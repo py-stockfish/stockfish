@@ -551,7 +551,7 @@ class Stockfish:
             self._set_option("MultiPV", num_top_moves)
             self._parameters.update({"MultiPV": num_top_moves})
 
-        self._go() if num_nodes > 0 else self._go_nodes(num_nodes)
+        self._go() if num_nodes == 0 else self._go_nodes(num_nodes)
 
         lines = []
         while True:
