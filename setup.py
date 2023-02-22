@@ -6,7 +6,7 @@ with open("README.md", "r") as readme:
 setup(
     name="stockfish",
     author="Ilya Zhelyabuzhsky",
-    author_email="zhelyabuzhsky@icloud.com",
+    author_email="TODO",
     version="3.28.0",
     license="MIT",
     keywords="chess stockfish",
