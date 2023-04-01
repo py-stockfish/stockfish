@@ -938,3 +938,15 @@ class TestStockfish:
         stockfish.__del__()
         assert stockfish._stockfish.poll() is not None
         assert Stockfish._del_counter == old_del_counter + 1
+
+    @pytest.mark.parametrize(
+        "line,expected",
+        [
+            ("Stockfish 15.1 by", 15),
+            ("Stockfish 200222 by", 200222),
+            ("Stockfish dev-20230329-3f01e3f4 by", 20230329),
+            ("Stockfish dev-15.1", -1),
+        ],
+    )
+    def test_version_number_extraction(self, stockfish, line, expected):
+        assert expected == stockfish._extract_major_version(line)
