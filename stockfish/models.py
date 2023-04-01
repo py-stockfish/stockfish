@@ -57,8 +57,8 @@ class Stockfish:
 
         self._has_quit_command_been_sent = False
 
-        self._stockfish_major_version: int = int(
-            self._read_line().split(" ")[1].split(".")[0].replace("-", "")
+        self._stockfish_major_version: int = self._extract_major_version(
+            self._read_line()
         )
 
         self._put("uci")
@@ -140,6 +140,23 @@ class Stockfish:
             None
         """
         self.update_engine_parameters(self._DEFAULT_STOCKFISH_PARAMS)
+
+    def _extract_major_version(self, output_line: str) -> int:
+        # To prevent the wrapper from not working at all,
+        # -1 is used as version number in case of problems
+        try:
+            version_specifier = output_line.split(" ")[1]
+            # Case: dev-20230329-3f01e3f4
+            if "dev" in version_specifier:
+                return int(version_specifier.split("-")[1])
+            # Case: 15.1
+            if "." in version_specifier:
+                return int(version_specifier.split(".")[0].replace("-", ""))
+            # Case: 200222
+            return int(version_specifier.replace("-", ""))
+
+        except ValueError:
+            return -1
 
     def _prepare_for_new_position(self, send_ucinewgame_token: bool = True) -> None:
         if send_ucinewgame_token:
@@ -750,7 +767,7 @@ class Stockfish:
         """
         return (
             self._stockfish_major_version >= 10109
-            and self._stockfish_major_version <= 311299
+            and self._stockfish_major_version <= 29991231
         )
 
     def send_quit_command(self) -> None:
