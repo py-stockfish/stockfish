@@ -300,8 +300,12 @@ Do not use this command during a search!
 ### Get current major version of stockfish engine
 E.g., if the engine being used is Stockfish 14.1 or Stockfish 14, then the function would return 14.
 Meanwhile, if a development build of the engine is being used (not an official release), then the function returns an 
-int with 5 or 6 digits, representing the date the engine was compiled on. 
-For example, 20122 is returned for the development build compiled on January 2, 2022.
+int, representing the date the engine was compiled on. There were two different versioning systems.
+Either it is a 5 or 6 digit long number with *ddmmyy* or an 8 digit long with *yyyymmdd*.
+For example, 20122 is returned for the development build compiled on January 2, 2022 and 20230329 is for the build on March 29, 2023.
+
+A return value of -1 from this function means that something did not work when parsing the version number.
+If this happens to you, please open an issue and specify which release you used so we can fix the problem.
 ```python 
 stockfish.get_stockfish_major_version()
 ```
