@@ -28,8 +28,8 @@ class Stockfish:
         self, 
         path: str = "stockfish", 
         depth: int = 15, 
-        num_nodes: int = 1000000, 
         parameters: dict = None,
+        num_nodes: int = 1000000, 
         turn_perspective: bool = True
     ) -> None:
         self._DEFAULT_STOCKFISH_PARAMS = {
@@ -365,7 +365,7 @@ class Stockfish:
         self._turn_perspective = turn_perspective
 
     def get_turn_perspective(self) -> bool:
-        """Returns whether centipawn and WDL values are set."""
+        """Returns whether centipawn and WDL values are set from turn perspective."""
         return self._turn_perspective
 
     def get_best_move(self, wtime: int = None, btime: int = None) -> Optional[str]:

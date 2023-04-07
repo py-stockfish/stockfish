@@ -129,17 +129,33 @@ True
 ```
 
 ### Get info on the top n moves
+Get moves, centipawns, and mates for the top n moves. If the move is a mate, the Centipawn value will be None, and vice versa.
+
 ```python
-stockfish.get_top_moves(3, include_info=False)
+stockfish.get_top_moves(3)
+# [
+#   {'Move': 'f5h7', 'Centipawn': None, 'Mate': 1},
+#   {'Move': 'f5d7', 'Centipawn': 713, 'Mate': None},
+#   {'Move': 'f5h5', 'Centipawn': -31, 'Mate': None}
+# ]
 ```
-Optional parameter `include_info` specifies whether to include the full info from the engine in the returned dictionary, including seldepth, multipv, time, nodes, nps, and wdl if available. Boolean. Default is `False`.
-```text
-[
-    {'Move': 'f5h7', 'Centipawn': None, 'Mate': 1},
-    {'Move': 'f5d7', 'Centipawn': 713, 'Mate': None},
-    {'Move': 'f5h5', 'Centipawn': -31, 'Mate': None}
-]
+Optional parameter `verbose` (default `False`) specifies whether to include the full info from the engine in the returned dictionary, including SelectiveDepth, Nodes, NodesPerSecond, Time, MultiPVLine, and WDL if available.
+```py
+stockfish.get_top_moves(1, verbose=True)
+# [{
+#   "Move":"d6e7",
+#   "Centipawn":-408,
+#   "Mate":"None",
+#   "Nodes":"2767506",
+#   "NodesPerSecond":"526442",
+#   "Time":"5257",
+#   "SelectiveDepth":"31",
+#   "MultiPVLine":"1",
+#   "WDL":"0 0 1000"
+# }]
 ```
+Optional parameter `num_nodes` specifies the number of nodes to search. If num_nodes is 0, then the engine will search until it configured depth is reached.
+
 
 ### Get Stockfish's win/draw/loss stats for the side to move in the current position  
 Before calling this function, it is recommended that you first check if your version of Stockfish is recent enough to display WDL stats. To do this,  
