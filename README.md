@@ -162,6 +162,16 @@ stockfish.get_top_moves(1, verbose=True)
 ```
 Optional parameter `num_nodes` specifies the number of nodes to search. If num_nodes is 0, then the engine will search until it configured depth is reached.
 
+### Set perspective of the evaluation
+You can set the perspective of the evaluation to be from the perspective of the side to move, or from the perspective of White.
+```py
+# Set perspective to be from the perspective of the side to move
+stockfish.is_turn_perspective(True)
+
+# Set perspective to be from the perspective of White
+stockfish.is_turn_perspective(False)
+```
+
 
 ### Get Stockfish's win/draw/loss stats for the side to move in the current position  
 Before calling this function, it is recommended that you first check if your version of Stockfish is recent enough to display WDL stats. To do this,  

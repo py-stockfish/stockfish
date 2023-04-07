@@ -630,12 +630,12 @@ class TestStockfish:
         with pytest.raises(ValueError):
             stockfish.get_top_moves(2, num_nodes=1000, depth=10)
 
-    def test_turn_perspective(self, stockfish):
+    def test_is_turn_perspective(self, stockfish):
         stockfish.set_depth(15)
         stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] > 0
-        stockfish.set_turn_perspective(False)
+        stockfish.set_is_turn_perspective(False)
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
 

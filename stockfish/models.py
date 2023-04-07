@@ -30,7 +30,7 @@ class Stockfish:
         depth: int = 15,
         parameters: Optional[dict] = None,
         num_nodes: int = 1000000,
-        turn_perspective: bool = True,
+        is_turn_perspective: bool = True,
     ) -> None:
         self._DEFAULT_STOCKFISH_PARAMS = {
             "Debug Log File": "",
@@ -67,7 +67,7 @@ class Stockfish:
 
         self.depth = str(depth)
         self._num_nodes = num_nodes
-        self._turn_perspective = turn_perspective
+        self._is_turn_perspective = is_turn_perspective
         self.info: str = ""
 
         self._parameters: dict = {}
@@ -335,7 +335,7 @@ class Stockfish:
         )
 
     def set_depth(self, depth_value: int = 2) -> None:
-        """Sets current depth of stockfish engine.
+        """Sets current depth of Stockfish engine.
 
         Args:
             depth_value: Depth option higher than 1
@@ -346,7 +346,7 @@ class Stockfish:
         """Sets current number of nodes of Stockfish engine.
 
         Args:
-            num_nodes: Number of nodes option higher than 1000000
+            num_nodes: Number of nodes for Stockfish to search
         """
         self._num_nodes = num_nodes
 
@@ -354,19 +354,19 @@ class Stockfish:
         """Returns configured number of nodes to search"""
         return self._num_nodes
 
-    def set_turn_perspective(self, turn_perspective: bool = True) -> None:
+    def set_is_turn_perspective(self, is_turn_perspective: bool = True) -> None:
         """Sets perspective of centipawn and WDL evaluations.
 
         Args:
-            turn_perspective:
+            is_turn_perspective:
               Boolean whether perspective is turn-based. Default True.
               If False, returned evaluations are from White's perspective.
         """
-        self._turn_perspective = turn_perspective
+        self._is_turn_perspective = is_turn_perspective
 
-    def get_turn_perspective(self) -> bool:
+    def get_is_turn_perspective(self) -> bool:
         """Returns whether centipawn and WDL values are set from turn perspective."""
-        return self._turn_perspective
+        return self._is_turn_perspective
 
     def get_best_move(
         self, wtime: Optional[int] = None, btime: Optional[int] = None
@@ -641,10 +641,10 @@ class Stockfish:
 
         top_moves: List[dict] = []
 
-        # set perspective of evaluations. if turn_perspective is True, or white to move, use Stockfish' values.
+        # set perspective of evaluations. if is_turn_perspective is True, or white to move, use Stockfish' values.
         # otherwise invert values.
         perspective = (
-            1 if self._turn_perspective or ("w" in self.get_fen_position()) else -1
+            1 if self._is_turn_perspective or ("w" in self.get_fen_position()) else -1
         )
 
         # loop through Stockfish output lines in reverse order
