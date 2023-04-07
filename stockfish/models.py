@@ -28,7 +28,7 @@ class Stockfish:
         self, 
         path: str = "stockfish", 
         depth: int = 15, 
-        parameters: dict = None,
+        parameters: Optional[dict] = None,
         num_nodes: int = 1000000, 
         turn_perspective: bool = True
     ) -> None:
@@ -368,7 +368,9 @@ class Stockfish:
         """Returns whether centipawn and WDL values are set from turn perspective."""
         return self._turn_perspective
 
-    def get_best_move(self, wtime: int = None, btime: int = None) -> Optional[str]:
+    def get_best_move(
+        self, wtime: Optional[int] = None, btime: Optional[int] = None
+    ) -> Optional[str]:
         """Returns best move with current position on the board.
         wtime and btime arguments influence the search only if provided.
 
