@@ -25,7 +25,12 @@ class Stockfish:
     # Used in test_models: will count how many times the del function is called.
 
     def __init__(
-        self, path: str = "stockfish", depth: int = 15, parameters: dict = None
+        self, 
+        path: str = "stockfish", 
+        depth: int = 15, 
+        num_nodes: int = 1000000, 
+        parameters: dict = None,
+        turn_perspective: bool = True
     ) -> None:
         self._DEFAULT_STOCKFISH_PARAMS = {
             "Debug Log File": "",
@@ -61,6 +66,8 @@ class Stockfish:
         self._put("uci")
 
         self.depth = str(depth)
+        self._num_nodes = num_nodes
+        self._turn_perspective = turn_perspective
         self.info: str = ""
 
         self._parameters: dict = {}
@@ -175,6 +182,9 @@ class Stockfish:
 
     def _go(self) -> None:
         self._put(f"go depth {self.depth}")
+    
+    def _go_nodes(self) -> None:
+        self._put(f"go nodes {self._num_nodes}")
 
     def _go_time(self, time: int) -> None:
         self._put(f"go movetime {time}")
@@ -190,7 +200,7 @@ class Stockfish:
     def set_fen_position(
         self, fen_position: str, send_ucinewgame_token: bool = True
     ) -> None:
-        """Sets current board position in Forsyth–Edwards notation (FEN).
+        """Sets current board position in Forsyth-Edwards notation (FEN).
 
         Args:
             fen_position:
@@ -283,10 +293,10 @@ class Stockfish:
         return board_rep
 
     def get_fen_position(self) -> str:
-        """Returns current board position in Forsyth–Edwards notation (FEN).
+        """Returns current board position in Forsyth-Edwards notation (FEN).
 
         Returns:
-            String with current position in Forsyth–Edwards notation (FEN)
+            String with current position in Forsyth-Edwards notation (FEN)
         """
         self._put("d")
         while True:
@@ -323,6 +333,40 @@ class Stockfish:
         self.update_engine_parameters(
             {"UCI_LimitStrength": "true", "UCI_Elo": elo_rating}
         )
+    
+    def set_depth(self, depth_value: int = 2) -> None:
+        """Sets current depth of stockfish engine.
+
+        Args:
+            depth_value: Depth option higher than 1
+        """
+        self.depth = str(depth_value)
+
+    def set_num_nodes(self, num_nodes: int = 1000000) -> None:
+        """Sets current number of nodes of Stockfish engine.
+
+        Args:
+            num_nodes: Number of nodes option higher than 1000000
+        """
+        self._num_nodes = num_nodes
+
+    def get_num_nodes(self) -> int:
+        """Returns configured number of nodes to search"""
+        return self._num_nodes
+
+    def set_turn_perspective(self, turn_perspective: bool = True) -> None:
+        """Sets perspective of centipawn and WDL evaluations.
+
+        Args:
+            turn_perspective: 
+              Boolean whether perspective is turn-based. Default True.
+              If False, returned evaluations are from White's perspective. 
+        """
+        self._turn_perspective = turn_perspective
+
+    def get_turn_perspective(self) -> bool:
+        """Returns whether centipawn and WDL values are set."""
+        return self._turn_perspective
 
     def get_best_move(self, wtime: int = None, btime: int = None) -> Optional[str]:
         """Returns best move with current position on the board.
@@ -514,109 +558,181 @@ class Stockfish:
             elif splitted_text[0] == "bestmove":
                 return evaluation
 
+   
     def get_top_moves(
-        self, num_top_moves: int = 5, include_info: bool = False
+        self, 
+        num_top_moves: int = 5, 
+        verbose: bool = False, 
+        num_nodes: int = 0,
+        depth: int = 15,
     ) -> List[dict]:
         """Returns info on the top moves in the position.
 
         Args:
             num_top_moves:
-                The number of moves to return info on, assuming there are at least
-                those many legal moves.
+              The number of moves for which to return information, assuming there
+              are at least that many legal moves.
+              Default is 5.
 
-            include_info:
-                Option to include the full info from the engine in the returned dictionary,
-                including seldepth, multipv, time, nodes, nps, and wdl if available.
-                Boolean. Default is False.
+            verbose:
+              Option to include the full info from the engine in the returned dictionary,
+              including seldepth, multipv, time, nodes, nps, and wdl if available.
+              Boolean. Default is False.
+            
+            num_nodes:
+              Option to search until a certain number of nodes have been searched, instead of depth. 
+              Default is 0.
+
+            depth:
+              Option to search until a certain depth has been reached, instead of nodes. 
+              Default is 15.
 
         Returns:
-            A list of dictionaries. In each dictionary, there are keys for Move, Centipawn, and Mate;
-            the corresponding value for either the Centipawn or Mate key will be None.
+            A list of dictionaries, where each dictionary contains keys for Move, Centipawn, and Mate.
+            The corresponding value for either the Centipawn or Mate key will be None.
             If there are no moves in the position, an empty list is returned.
 
-            If include_info is True, the dictionary will also include the keys SelectiveDepth, Time,
-            Nodes, N/s, MultiPVLine, and WDL (if available). WDL is set from the White player's perspective.
+            If 'verbose' is True, the dictionary will also include the following keys: SelectiveDepth, Time,
+            Nodes, NodesPerSecond, MultiPVLine, and WDL (if available).
         """
 
         if num_top_moves <= 0:
             raise ValueError("num_top_moves is not a positive number.")
-        old_MultiPV_value = self._parameters["MultiPV"]
+        
+        if depth != 15 and num_nodes > 0:
+            raise ValueError("depth and num_nodes should not be set at the same time.")
+
+        # to get number of top moves, we use Stockish's MultiPV option (ie. multiple principal variations) 
+
+        # remember global values
+        old_multipv = self._parameters["MultiPV"]
+        old_num_nodes = self._num_nodes
+
+        # set MultiPV to num_top_moves requested
         if num_top_moves != self._parameters["MultiPV"]:
             self._set_option("MultiPV", num_top_moves)
             self._parameters.update({"MultiPV": num_top_moves})
-        self._go()
+
+        # start engine
+        # will go until reaches self._depth or self._num_nodes
+        if num_nodes == 0:
+            self._go()
+        else:
+            self._num_nodes = num_nodes
+            self._go_nodes()
+
+        # self._go() if nodes else self._go_nodes()
+
         lines = []
+        
+        # parse output into a list of lists
+        # this loop will run until Stockfish has finished evaluating the position
         while True:
             text = self._read_line()
-            splitted_text = text.split(" ")
-            lines.append(splitted_text)
-            if splitted_text[0] == "bestmove":
+            split_text = text.split(" ")
+            lines.append(split_text)
+            # The "bestmove" line is the last line of the evaluation.
+            if split_text[0] == "bestmove":
                 break
+        
+        # Stockfish is now done evaluating the position,
+        # and the output is stored in the list 'lines'
+
         top_moves: List[dict] = []
-        multiplier = 1 if ("w" in self.get_fen_position()) else -1
+        
+        # set perspective of evaluations. if turn_perspective is True, or white to move, use Stockfish' values.
+        # otherwise invert values.
+        perspective = 1 if self._turn_perspective or ("w" in self.get_fen_position()) else -1
+
+        # loop through Stockfish output lines in reverse order
         for current_line in reversed(lines):
+
+            # if the line is a "bestmove" line, and the best move is "(none)", then
+            # there are no top moves, and we're done. otherwise, continue with next line
             if current_line[0] == "bestmove":
                 if current_line[1] == "(none)":
                     top_moves = []
                     break
-            elif (
-                ("multipv" in current_line)
-                and ("depth" in current_line)
-                and current_line[current_line.index("depth") + 1] == self.depth
-            ):
-                multiPV_number = int(current_line[current_line.index("multipv") + 1])
-                if multiPV_number <= num_top_moves:
-                    has_centipawn_value = "cp" in current_line
-                    has_mate_value = "mate" in current_line
-                    if has_centipawn_value == has_mate_value:
-                        raise RuntimeError(
-                            "Having a centipawn value and mate value should be mutually exclusive."
-                        )
-                    move_evaluation = {
-                        "Move": current_line[current_line.index("pv") + 1],
-                        "Centipawn": int(current_line[current_line.index("cp") + 1])
-                        * multiplier
-                        if has_centipawn_value
-                        else None,
-                        "Mate": int(current_line[current_line.index("mate") + 1])
-                        * multiplier
-                        if has_mate_value
-                        else None,
-                    }
-                    if include_info:
-                        move_evaluation.update(
-                            {
-                                "Nodes": current_line[current_line.index("nodes") + 1],
-                                "N/s": current_line[current_line.index("nps") + 1],
-                                "Time": current_line[current_line.index("time") + 1],
-                                "SelectiveDepth": current_line[
-                                    current_line.index("seldepth") + 1
-                                ],
-                                "MultiPVLine": current_line[
-                                    current_line.index("multipv") + 1
-                                ],
-                            }
-                        )
-                        if self.does_current_engine_version_have_wdl_option():
-                            move_evaluation.update(
-                                {
-                                    "WDL": " ".join(
-                                        [
-                                            current_line[current_line.index("wdl") + 1],
-                                            current_line[current_line.index("wdl") + 2],
-                                            current_line[current_line.index("wdl") + 3],
-                                        ][::multiplier]
-                                    )
-                                }
-                            )
-                    top_moves.insert(0, move_evaluation)
-            else:
-                break
-        if old_MultiPV_value != self._parameters["MultiPV"]:
-            self._set_option("MultiPV", old_MultiPV_value)
-            self._parameters.update({"MultiPV": old_MultiPV_value})
-        return top_moves
+                continue
 
+            # if the line has no relevant info, we're done
+            if ("multipv" not in current_line) or ("depth" not in current_line):
+                break
+
+            # if we're searching depth and the line is not our desired depth, we're done
+            if (num_nodes == 0) and (current_line[current_line.index("depth") + 1] != self.depth):
+                break
+
+            # if we're searching nodes and the line has less than desired number of nodes, we're done
+            if (num_nodes > 0) and (int(current_line[current_line.index("nodes") + 1]) < self._num_nodes):
+                break
+        
+            # gather info on "num_top_moves" multipv lines
+            # multiPV_number = int(current_line[current_line.index("multipv") + 1])
+
+            # should never happen
+            # if multiPV_number > num_top_moves:
+            #     continue
+
+            # should always be the case
+            # if multiPV_number <= num_top_moves:
+
+            # has_centipawn_value = "cp" in current_line
+            # has_mate_value = "mate" in current_line
+
+            # unnecessary check? should never happen, unless major malfunction
+            # if has_centipawn_value == has_mate_value:
+                # raise RuntimeError("Having a centipawn value and mate value should be mutually exclusive.")
+            
+            move_evaluation = {
+
+                # get move
+                "Move": current_line[current_line.index("pv") + 1],
+
+                # get cp if available
+                "Centipawn": int(current_line[current_line.index("cp") + 1])
+                * perspective
+                if "cp" in current_line
+                else None,
+
+                # get mate if available
+                "Mate": int(current_line[current_line.index("mate") + 1])
+                * perspective
+                if "mate" in current_line
+                else None,
+            }
+
+            # add more info if verbose
+            if verbose:
+                move_evaluation["Nodes"] = current_line[current_line.index("nodes") + 1]
+                move_evaluation["NodesPerSecond"] = current_line[current_line.index("nps") + 1]
+                move_evaluation["Time"] = current_line[current_line.index("time") + 1]
+                move_evaluation["SelectiveDepth"] = current_line[current_line.index("seldepth") + 1]
+                move_evaluation["MultiPVLine"] = current_line[current_line.index("multipv") + 1]
+
+                # add wdl if available
+                if self.does_current_engine_version_have_wdl_option():
+                    move_evaluation["WDL"] = " ".join([  
+                            current_line[current_line.index("wdl") + 1],
+                            current_line[current_line.index("wdl") + 2],
+                            current_line[current_line.index("wdl") + 3],
+                        ][::perspective]
+                    )
+                
+            # add move to list of top moves
+            top_moves.insert(0, move_evaluation)
+
+        # reset MultiPV to global value
+        if old_multipv != self._parameters["MultiPV"]:
+            self._set_option("MultiPV", old_multipv)
+            self._parameters.update({"MultiPV": old_multipv})
+        
+        # reset self._num_nodes to global value
+        if old_num_nodes != self._num_nodes:
+            self._num_nodes = old_num_nodes
+
+        return top_moves
+    
     @dataclass
     class BenchmarkParameters:
         ttSize: int = 16
@@ -663,13 +779,7 @@ class Stockfish:
             if splitted_text[0] == "Nodes/second":
                 return text
 
-    def set_depth(self, depth_value: int = 2) -> None:
-        """Sets current depth of stockfish engine.
-
-        Args:
-            depth_value: Depth option higher than 1
-        """
-        self.depth = str(depth_value)
+    
 
     class Piece(Enum):
         WHITE_PAWN = "P"

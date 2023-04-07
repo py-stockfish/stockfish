@@ -571,15 +571,15 @@ class TestStockfish:
         assert stockfish.get_top_moves() == []
         assert stockfish.get_parameters()["MultiPV"] == 3
 
-    def test_get_top_moves_with_info(self, stockfish):
+    def test_get_top_moves_verbose(self, stockfish):
         stockfish.set_depth(15)
         stockfish._set_option("MultiPV", 4)
         stockfish.set_fen_position("1rQ1r1k1/5ppp/8/8/1R6/8/2r2PPP/4R1K1 w - - 0 1")
-        assert stockfish.get_top_moves(2, include_info=False) == [
+        assert stockfish.get_top_moves(2, verbose=False) == [
             {"Move": "e1e8", "Centipawn": None, "Mate": 1},
             {"Move": "c8e8", "Centipawn": None, "Mate": 2},
         ]
-        moves = stockfish.get_top_moves(2, include_info=True)
+        moves = stockfish.get_top_moves(2, verbose=True)
         assert all(
             k in moves[0]
             for k in (
@@ -587,7 +587,7 @@ class TestStockfish:
                 "Centipawn",
                 "Mate",
                 "MultiPVLine",
-                "N/s",
+                "NodesPerSecond",
                 "Nodes",
                 "SelectiveDepth",
                 "Time",
@@ -596,7 +596,27 @@ class TestStockfish:
         if stockfish.does_current_engine_version_have_wdl_option():
             assert "WDL" in moves[0]
 
-    def test_get_top_moves_raising_error(self, stockfish):
+    def test_get_top_moves_num_nodes(self, stockfish):
+        stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
+        moves = stockfish.get_top_moves(2, num_nodes=1000000, verbose=True)
+        assert int(moves[0]["Nodes"]) >= 1000000
+
+    def test_get_top_moves_depth(self, stockfish):
+        stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
+        moves = stockfish.get_top_moves(2, depth=10, verbose=True)
+        assert int(moves[0]["SelectiveDepth"]) >= 10
+        moves = stockfish.get_top_moves(2, depth=15, verbose=True)
+        assert int(moves[0]["SelectiveDepth"]) >= 15
+
+    def test_get_top_moves_preserve_globals(self, stockfish):
+        stockfish._set_option("MultiPV", 4)
+        stockfish.set_num_nodes(2000000)
+        stockfish.set_fen_position("1rQ1r1k1/5ppp/8/8/1R6/8/2r2PPP/4R1K1 w - - 0 1")
+        stockfish.get_top_moves(2, num_nodes=100000)
+        assert stockfish.get_num_nodes() == 2000000
+        assert stockfish.get_parameters()["MultiPV"] == 4
+
+    def test_get_top_moves_raising_error_num_top_moves(self, stockfish):
         stockfish.set_fen_position(
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         )
@@ -604,6 +624,20 @@ class TestStockfish:
             stockfish.get_top_moves(0)
         assert len(stockfish.get_top_moves(2)) == 2
         assert stockfish.get_parameters()["MultiPV"] == 1
+
+    def test_get_top_moves_raising_error_depth_and_num_nodes_set(self, stockfish):
+        stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
+        with pytest.raises(ValueError):
+            stockfish.get_top_moves(2, num_nodes=1000, depth=10)
+
+    def test_turn_perspective(self, stockfish):
+        stockfish.set_depth(15)
+        stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
+        moves = stockfish.get_top_moves(1)
+        assert moves[0]["Centipawn"] > 0
+        stockfish.set_turn_perspective(False)
+        moves = stockfish.get_top_moves(1)
+        assert moves[0]["Centipawn"] < 0
 
     def test_make_moves_from_current_position(self, stockfish):
         stockfish.set_fen_position(
