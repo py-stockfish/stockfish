@@ -565,7 +565,6 @@ class Stockfish:
         num_top_moves: int = 5,
         verbose: bool = False,
         num_nodes: int = 0,
-        depth: int = 15,
     ) -> List[dict]:
         """Returns info on the top moves in the position.
 
@@ -584,10 +583,6 @@ class Stockfish:
               Option to search until a certain number of nodes have been searched, instead of depth.
               Default is 0.
 
-            depth:
-              Option to search until a certain depth has been reached, instead of nodes.
-              Default is 15.
-
         Returns:
             A list of dictionaries, where each dictionary contains keys for Move, Centipawn, and Mate.
             The corresponding value for either the Centipawn or Mate key will be None.
@@ -599,9 +594,6 @@ class Stockfish:
 
         if num_top_moves <= 0:
             raise ValueError("num_top_moves is not a positive number.")
-
-        if depth != 15 and num_nodes > 0:
-            raise ValueError("depth and num_nodes should not be set at the same time.")
 
         # to get number of top moves, we use Stockish's MultiPV option (ie. multiple principal variations)
 
