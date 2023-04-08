@@ -611,7 +611,7 @@ class Stockfish:
         if num_top_moves <= 0:
             raise ValueError("num_top_moves is not a positive number.")
 
-        # to get number of top moves, we use Stockish's MultiPV option (ie. multiple principal variations)
+        # to get number of top moves, we use Stockfish's MultiPV option (ie. multiple principal variations)
 
         # remember global values
         old_multipv = self._parameters["MultiPV"]
@@ -649,10 +649,12 @@ class Stockfish:
 
         top_moves: List[dict] = []
 
-        # set perspective of evaluations. if is_turn_perspective is True, or white to move, use Stockfish' values.
-        # otherwise invert values.
+        # set perspective of evaluations. if get_is_turn_perspective() is True, or white to move,
+        # use Stockfish' values, otherwise invert values.
         perspective = (
-            1 if self._is_turn_perspective or ("w" in self.get_fen_position()) else -1
+            1
+            if self.get_is_turn_perspective() or ("w" in self.get_fen_position())
+            else -1
         )
 
         # loop through Stockfish output lines in reverse order

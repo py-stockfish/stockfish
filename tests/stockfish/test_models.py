@@ -10,7 +10,7 @@ class TestStockfish:
     def stockfish(self):
         return Stockfish()
 
-    def test_instantiation_defaults(self):
+    def test_constructor_defaults(self):
         sf = Stockfish()
         assert sf is not None
         assert sf._path == "stockfish"
@@ -19,7 +19,7 @@ class TestStockfish:
         assert sf._num_nodes == 1000000
         assert sf._is_turn_perspective is True
 
-    def test_instantiation_options(self):
+    def test_constructor_options(self):
         sf = Stockfish(
             depth=20,
             num_nodes=1000,
@@ -32,7 +32,7 @@ class TestStockfish:
         assert sf._parameters["Threads"] == 2
         assert sf._parameters["UCI_Elo"] == 1500
 
-    def test_instantiation_raises_type_errors(self):
+    def test_constructor_raises_type_errors(self):
         with pytest.raises(TypeError):
             Stockfish(depth="20")
         with pytest.raises(TypeError):
@@ -649,7 +649,6 @@ class TestStockfish:
 
     def test_get_top_moves_verbose(self, stockfish):
         stockfish.set_depth(15)
-        stockfish._set_option("MultiPV", 4)
         stockfish.set_fen_position("1rQ1r1k1/5ppp/8/8/1R6/8/2r2PPP/4R1K1 w - - 0 1")
         assert stockfish.get_top_moves(2, verbose=False) == [
             {"Move": "e1e8", "Centipawn": None, "Mate": 1},
