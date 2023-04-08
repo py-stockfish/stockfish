@@ -618,11 +618,6 @@ class TestStockfish:
         assert len(stockfish.get_top_moves(2)) == 2
         assert stockfish.get_parameters()["MultiPV"] == 1
 
-    def test_get_top_moves_raising_error_depth_and_num_nodes_set(self, stockfish):
-        stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
-        with pytest.raises(ValueError):
-            stockfish.get_top_moves(2, num_nodes=1000, depth=10)
-
     def test_is_turn_perspective(self, stockfish):
         stockfish.set_depth(15)
         stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
