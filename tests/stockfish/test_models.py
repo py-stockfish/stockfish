@@ -448,9 +448,15 @@ class TestStockfish:
 
     def test_set_depth(self, stockfish):
         stockfish.set_depth(12)
-        assert stockfish.depth == "12"
+        assert stockfish._depth == 12
         stockfish.get_best_move()
         assert "depth 12" in stockfish.info
+
+    def test_get_depth(self, stockfish):
+        stockfish.set_depth(12)
+        assert stockfish.get_depth() == 12
+        stockfish.set_depth(20)
+        assert stockfish.get_depth() == 20
 
     def test_get_best_move_wrong_position(self, stockfish):
         stockfish.set_depth(2)
@@ -482,10 +488,10 @@ class TestStockfish:
         stockfish.get_best_move()
         assert "multipv 2" in stockfish_2.info
         assert "depth 16" in stockfish_2.info
-        assert stockfish_2.depth == "16"
+        assert stockfish_2._depth == 16
         assert "multipv 1" in stockfish.info
         assert "depth 15" in stockfish.info
-        assert stockfish.depth == "15"
+        assert stockfish._depth == 15
 
         stockfish_1_params = stockfish.get_parameters()
         stockfish_2_params = stockfish_2.get_parameters()
@@ -948,7 +954,7 @@ class TestStockfish:
     def test_is_fen_valid(self, stockfish):
         old_params = stockfish.get_parameters()
         old_info = stockfish.info
-        old_depth = stockfish.depth
+        old_depth = stockfish._depth
         old_fen = stockfish.get_fen_position()
         correct_fens = [
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -974,7 +980,7 @@ class TestStockfish:
         assert stockfish._stockfish.poll() is None
         assert stockfish.get_parameters() == old_params
         assert stockfish.info == old_info
-        assert stockfish.depth == old_depth
+        assert stockfish._depth == old_depth
         assert stockfish.get_fen_position() == old_fen
 
     def test_send_quit_command(self, stockfish):

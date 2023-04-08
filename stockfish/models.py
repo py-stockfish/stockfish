@@ -65,7 +65,7 @@ class Stockfish:
 
         self._put("uci")
 
-        self.depth = str(depth)
+        self._depth = depth
         self._num_nodes = num_nodes
         self._is_turn_perspective = is_turn_perspective
         self.info: str = ""
@@ -181,7 +181,7 @@ class Stockfish:
             pass
 
     def _go(self) -> None:
-        self._put(f"go depth {self.depth}")
+        self._put(f"go depth {self._depth}")
 
     def _go_nodes(self) -> None:
         self._put(f"go nodes {self._num_nodes}")
@@ -334,13 +334,19 @@ class Stockfish:
             {"UCI_LimitStrength": "true", "UCI_Elo": elo_rating}
         )
 
-    def set_depth(self, depth_value: int = 2) -> None:
+    def set_depth(self, depth: int = 2) -> None:
         """Sets current depth of Stockfish engine.
 
         Args:
             depth_value: Depth option higher than 1
         """
-        self.depth = str(depth_value)
+        if not isinstance(depth, int):
+            raise TypeError("depth must be an integer")
+        self._depth = depth
+
+    def get_depth(self) -> int:
+        """Returns configured depth to search"""
+        return self._depth
 
     def set_num_nodes(self, num_nodes: int = 1000000) -> None:
         """Sets current number of nodes of Stockfish engine.
@@ -655,7 +661,7 @@ class Stockfish:
 
             # if we're searching depth and the line is not our desired depth, we're done
             if (num_nodes == 0) and (
-                current_line[current_line.index("depth") + 1] != self.depth
+                int(current_line[current_line.index("depth") + 1]) != self._depth
             ):
                 break
 
