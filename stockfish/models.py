@@ -48,6 +48,7 @@ class Stockfish:
             "UCI_LimitStrength": "false",
             "UCI_Elo": 1350,
         }
+
         self._path = path
         self._stockfish = subprocess.Popen(
             self._path,
@@ -65,9 +66,10 @@ class Stockfish:
 
         self._put("uci")
 
-        self._depth: int = depth
-        self._num_nodes: int = num_nodes
-        self._is_turn_perspective: bool = is_turn_perspective
+        self.set_depth(depth)
+        self.set_num_nodes(num_nodes)
+        self.set_is_turn_perspective(is_turn_perspective)
+
         self.info: str = ""
 
         self._parameters: dict = {}
