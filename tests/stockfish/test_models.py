@@ -24,7 +24,7 @@ class TestStockfish:
             depth=20,
             num_nodes=1000,
             is_turn_perspective=False,
-            parameters={"Threads": 2},
+            parameters={"Threads": 2, "UCI_Elo": 1500},
         )
         assert sf._depth == 20
         assert sf._num_nodes == 1000
@@ -699,6 +699,7 @@ class TestStockfish:
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] > 0
         stockfish.set_is_turn_perspective(False)
+        assert stockfish.get_is_turn_perspective() is False
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
 
