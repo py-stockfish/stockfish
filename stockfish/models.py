@@ -65,9 +65,9 @@ class Stockfish:
 
         self._put("uci")
 
-        self._depth = depth
-        self._num_nodes = num_nodes
-        self._is_turn_perspective = is_turn_perspective
+        self._depth: int = depth
+        self._num_nodes: int = num_nodes
+        self._is_turn_perspective: bool = is_turn_perspective
         self.info: str = ""
 
         self._parameters: dict = {}
