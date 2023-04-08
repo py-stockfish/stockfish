@@ -476,6 +476,28 @@ class TestStockfish:
         assert stockfish.get_depth() == 20
         assert stockfish._depth == 20
 
+    def test_set_num_nodes(self, stockfish):
+        stockfish.set_num_nodes(100)
+        assert stockfish._num_nodes == 100
+        stockfish.set_num_nodes()
+        assert stockfish._num_nodes == 1000000
+
+    def test_set_num_nodes_type_error(self, stockfish):
+        with pytest.raises(TypeError):
+            stockfish.set_num_nodes("100")
+        with pytest.raises(TypeError):
+            stockfish.set_num_nodes(100.1)
+        with pytest.raises(TypeError):
+            stockfish.set_num_nodes(None)
+        with pytest.raises(TypeError):
+            stockfish.set_num_nodes(True)
+
+    def test_get_num_nodes(self, stockfish):
+        stockfish.set_num_nodes(100)
+        assert stockfish.get_num_nodes() == 100
+        stockfish.set_num_nodes()
+        assert stockfish.get_num_nodes() == 1000000
+
     def test_get_best_move_wrong_position(self, stockfish):
         stockfish.set_depth(2)
         wrong_fen = "3kk3/8/8/8/8/8/8/3KK3 w - - 0 0"

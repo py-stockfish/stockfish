@@ -354,6 +354,12 @@ class Stockfish:
         Args:
             num_nodes: Number of nodes for Stockfish to search
         """
+        if (
+            not isinstance(num_nodes, int)
+            or isinstance(num_nodes, bool)
+            or num_nodes < 1
+        ):
+            raise TypeError("num_nodes must be an integer higher than 1")
         self._num_nodes = num_nodes
 
     def get_num_nodes(self) -> int:
