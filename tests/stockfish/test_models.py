@@ -17,18 +17,18 @@ class TestStockfish:
         assert sf._parameters == sf._DEFAULT_STOCKFISH_PARAMS
         assert sf._depth == 15
         assert sf._num_nodes == 1000000
-        assert sf._is_turn_perspective is True
+        assert sf._turn_perspective is True
 
     def test_constructor_options(self):
         sf = Stockfish(
             depth=20,
             num_nodes=1000,
-            is_turn_perspective=False,
+            turn_perspective=False,
             parameters={"Threads": 2, "UCI_Elo": 1500},
         )
         assert sf._depth == 20
         assert sf._num_nodes == 1000
-        assert sf._is_turn_perspective is False
+        assert sf._turn_perspective is False
         assert sf._parameters["Threads"] == 2
         assert sf._parameters["UCI_Elo"] == 1500
 
@@ -38,7 +38,7 @@ class TestStockfish:
         with pytest.raises(TypeError):
             Stockfish(num_nodes="100")
         with pytest.raises(TypeError):
-            Stockfish(is_turn_perspective="False")
+            Stockfish(turn_perspective="False")
 
     def test_get_best_move_first_move(self, stockfish):
         best_move = stockfish.get_best_move()
@@ -693,19 +693,19 @@ class TestStockfish:
         assert len(stockfish.get_top_moves(2)) == 2
         assert stockfish.get_parameters()["MultiPV"] == 1
 
-    def test_is_turn_perspective(self, stockfish):
+    def test_turn_perspective(self, stockfish):
         stockfish.set_depth(15)
         stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] > 0
-        stockfish.set_is_turn_perspective(False)
-        assert stockfish.get_is_turn_perspective() is False
+        stockfish.set_turn_perspective(False)
+        assert stockfish.get_turn_perspective() is False
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
 
-    def test_is_turn_perspective_raises_type_error(self, stockfish):
+    def test_turn_perspective_raises_type_error(self, stockfish):
         with pytest.raises(TypeError):
-            stockfish.set_is_turn_perspective("not a bool")
+            stockfish.set_turn_perspective("not a bool")
 
     def test_make_moves_from_current_position(self, stockfish):
         stockfish.set_fen_position(

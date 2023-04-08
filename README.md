@@ -166,10 +166,14 @@ Optional parameter `num_nodes` specifies the number of nodes to search. If num_n
 You can set the perspective of the evaluation to be from the perspective of the side to move, or from the perspective of White.
 ```py
 # Set the perspective of the evaluation to be from the point of view of the side to move
-stockfish.is_turn_perspective(True)
+stockfish.set_turn_perspective(True)
 
 # Set the perspective of the evaluation to be from White's perspective
-stockfish.is_turn_perspective(False)
+stockfish.set_turn_perspective(False)
+
+# Get the current perspective of the evaluation
+is_turn_perspective = stockfish.get_turn_perspective()
+
 ```
 
 
