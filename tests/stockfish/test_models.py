@@ -30,8 +30,9 @@ class TestStockfish:
         assert sf._num_nodes == 1000
         assert sf._is_turn_perspective is False
         assert sf._parameters["Threads"] == 2
+        assert sf._parameters["UCI_Elo"] == 1500
 
-    def test_instantiation_raising_type_errors(self):
+    def test_instantiation_raises_type_errors(self):
         with pytest.raises(TypeError):
             Stockfish(depth="20")
         with pytest.raises(TypeError):
@@ -485,7 +486,7 @@ class TestStockfish:
         stockfish.get_best_move()
         assert "depth 15" in stockfish.info
 
-    def test_set_depth_type_error(self, stockfish):
+    def test_set_depth_raises_type_error(self, stockfish):
         with pytest.raises(TypeError):
             stockfish.set_depth("12")
         with pytest.raises(TypeError):
@@ -511,7 +512,7 @@ class TestStockfish:
         stockfish.set_num_nodes()
         assert stockfish._num_nodes == 1000000
 
-    def test_set_num_nodes_type_error(self, stockfish):
+    def test_set_num_nodes_raises_type_error(self, stockfish):
         with pytest.raises(TypeError):
             stockfish.set_num_nodes("100")
         with pytest.raises(TypeError):
@@ -684,7 +685,7 @@ class TestStockfish:
         assert stockfish.get_num_nodes() == 2000000
         assert stockfish.get_parameters()["MultiPV"] == 4
 
-    def test_get_top_moves_raising_error_num_top_moves(self, stockfish):
+    def test_get_top_moves_raises_value_error(self, stockfish):
         stockfish.set_fen_position(
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         )
@@ -703,7 +704,7 @@ class TestStockfish:
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
 
-    def test_is_turn_perspective_type_error(self, stockfish):
+    def test_is_turn_perspective_raises_type_error(self, stockfish):
         with pytest.raises(TypeError):
             stockfish.set_is_turn_perspective("not a bool")
 
