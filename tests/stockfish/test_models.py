@@ -10,6 +10,35 @@ class TestStockfish:
     def stockfish(self):
         return Stockfish()
 
+    def test_instantiation_defaults(self):
+        sf = Stockfish()
+        assert sf is not None
+        assert sf._path == "stockfish"
+        assert sf._parameters == sf._DEFAULT_STOCKFISH_PARAMS
+        assert sf._depth == 15
+        assert sf._num_nodes == 1000000
+        assert sf._is_turn_perspective is True
+
+    def test_instantiation_options(self):
+        sf = Stockfish(
+            depth=20,
+            num_nodes=1000,
+            is_turn_perspective=False,
+            parameters={"Threads": 2},
+        )
+        assert sf._depth == 20
+        assert sf._num_nodes == 1000
+        assert sf._is_turn_perspective is False
+        assert sf._parameters["Threads"] == 2
+
+    def test_instantiation_raising_type_errors(self):
+        with pytest.raises(TypeError):
+            Stockfish(depth="20")
+        with pytest.raises(TypeError):
+            Stockfish(num_nodes="100")
+        with pytest.raises(TypeError):
+            Stockfish(is_turn_perspective="False")
+
     def test_get_best_move_first_move(self, stockfish):
         best_move = stockfish.get_best_move()
         assert best_move in (
