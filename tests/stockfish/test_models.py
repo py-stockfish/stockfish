@@ -451,12 +451,30 @@ class TestStockfish:
         assert stockfish._depth == 12
         stockfish.get_best_move()
         assert "depth 12" in stockfish.info
+        stockfish.set_depth()
+        assert stockfish._depth == 15
+        stockfish.get_best_move()
+        assert "depth 15" in stockfish.info
+
+    def test_set_depth_type_error(self, stockfish):
+        with pytest.raises(TypeError):
+            stockfish.set_depth("12")
+        with pytest.raises(TypeError):
+            stockfish.set_depth(True)
+        with pytest.raises(TypeError):
+            stockfish.set_depth(12.1)
+        with pytest.raises(TypeError):
+            stockfish.set_depth(0)
+        with pytest.raises(TypeError):
+            stockfish.set_depth(None)
 
     def test_get_depth(self, stockfish):
         stockfish.set_depth(12)
         assert stockfish.get_depth() == 12
+        assert stockfish._depth == 12
         stockfish.set_depth(20)
         assert stockfish.get_depth() == 20
+        assert stockfish._depth == 20
 
     def test_get_best_move_wrong_position(self, stockfish):
         stockfish.set_depth(2)

@@ -334,14 +334,14 @@ class Stockfish:
             {"UCI_LimitStrength": "true", "UCI_Elo": elo_rating}
         )
 
-    def set_depth(self, depth: int = 2) -> None:
+    def set_depth(self, depth: int = 15) -> None:
         """Sets current depth of Stockfish engine.
 
         Args:
-            depth_value: Depth option higher than 1
+            depth: Depth as integer higher than 1
         """
-        if not isinstance(depth, int):
-            raise TypeError("depth must be an integer")
+        if not isinstance(depth, int) or depth < 1 or isinstance(depth, bool):
+            raise TypeError("depth must be an integer higher than 1")
         self._depth = depth
 
     def get_depth(self) -> int:
