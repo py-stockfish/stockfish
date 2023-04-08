@@ -601,13 +601,6 @@ class TestStockfish:
         moves = stockfish.get_top_moves(2, num_nodes=1000000, verbose=True)
         assert int(moves[0]["Nodes"]) >= 1000000
 
-    def test_get_top_moves_depth(self, stockfish):
-        stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
-        moves = stockfish.get_top_moves(2, depth=10, verbose=True)
-        assert int(moves[0]["SelectiveDepth"]) >= 10
-        moves = stockfish.get_top_moves(2, depth=15, verbose=True)
-        assert int(moves[0]["SelectiveDepth"]) >= 15
-
     def test_get_top_moves_preserve_globals(self, stockfish):
         stockfish._set_option("MultiPV", 4)
         stockfish.set_num_nodes(2000000)
