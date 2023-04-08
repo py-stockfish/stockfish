@@ -673,6 +673,10 @@ class TestStockfish:
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
 
+    def test_is_turn_perspective_type_error(self, stockfish):
+        with pytest.raises(TypeError):
+            stockfish.set_is_turn_perspective("not a bool")
+
     def test_make_moves_from_current_position(self, stockfish):
         stockfish.set_fen_position(
             "r1bqkb1r/pppp1ppp/2n2n2/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1"

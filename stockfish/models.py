@@ -374,6 +374,8 @@ class Stockfish:
               Boolean whether perspective is turn-based. Default True.
               If False, returned evaluations are from White's perspective.
         """
+        if not isinstance(is_turn_perspective, bool):
+            raise TypeError("is_turn_perspective must be a Boolean")
         self._is_turn_perspective = is_turn_perspective
 
     def get_is_turn_perspective(self) -> bool:
