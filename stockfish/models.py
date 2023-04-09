@@ -619,8 +619,7 @@ class Stockfish:
 
         # set MultiPV to num_top_moves requested
         if num_top_moves != self._parameters["MultiPV"]:
-            self._set_option("MultiPV", num_top_moves)
-            self._parameters.update({"MultiPV": num_top_moves})
+            self._set_option("MultiPV", num_top_moves, True)
 
         # start engine
         # will go until reaches self._depth or self._num_nodes
@@ -741,8 +740,7 @@ class Stockfish:
 
         # reset MultiPV to global value
         if old_multipv != self._parameters["MultiPV"]:
-            self._set_option("MultiPV", old_multipv)
-            self._parameters.update({"MultiPV": old_multipv})
+            self._set_option("MultiPV", old_multipv, True)
 
         # reset self._num_nodes to global value
         if old_num_nodes != self._num_nodes:
