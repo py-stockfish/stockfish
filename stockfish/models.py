@@ -58,6 +58,8 @@ class Stockfish:
             self._read_line().split(" ")[1].split(".")[0].replace("-", "")
         )
 
+        self._parse_stockfish_version()
+
         self._put("uci")
 
         self.depth = str(depth)
@@ -71,6 +73,25 @@ class Stockfish:
             self._set_option("UCI_ShowWDL", "true", False)
 
         self._prepare_for_new_position(True)
+
+    def _parse_stockfish_version(self) -> None:
+        """Parses the Stockfish engine version.
+
+        Returns:
+            None
+        """
+        self._stockfish_version = self._read_line().split(" ")[1]
+
+        if self._stockfish_version.startswith("dev-"):
+            self._stockfish_version = self._stockfish_version[3:]
+            self._is_dev_version = True
+
+        self._stockfish_minor_version = int(
+            self._stockfish_version.split(".")[1].replace("-", "")
+        )
+
+        # create list of stockfish version numbers
+        self._stockfish_version_numbers = []
 
     def get_parameters(self) -> dict:
         """Returns current board position.
