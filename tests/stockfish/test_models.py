@@ -1065,3 +1065,9 @@ class TestStockfish:
         stockfish.__del__()
         assert stockfish._stockfish.poll() is not None
         assert Stockfish._del_counter == old_del_counter + 1
+
+    def test_set_option(self, stockfish):
+        stockfish._set_option("MultiPV", 3)
+        assert stockfish.get_parameters()["MultiPV"] == 3
+        stockfish._set_option("MultiPV", 6, False)  # update_parameters_attribute
+        assert stockfish.get_parameters()["MultiPV"] == 3

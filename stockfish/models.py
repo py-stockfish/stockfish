@@ -135,7 +135,7 @@ class Stockfish:
             new_param_values["Hash"] = hash_value
 
         for name, value in new_param_values.items():
-            self._set_option(name, value, True)
+            self._set_option(name, value)
         self.set_fen_position(self.get_fen_position(), False)
         # Getting SF to set the position again, since UCI option(s) have been updated.
 
@@ -619,7 +619,7 @@ class Stockfish:
 
         # set MultiPV to num_top_moves requested
         if num_top_moves != self._parameters["MultiPV"]:
-            self._set_option("MultiPV", num_top_moves, True)
+            self._set_option("MultiPV", num_top_moves)
 
         # start engine
         # will go until reaches self._depth or self._num_nodes
@@ -740,7 +740,7 @@ class Stockfish:
 
         # reset MultiPV to global value
         if old_multipv != self._parameters["MultiPV"]:
-            self._set_option("MultiPV", old_multipv, True)
+            self._set_option("MultiPV", old_multipv)
 
         # reset self._num_nodes to global value
         if old_num_nodes != self._num_nodes:
