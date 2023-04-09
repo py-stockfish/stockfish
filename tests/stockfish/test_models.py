@@ -1001,3 +1001,37 @@ class TestStockfish:
         stockfish.__del__()
         assert stockfish._stockfish.poll() is not None
         assert Stockfish._del_counter == old_del_counter + 1
+
+    def test_parse_stockfish_version(self, stockfish):
+        stockfish._parse_stockfish_version("dev-20221219-61ea1534")
+        assert stockfish.get_stockfish_full_version() == 15.1
+        assert stockfish.get_stockfish_major_version() == 15
+        assert stockfish.get_stockfish_minor_version() == 1
+        assert stockfish.get_stockfish_patch_version() == "20221219"
+        assert stockfish.get_stockfish_sha_version() == "61ea1534"
+        assert stockfish.is_development_build_of_engine() is True
+        stockfish._parse_stockfish_version("dev-20230319-af4b62a5")
+        assert stockfish.get_stockfish_full_version() == 15.1
+        assert stockfish.get_stockfish_major_version() == 15
+        assert stockfish.get_stockfish_minor_version() == 1
+        assert stockfish.get_stockfish_patch_version() == "20230319"
+        assert stockfish.get_stockfish_sha_version() == "af4b62a5"
+        assert stockfish.is_development_build_of_engine() is True
+        stockfish._parse_stockfish_version("280322")
+        assert stockfish.get_stockfish_full_version() == 14.1
+        assert stockfish.get_stockfish_major_version() == 14
+        assert stockfish.get_stockfish_minor_version() == 1
+        assert stockfish.get_stockfish_patch_version() == "280322"
+        assert stockfish.is_development_build_of_engine() is True
+        stockfish._parse_stockfish_version("15.1")
+        assert stockfish.get_stockfish_full_version() == 15.1
+        assert stockfish.get_stockfish_major_version() == 15
+        assert stockfish.get_stockfish_minor_version() == 1
+        assert stockfish.get_stockfish_patch_version() == ""
+        assert stockfish.is_development_build_of_engine() is False
+        stockfish._parse_stockfish_version("14")
+        assert stockfish.get_stockfish_full_version() == 14.0
+        assert stockfish.get_stockfish_major_version() == 14
+        assert stockfish.get_stockfish_minor_version() == 0
+        assert stockfish.get_stockfish_patch_version() == ""
+        assert stockfish.is_development_build_of_engine() is False
