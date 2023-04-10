@@ -801,13 +801,6 @@ class Stockfish:
             "text": version_text,
         }
 
-        # possible version formats:
-        # id name Stockfish 15.1
-        # id name Stockfish 14
-        # id name Stockfish dev-20221219-61ea1534 # ie. dev-YYYYMMDD-<sha>
-        # id name Stockfish 280322 # ie. DDMMYY
-        # id name Stockfish 150521 # ie. DDMMYY
-
         # check if version is a development build, eg. dev-20221219-61ea1534
         if self._version["text"].startswith("dev-"):
             self._version["is_dev_build"] = True
