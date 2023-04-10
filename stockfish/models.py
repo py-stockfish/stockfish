@@ -621,15 +621,12 @@ class Stockfish:
         if num_top_moves != self._parameters["MultiPV"]:
             self._set_option("MultiPV", num_top_moves)
 
-        # start engine
-        # will go until reaches self._depth or self._num_nodes
+        # start engine. will go until reaches self._depth or self._num_nodes
         if num_nodes == 0:
             self._go()
         else:
             self._num_nodes = num_nodes
             self._go_nodes()
-
-        # self._go() if nodes else self._go_nodes()
 
         lines = []
 
@@ -655,29 +652,25 @@ class Stockfish:
         )
 
         # loop through Stockfish output lines in reverse order
-        for current_line in reversed(lines):
+        for line in reversed(lines):
             # if the line is a "bestmove" line, and the best move is "(none)", then
             # there are no top moves, and we're done. otherwise, continue with next line
-            if current_line[0] == "bestmove":
-                if current_line[1] == "(none)":
+            if line[0] == "bestmove":
+                if line[1] == "(none)":
                     top_moves = []
                     break
                 continue
 
             # if the line has no relevant info, we're done
-            if ("multipv" not in current_line) or ("depth" not in current_line):
+            if ("multipv" not in line) or ("depth" not in line):
                 break
 
             # if we're searching depth and the line is not our desired depth, we're done
-            if (num_nodes == 0) and (
-                int(current_line[current_line.index("depth") + 1]) != self._depth
-            ):
+            if (num_nodes == 0) and (int(self._pick(line, "depth")) != self._depth):
                 break
 
             # if we're searching nodes and the line has less than desired number of nodes, we're done
-            if (num_nodes > 0) and (
-                int(current_line[current_line.index("nodes") + 1]) < self._num_nodes
-            ):
+            if (num_nodes > 0) and (int(self._pick(line, "nodes")) < self._num_nodes):
                 break
 
             # gather info on "num_top_moves" multipv lines
@@ -699,39 +692,32 @@ class Stockfish:
 
             move_evaluation = {
                 # get move
-                "Move": current_line[current_line.index("pv") + 1],
+                "Move": self._pick(line, "pv"),
                 # get cp if available
-                "Centipawn": int(current_line[current_line.index("cp") + 1])
-                * perspective
-                if "cp" in current_line
+                "Centipawn": int(self._pick(line, "cp")) * perspective
+                if "cp" in line
                 else None,
                 # get mate if available
-                "Mate": int(current_line[current_line.index("mate") + 1]) * perspective
-                if "mate" in current_line
+                "Mate": int(self._pick(line, "mate")) * perspective
+                if "mate" in line
                 else None,
             }
 
             # add more info if verbose
             if verbose:
-                move_evaluation["Nodes"] = current_line[current_line.index("nodes") + 1]
-                move_evaluation["NodesPerSecond"] = current_line[
-                    current_line.index("nps") + 1
-                ]
-                move_evaluation["Time"] = current_line[current_line.index("time") + 1]
-                move_evaluation["SelectiveDepth"] = current_line[
-                    current_line.index("seldepth") + 1
-                ]
-                move_evaluation["MultiPVLine"] = current_line[
-                    current_line.index("multipv") + 1
-                ]
+                move_evaluation["Time"] = self._pick(line, "time")
+                move_evaluation["Nodes"] = self._pick(line, "nodes")
+                move_evaluation["MultiPVLine"] = self._pick(line, "multipv")
+                move_evaluation["NodesPerSecond"] = self._pick(line, "nps")
+                move_evaluation["SelectiveDepth"] = self._pick(line, "seldepth")
 
                 # add wdl if available
                 if self.does_current_engine_version_have_wdl_option():
                     move_evaluation["WDL"] = " ".join(
                         [
-                            current_line[current_line.index("wdl") + 1],
-                            current_line[current_line.index("wdl") + 2],
-                            current_line[current_line.index("wdl") + 3],
+                            self._pick(line, "wdl", 1),
+                            self._pick(line, "wdl", 2),
+                            self._pick(line, "wdl", 3),
                         ][::perspective]
                     )
 
@@ -747,6 +733,9 @@ class Stockfish:
             self._num_nodes = old_num_nodes
 
         return top_moves
+
+    def _pick(self, line: list = [], value: str = "", index: int = 1) -> str:
+        return line[line.index(value) + index]
 
     @dataclass
     class BenchmarkParameters:

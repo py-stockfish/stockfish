@@ -1071,3 +1071,10 @@ class TestStockfish:
         assert stockfish.get_parameters()["MultiPV"] == 3
         stockfish._set_option("MultiPV", 6, False)  # update_parameters_attribute
         assert stockfish.get_parameters()["MultiPV"] == 3
+
+    def test_pick(self, stockfish):
+        info = "info depth 10 seldepth 15 multipv 1 score cp -677 wdl 0 0 1000"
+        line = info.split(" ")
+        assert stockfish._pick(line, "depth") == "10"
+        assert stockfish._pick(line, "multipv") == "1"
+        assert stockfish._pick(line, "wdl", 3) == "1000"
