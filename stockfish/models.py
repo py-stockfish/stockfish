@@ -6,7 +6,7 @@
 """
 
 import subprocess
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 import copy
 from os import path
 from dataclasses import dataclass
@@ -791,7 +791,7 @@ class Stockfish:
             )
 
     def _parse_stockfish_version(self, version_text: str = "") -> None:
-        self._version = {
+        self._version: Dict["str", Any] = {
             "full": 0,
             "major": 0,
             "minor": 0,
@@ -845,7 +845,9 @@ class Stockfish:
             self._version["minor"] = 0
         self._version["full"] = self._version["major"] + self._version["minor"] / 10
 
-    def _get_stockfish_version_from_build_date(self, date_string: str = "") -> str:
+    def _get_stockfish_version_from_build_date(
+        self, date_string: str = ""
+    ) -> Optional[str]:
         # Convert date string to datetime object
         date_object = datetime.strptime(date_string, "%Y-%m-%d")
 
