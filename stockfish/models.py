@@ -549,6 +549,7 @@ class Stockfish:
         if num_top_moves != self._parameters["MultiPV"]:
             self._set_option("MultiPV", num_top_moves)
             self._parameters.update({"MultiPV": num_top_moves})
+        self._go()
         lines = []
         while True:
             text = self._read_line()
