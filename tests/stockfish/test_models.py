@@ -968,3 +968,7 @@ class TestStockfish:
         assert stockfish.get_stockfish_patch_version() == ""
         assert stockfish.get_stockfish_sha_version() == ""
         assert stockfish.is_development_build_of_engine() is False
+
+    def test_parse_stockfish_version_raise_exception(self, stockfish):
+        with pytest.raises(Exception):
+            stockfish._parse_stockfish_version("not a version")

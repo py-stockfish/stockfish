@@ -784,60 +784,60 @@ class Stockfish:
                 version_text = line.split(" ")[3]
                 break
 
+        self._parse_stockfish_version(version_text)
+
+    def _parse_stockfish_version(self, version_text: str = "") -> None:
         try:
-            self._parse_stockfish_version(version_text)
+            self._version: Dict["str", Any] = {
+                "full": 0,
+                "major": 0,
+                "minor": 0,
+                "patch": "",
+                "sha": "",
+                "is_dev_build": False,
+                "text": version_text,
+            }
+
+            # check if version is a development build, eg. dev-20221219-61ea1534
+            if self._version["text"].startswith("dev-"):
+                self._version["is_dev_build"] = True
+
+                # parse patch and sha from dev version text
+                self._version["patch"] = self._version["text"].split("-")[1]
+                self._version["sha"] = self._version["text"].split("-")[2]
+
+                # get major.minor version as text from build date
+                build_date = self._version["text"].split("-")[1]
+                date_string = f"{int(build_date[:4])}-{int(build_date[4:6]):02d}-{int(build_date[6:8]):02d}"
+                self._version["text"] = self._get_stockfish_version_from_build_date(
+                    date_string
+                )
+
+            # check if version is a development build, eg. 280322
+            if len(self._version["text"]) == 6:
+                self._version["is_dev_build"] = True
+
+                # parse version number from DDMMYY
+                self._version["patch"] = self._version["text"]
+
+                # parse build date from dev version text
+                build_date = self._version["text"]
+                date_string = f"20{build_date[4:6]}-{build_date[2:4]}-{build_date[0:2]}"
+                self._version["text"] = self._get_stockfish_version_from_build_date(
+                    date_string
+                )
+
+            # parse version number for all versions
+            self._version["major"] = int(self._version["text"].split(".")[0])
+            try:
+                self._version["minor"] = int(self._version["text"].split(".")[1])
+            except IndexError:
+                self._version["minor"] = 0
+            self._version["full"] = self._version["major"] + self._version["minor"] / 10
         except Exception as e:
             raise Exception(
                 "Unable to parse Stockfish version. You may be using an unsupported version of Stockfish."
             )
-
-    def _parse_stockfish_version(self, version_text: str = "") -> None:
-        self._version: Dict["str", Any] = {
-            "full": 0,
-            "major": 0,
-            "minor": 0,
-            "patch": "",
-            "sha": "",
-            "is_dev_build": False,
-            "text": version_text,
-        }
-
-        # check if version is a development build, eg. dev-20221219-61ea1534
-        if self._version["text"].startswith("dev-"):
-            self._version["is_dev_build"] = True
-
-            # parse patch and sha from dev version text
-            self._version["patch"] = self._version["text"].split("-")[1]
-            self._version["sha"] = self._version["text"].split("-")[2]
-
-            # get major.minor version as text from build date
-            build_date = self._version["text"].split("-")[1]
-            date_string = f"{int(build_date[:4])}-{int(build_date[4:6]):02d}-{int(build_date[6:8]):02d}"
-            self._version["text"] = self._get_stockfish_version_from_build_date(
-                date_string
-            )
-
-        # check if version is a development build, eg. 280322
-        if len(self._version["text"]) == 6:
-            self._version["is_dev_build"] = True
-
-            # parse version number from DDMMYY
-            self._version["patch"] = self._version["text"]
-
-            # parse build date from dev version text
-            build_date = self._version["text"]
-            date_string = f"20{build_date[4:6]}-{build_date[2:4]}-{build_date[0:2]}"
-            self._version["text"] = self._get_stockfish_version_from_build_date(
-                date_string
-            )
-
-        # parse version number for all versions
-        self._version["major"] = int(self._version["text"].split(".")[0])
-        try:
-            self._version["minor"] = int(self._version["text"].split(".")[1])
-        except IndexError:
-            self._version["minor"] = 0
-        self._version["full"] = self._version["major"] + self._version["minor"] / 10
 
     def _get_stockfish_version_from_build_date(
         self, date_string: str = ""
