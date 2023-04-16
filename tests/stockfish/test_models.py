@@ -485,7 +485,7 @@ class TestStockfish:
         stockfish.get_best_move()
         assert "depth 15" in stockfish.info
 
-@pytest.mark.parametrize("depth", ["12", True, 12.1, 0, None])
+    @pytest.mark.parametrize("depth", ["12", True, 12.1, 0, None])
     def test_set_depth_raises_type_error(self, stockfish, depth):
         with pytest.raises(TypeError):
             stockfish.set_depth(depth)
