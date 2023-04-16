@@ -339,8 +339,8 @@ class Stockfish:
     def set_depth(self, depth: int = 15) -> None:
         """Sets current depth of Stockfish engine.
 
-        Args:
-depth: Depth as integer 1 or higher
+                Args:
+        depth: Depth as integer 1 or higher
         """
         if not isinstance(depth, int) or depth < 1 or isinstance(depth, bool):
             raise TypeError("depth must be an integer higher than 0")

@@ -39,6 +39,7 @@ class TestStockfish:
     def test_constructor_raises_type_errors(self, parameters):
         with pytest.raises(TypeError):
             Stockfish(**parameters)
+
     def test_get_best_move_first_move(self, stockfish):
         best_move = stockfish.get_best_move()
         assert best_move in (
