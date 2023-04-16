@@ -32,14 +32,13 @@ class TestStockfish:
         assert sf._parameters["Threads"] == 2
         assert sf._parameters["UCI_Elo"] == 1500
 
-    def test_constructor_raises_type_errors(self):
+    @pytest.mark.parametrize(
+        "parameters",
+        [{"depth": "20"}, {"num_nodes": "100"}, {"turn_perspective": "False"}],
+    )
+    def test_constructor_raises_type_errors(self, parameters):
         with pytest.raises(TypeError):
-            Stockfish(depth="20")
-        with pytest.raises(TypeError):
-            Stockfish(num_nodes="100")
-        with pytest.raises(TypeError):
-            Stockfish(turn_perspective="False")
-
+            Stockfish(**parameters)
     def test_get_best_move_first_move(self, stockfish):
         best_move = stockfish.get_best_move()
         assert best_move in (
