@@ -340,7 +340,7 @@ class Stockfish:
         """Sets current depth of Stockfish engine.
 
         Args:
-            depth: Depth as integer higher than 1
+depth: Depth as integer 1 or higher
         """
         if not isinstance(depth, int) or depth < 1 or isinstance(depth, bool):
             raise TypeError("depth must be an integer higher than 0")
