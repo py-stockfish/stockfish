@@ -343,7 +343,7 @@ class Stockfish:
             depth: Depth as integer higher than 1
         """
         if not isinstance(depth, int) or depth < 1 or isinstance(depth, bool):
-            raise TypeError("depth must be an integer higher than 1")
+            raise TypeError("depth must be an integer higher than 0")
         self._depth = depth
 
     def get_depth(self) -> int:
