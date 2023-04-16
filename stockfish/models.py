@@ -646,7 +646,7 @@ class Stockfish:
         top_moves: List[dict] = []
 
         # set perspective of evaluations. if get_turn_perspective() is True, or white to move,
-        # use Stockfish' values, otherwise invert values.
+        # use Stockfish's values, otherwise invert values.
         perspective = (
             1 if self.get_turn_perspective() or ("w" in self.get_fen_position()) else -1
         )
