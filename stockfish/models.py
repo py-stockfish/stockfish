@@ -734,7 +734,7 @@ class Stockfish:
 
         return top_moves
 
-    def _pick(self, line: list = [], value: str = "", index: int = 1) -> str:
+    def _pick(self, line: list, value: str = "", index: int = 1) -> str:
         return line[line.index(value) + index]
 
     @dataclass
