@@ -506,7 +506,7 @@ class TestStockfish:
         assert stockfish._num_nodes == 1000000
 
     @pytest.mark.parametrize("num_nodes", ["100", 100.1, None, True])
-    def test_set_num_nodes_raises_type_error(self, stockfish):
+    def test_set_num_nodes_raises_type_error(self, stockfish, num_nodes):
         with pytest.raises(TypeError):
             stockfish.set_num_nodes(num_nodes)
 
