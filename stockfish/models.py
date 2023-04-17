@@ -610,7 +610,6 @@ class Stockfish:
 
         if num_top_moves <= 0:
             raise ValueError("num_top_moves is not a positive number.")
-
         # to get number of top moves, we use Stockfish's MultiPV option (ie. multiple principal variations)
 
         # remember global values
@@ -642,7 +641,6 @@ class Stockfish:
 
         # Stockfish is now done evaluating the position,
         # and the output is stored in the list 'lines'
-
         top_moves: List[dict] = []
 
         # set perspective of evaluations. if get_turn_perspective() is True, or white to move,
@@ -672,23 +670,6 @@ class Stockfish:
             # if we're searching nodes and the line has less than desired number of nodes, we're done
             if (num_nodes > 0) and (int(self._pick(line, "nodes")) < self._num_nodes):
                 break
-
-            # gather info on "num_top_moves" multipv lines
-            # multiPV_number = int(current_line[current_line.index("multipv") + 1])
-
-            # should never happen
-            # if multiPV_number > num_top_moves:
-            #     continue
-
-            # should always be the case
-            # if multiPV_number <= num_top_moves:
-
-            # has_centipawn_value = "cp" in current_line
-            # has_mate_value = "mate" in current_line
-
-            # unnecessary check? should never happen, unless major malfunction
-            # if has_centipawn_value == has_mate_value:
-            # raise RuntimeError("Having a centipawn value and mate value should be mutually exclusive.")
 
             move_evaluation = {
                 # get move
