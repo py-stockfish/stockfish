@@ -217,12 +217,12 @@ class TestStockfish:
             "h2h3",
         )
         assert stockfish.get_parameters()["Skill Level"] == 1
-        assert stockfish.get_parameters()["UCI_LimitStrength"] == "false"
+        assert stockfish.get_parameters()["UCI_LimitStrength"] == False
 
         stockfish.set_skill_level(20)
         assert stockfish.get_best_move() in ("d2d4", "c2c4")
         assert stockfish.get_parameters()["Skill Level"] == 20
-        assert stockfish.get_parameters()["UCI_LimitStrength"] == "false"
+        assert stockfish.get_parameters()["UCI_LimitStrength"] == False
 
     def test_set_elo_rating(self, stockfish):
         stockfish.set_fen_position(
@@ -244,7 +244,7 @@ class TestStockfish:
             "a2a3",
         )
         assert stockfish.get_parameters()["UCI_Elo"] == 2000
-        assert stockfish.get_parameters()["UCI_LimitStrength"] == "true"
+        assert stockfish.get_parameters()["UCI_LimitStrength"] == True
 
         stockfish.set_elo_rating(1350)
         assert stockfish.get_best_move() in (
@@ -260,7 +260,7 @@ class TestStockfish:
             "h2h3",
         )
         assert stockfish.get_parameters()["UCI_Elo"] == 1350
-        assert stockfish.get_parameters()["UCI_LimitStrength"] == "true"
+        assert stockfish.get_parameters()["UCI_LimitStrength"] == True
 
         stockfish.set_elo_rating(2850)
         major_version = stockfish.get_stockfish_major_version()
@@ -279,15 +279,15 @@ class TestStockfish:
             "Contempt": 0,
             "Min Split Depth": 0,
             "Threads": 1,
-            "Ponder": "false",
+            "Ponder": False,
             "Hash": 16,
             "MultiPV": 1,
             "Skill Level": 20,
             "Move Overhead": 10,
             "Minimum Thinking Time": 20,
             "Slow Mover": 100,
-            "UCI_Chess960": "false",
-            "UCI_LimitStrength": "false",
+            "UCI_Chess960": False,
+            "UCI_LimitStrength": False,
             "UCI_Elo": 1350,
         }
         expected_parameters = old_parameters.copy()
@@ -314,8 +314,8 @@ class TestStockfish:
         assert "KQkq" in stockfish.get_fen_position()
         old_parameters = stockfish.get_parameters()
         expected_parameters = stockfish.get_parameters()
-        expected_parameters["UCI_Chess960"] = "true"
-        stockfish.update_engine_parameters({"UCI_Chess960": "true"})
+        expected_parameters["UCI_Chess960"] = True
+        stockfish.update_engine_parameters({"UCI_Chess960": True})
         assert "HAha" in stockfish.get_fen_position()
         assert stockfish.get_parameters() == expected_parameters
         stockfish.set_fen_position("4rkr1/4p1p1/8/8/8/8/8/4nK1R w K - 0 100")
@@ -325,7 +325,7 @@ class TestStockfish:
         assert (
             stockfish.will_move_be_a_capture("f1e1") is Stockfish.Capture.DIRECT_CAPTURE
         )
-        stockfish.update_engine_parameters({"UCI_Chess960": "false"})
+        stockfish.update_engine_parameters({"UCI_Chess960": False})
         assert stockfish.get_parameters() == old_parameters
         assert stockfish.get_best_move() == "f1g1"
         assert stockfish.get_evaluation() == {"type": "mate", "value": 2}
@@ -531,7 +531,7 @@ class TestStockfish:
         # params to the constructor.
 
         stockfish_2 = Stockfish(
-            depth=16, parameters={"MultiPV": 2, "UCI_Elo": 2850, "UCI_Chess960": "true"}
+            depth=16, parameters={"MultiPV": 2, "UCI_Elo": 2850, "UCI_Chess960": True}
         )
         assert (
             stockfish_2.get_fen_position()
@@ -561,11 +561,11 @@ class TestStockfish:
                 assert stockfish_2_params[key] == 2850
                 assert stockfish_1_params[key] == 1350
             elif key == "UCI_LimitStrength":
-                assert stockfish_2_params[key] == "true"
-                assert stockfish_1_params[key] == "false"
+                assert stockfish_2_params[key] == True
+                assert stockfish_1_params[key] == False
             elif key == "UCI_Chess960":
-                assert stockfish_2_params[key] == "true"
-                assert stockfish_1_params[key] == "false"
+                assert stockfish_2_params[key] == True
+                assert stockfish_1_params[key] == False
             else:
                 assert stockfish_2_params[key] == stockfish_1_params[key]
 
@@ -580,7 +580,7 @@ class TestStockfish:
                 "Minimum Thinking Time": 10,
                 "Hash": 32,
                 "MultiPV": 2,
-                "UCI_Chess960": "true",
+                "UCI_Chess960": True,
             }
         )
         assert stockfish.get_fen_position() == "4rkr1/4p1p1/8/8/8/8/8/5K1R w H - 0 100"
@@ -595,18 +595,18 @@ class TestStockfish:
             elif key == "MultiPV":
                 assert value == 2
             elif key == "UCI_Chess960":
-                assert value == "true"
+                assert value == True
             else:
                 assert updated_parameters[key] == old_parameters[key]
-        assert stockfish.get_parameters()["UCI_LimitStrength"] == "false"
+        assert stockfish.get_parameters()["UCI_LimitStrength"] == False
         stockfish.update_engine_parameters({"UCI_Elo": 2000, "Skill Level": 19})
         assert stockfish.get_parameters()["UCI_Elo"] == 2000
         assert stockfish.get_parameters()["Skill Level"] == 19
-        assert stockfish.get_parameters()["UCI_LimitStrength"] == "false"
+        assert stockfish.get_parameters()["UCI_LimitStrength"] == False
         stockfish.update_engine_parameters({"UCI_Elo": 2000})
-        assert stockfish.get_parameters()["UCI_LimitStrength"] == "true"
+        assert stockfish.get_parameters()["UCI_LimitStrength"] == True
         stockfish.update_engine_parameters({"Skill Level": 20})
-        assert stockfish.get_parameters()["UCI_LimitStrength"] == "false"
+        assert stockfish.get_parameters()["UCI_LimitStrength"] == False
         assert stockfish.get_fen_position() == "4rkr1/4p1p1/8/8/8/8/8/5K1R w H - 0 100"
         stockfish.reset_engine_parameters()
         assert stockfish.get_parameters() == old_parameters

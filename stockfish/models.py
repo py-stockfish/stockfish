@@ -37,15 +37,15 @@ class Stockfish:
             "Contempt": 0,
             "Min Split Depth": 0,
             "Threads": 1,
-            "Ponder": "false",
+            "Ponder": False,
             "Hash": 16,
             "MultiPV": 1,
             "Skill Level": 20,
             "Move Overhead": 10,
             "Minimum Thinking Time": 20,
             "Slow Mover": 100,
-            "UCI_Chess960": "false",
-            "UCI_LimitStrength": "false",
+            "UCI_Chess960": False,
+            "UCI_LimitStrength": False,
             "UCI_Elo": 1350,
         }
 
@@ -117,9 +117,9 @@ class Stockfish:
             # not both), and that they didn't specify a new value for UCI_LimitStrength.
             # So, update UCI_LimitStrength, in case it's not the right value currently.
             if "Skill Level" in new_param_values:
-                new_param_values.update({"UCI_LimitStrength": "false"})
+                new_param_values.update({"UCI_LimitStrength": False})
             elif "UCI_Elo" in new_param_values:
-                new_param_values.update({"UCI_LimitStrength": "true"})
+                new_param_values.update({"UCI_LimitStrength": True})
 
         if "Threads" in new_param_values:
             # Recommended to set the hash param after threads.
@@ -320,7 +320,7 @@ class Stockfish:
             None
         """
         self.update_engine_parameters(
-            {"UCI_LimitStrength": "false", "Skill Level": skill_level}
+            {"UCI_LimitStrength": False, "Skill Level": skill_level}
         )
 
     def set_elo_rating(self, elo_rating: int = 1350) -> None:
@@ -333,7 +333,7 @@ class Stockfish:
             None
         """
         self.update_engine_parameters(
-            {"UCI_LimitStrength": "true", "UCI_Elo": elo_rating}
+            {"UCI_LimitStrength": True, "UCI_Elo": elo_rating}
         )
 
     def set_depth(self, depth: int = 15) -> None:
@@ -833,7 +833,7 @@ class Stockfish:
         starting_square_piece = self.get_what_is_on_square(move_value[:2])
         ending_square_piece = self.get_what_is_on_square(move_value[2:4])
         if ending_square_piece != None:
-            if self._parameters["UCI_Chess960"] == "false":
+            if not self._parameters["UCI_Chess960"]:
                 return Stockfish.Capture.DIRECT_CAPTURE
             else:
                 # Check for Chess960 castling:
