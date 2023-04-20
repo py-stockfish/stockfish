@@ -77,7 +77,7 @@ class Stockfish:
         self.update_engine_parameters(parameters)
 
         if self.does_current_engine_version_have_wdl_option():
-            self._set_option("UCI_ShowWDL", "true", False)
+            self._set_option("UCI_ShowWDL", True, False)
 
         self._prepare_for_new_position(True)
 
@@ -172,7 +172,10 @@ class Stockfish:
     def _set_option(
         self, name: str, value: Any, update_parameters_attribute: bool = True
     ) -> None:
-        self._put(f"setoption name {name} value {value}")
+        str_rep_value = str(value)
+        if isinstance(value, bool):
+            str_rep_value = str_rep_value.lower()
+        self._put(f"setoption name {name} value {str_rep_value}")
         if update_parameters_attribute:
             self._parameters.update({name: value})
         self._is_ready()
