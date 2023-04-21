@@ -148,7 +148,7 @@ Time constraint is in milliseconds
 e2e4
 ```
 
-### Check is move correct with current position
+### Check if a move is legal in the current position
 
 ```python
 stockfish.is_move_correct('a2a3')
@@ -229,25 +229,25 @@ stockfish.does_current_engine_version_have_wdl_option()
 True
 ```
 
-### Set current engine's skill level (ignoring ELO rating)
+### Set the engine's skill level (ignoring ELO rating)
 
 ```python
 stockfish.set_skill_level(15)
 ```
 
-### Set current engine's ELO rating (ignoring skill level)
+### Set the engine's ELO rating (ignoring skill level)
 
 ```python
 stockfish.set_elo_rating(1350)
 ```
 
-### Set current engine's depth
+### Set the engine's depth
 
 ```python
 stockfish.set_depth(15)
 ```
 
-### Get current engine's parameters
+### Get the engine's current parameters
 
 ```python
 stockfish.get_engine_parameters()
@@ -280,7 +280,7 @@ aware that a few string parameters have been updated to be bools now.
 stockfish.reset_engine_parameters()
 ```
 
-### Get current board position in Forsyth–Edwards notation (FEN)
+### Get the current board position in Forsyth–Edwards notation (FEN)
 
 ```python
 stockfish.get_fen_position()
@@ -290,7 +290,7 @@ stockfish.get_fen_position()
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 ```
 
-### Get current board visual
+### Get the current board visual
 
 ```python
 stockfish.get_board_visual()
@@ -344,7 +344,7 @@ stockfish.get_board_visual(False)
   h   g   f   e   d   c   b   a
 ```
 
-### Get current board evaluation in centipawns or mate in x
+### Get the current board evaluation in centipawns or mate in x
 
 ```python
 stockfish.get_evaluation()
@@ -384,7 +384,7 @@ This will run the bench command with BenchmarkParameters.
 It is an additional custom non-UCI command, mainly for debugging.
 Do not use this command during a search!
 
-### Get current major version of stockfish engine
+### Get the major version of the stockfish engine being used
 
 E.g., if the engine being used is Stockfish 14.1 or Stockfish 14, then the function would return 14.
 Meanwhile, if a development build of the engine is being used (not an official release), then the function returns an
