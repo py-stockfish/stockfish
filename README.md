@@ -250,7 +250,9 @@ stockfish.set_depth(15)
 ### Get current engine's parameters
 
 ```python
+# Should be called in either of the following ways:
 stockfish.get_parameters(aware_of_library_update=True)
+stockfish.get_parameters(True)
 ```
 
 ```text

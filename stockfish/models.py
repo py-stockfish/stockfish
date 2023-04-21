@@ -99,8 +99,8 @@ class Stockfish:
             string types for the values of the 'Ponder', 'UCI_Chess960', and 'UCI_LimitStrength' params. 
             This message is just to let you know, in case you were previously using an earlier version.
 
-            To continue using this function, just call it like so:
-            get_parameters(aware_of_library_update=True)"""
+            To continue using this function, call it with get_parameters(aware_of_library_update=True),
+            or more simply just get_parameters(True) """
             )
 
         return self._parameters
