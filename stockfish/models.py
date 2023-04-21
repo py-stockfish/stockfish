@@ -81,27 +81,22 @@ class Stockfish:
 
         self._prepare_for_new_position(True)
 
-    def get_parameters(self, aware_of_library_update: bool = False) -> dict:
-        """Returns current board position.
+    def get_parameters(self) -> dict:
+        """Returns the current engine parameters being used - *deprecated*."""
 
-        Args:
-            aware_of_library_update must be set to true, in order for the user to acknowledge they're
-            aware of changes to self._parameters. I.e., a few params are now bools instead of strings
-            holding "false"/"true".
+        raise ValueError(
+            """The values for 'Ponder', 'UCI_Chess960', and 'UCI_LimitStrength' have been updated from
+               strings to bools in a new release of the python stockfish package. As a result, this
+               'get_parameters' function has been deprecated, and replaced with
+               'get_engine_parameters'."""
+        )
+
+    def get_engine_parameters(self) -> dict:
+        """Returns the current engine parameters being used - *deprecated*.
 
         Returns:
             Dictionary of current Stockfish engine's parameters.
         """
-
-        if not aware_of_library_update:
-            raise ValueError(
-                """The python stockfish package has been updated to use boolean rather than
-            string types for the values of the 'Ponder', 'UCI_Chess960', and 'UCI_LimitStrength' params. 
-            This message is just to let you know, in case you were previously using an earlier version.
-
-            To continue using this function, call it with get_parameters(aware_of_library_update=True),
-            or more simply just get_parameters(True) """
-            )
 
         return self._parameters
 
