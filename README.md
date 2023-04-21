@@ -271,8 +271,6 @@ stockfish.get_engine_parameters()
     "UCI_Elo": 1350
 }
 ```
-The 'aware_of_library_update' argument is a new addition, just to have the user confirm they're
-aware that a few string parameters have been updated to be bools now.
 
 ### Reset the engine's parameters to the default
 

@@ -87,12 +87,12 @@ class Stockfish:
         raise ValueError(
             """The values for 'Ponder', 'UCI_Chess960', and 'UCI_LimitStrength' have been updated from
                strings to bools in a new release of the python stockfish package. As a result, this
-               'get_parameters' function has been deprecated, and replaced with
-               'get_engine_parameters'."""
+               'get_parameters()' function has been deprecated, in an effort to avoid existing users
+               unknowingly getting bugs. It has been replaced with 'get_engine_parameters()'."""
         )
 
     def get_engine_parameters(self) -> dict:
-        """Returns the current engine parameters being used - *deprecated*.
+        """Returns the current engine parameters being used.
 
         Returns:
             Dictionary of current Stockfish engine's parameters.
