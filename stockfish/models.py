@@ -81,12 +81,28 @@ class Stockfish:
 
         self._prepare_for_new_position(True)
 
-    def get_parameters(self) -> dict:
+    def get_parameters(self, aware_of_library_update: bool = False) -> dict:
         """Returns current board position.
+
+        Args:
+            aware_of_library_update must be set to true, in order for the user to acknowledge they're
+            aware of changes to self._parameters. I.e., a few params are now bools instead of strings
+            holding "false"/"true".
 
         Returns:
             Dictionary of current Stockfish engine's parameters.
         """
+
+        if not aware_of_library_update:
+            raise ValueError(
+                """The python stockfish package has been updated to use boolean rather than
+            string types for the values of the 'Ponder', 'UCI_Chess960', and 'UCI_LimitStrength' params. 
+            This message is just to let you know, in case you were previously using an earlier version.
+
+            To continue using this function, just call it like so:
+            get_parameters(aware_of_library_update=True)"""
+            )
+
         return self._parameters
 
     def update_engine_parameters(self, new_param_valuesP: Optional[dict]) -> None:
@@ -109,6 +125,15 @@ class Stockfish:
             for key in new_param_values:
                 if key not in self._parameters:
                     raise ValueError(f"'{key}' is not a key that exists.")
+
+                elif key in (
+                    "Ponder",
+                    "UCI_Chess960",
+                    "UCI_LimitStrength",
+                ) and not isinstance(new_param_values[key], bool):
+                    raise ValueError(
+                        f"The value for the '{key}' key has been updated from a string to a bool in a new release of the python stockfish package."
+                    )
 
         if ("Skill Level" in new_param_values) != (
             "UCI_Elo" in new_param_values

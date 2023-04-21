@@ -43,15 +43,15 @@ There are some default engine settings used by this wrapper. For increasing Stoc
     "Contempt": 0,
     "Min Split Depth": 0,
     "Threads": 1, # More threads will make the engine stronger, but should be kept at less than the number of logical processors on your computer.
-    "Ponder": "false",
+    "Ponder": False,
     "Hash": 16, # Default size is 16 MB. It's recommended that you increase this value, but keep it as some power of 2. E.g., if you're fine using 2 GB of RAM, set Hash to 2048 (11th power of 2).
     "MultiPV": 1,
     "Skill Level": 20,
     "Move Overhead": 10,
     "Minimum Thinking Time": 20,
     "Slow Mover": 100,
-    "UCI_Chess960": "false",
-    "UCI_LimitStrength": "false",
+    "UCI_Chess960": False,
+    "UCI_LimitStrength": False,
     "UCI_Elo": 1350
 }
 ```
@@ -65,7 +65,7 @@ stockfish = Stockfish(path="/Users/zhelyabuzhsky/Work/stockfish/stockfish-9-64",
 These parameters can also be updated at any time by calling the "update_engine_parameters" function:
 
 ```python
-stockfish.update_engine_parameters({"Hash": 2048, "UCI_Chess960": "true"}) # Gets stockfish to use a 2GB hash table, and also to play Chess960.
+stockfish.update_engine_parameters({"Hash": 2048, "UCI_Chess960": True}) # Gets stockfish to use a 2GB hash table, and also to play Chess960.
 ```
 
 When you're done using the Stockfish engine process, you can send the "quit" uci command to it with:
@@ -91,7 +91,7 @@ stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1"])
 ### Set position by Forsyth–Edwards Notation (FEN)
 
 If you'd like to first check if your fen is valid, call the is_fen_valid() function below.  
-Also, if you want to play Chess960, it's recommended you first update the "UCI_Chess960" engine parameter to be "true", before calling set_fen_position.
+Also, if you want to play Chess960, it's recommended you first update the "UCI_Chess960" engine parameter to be True, before calling set_fen_position.
 
 ```python
 stockfish.set_fen_position("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2")
@@ -250,7 +250,7 @@ stockfish.set_depth(15)
 ### Get current engine's parameters
 
 ```python
-stockfish.get_parameters()
+stockfish.get_parameters(aware_of_library_update=True)
 ```
 
 ```text
@@ -259,18 +259,20 @@ stockfish.get_parameters()
     "Contempt": 0,
     "Min Split Depth": 0,
     "Threads": 1,
-    "Ponder": "false",
+    "Ponder": False,
     "Hash": 16,
     "MultiPV": 1,
     "Skill Level": 20,
     "Move Overhead": 10,
     "Minimum Thinking Time": 20,
     "Slow Mover": 100,
-    "UCI_Chess960": "false",
-    "UCI_LimitStrength": "false",
+    "UCI_Chess960": False,
+    "UCI_LimitStrength": False,
     "UCI_Elo": 1350
 }
 ```
+The 'aware_of_library_update' argument is a new addition, just to have the user confirm they're
+aware that a few string parameters have been updated to be bools now.
 
 ### Reset the engine's parameters to the default
 
