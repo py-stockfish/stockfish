@@ -310,19 +310,20 @@ class TestStockfish:
         expected_parameters.update({"Hash": 256, "Threads": 3})
         assert stockfish.get_engine_parameters() == expected_parameters
 
-    def test_update_engine_parameters_wrong_type(self, stockfish):
+    @pytest.mark.parametrize(
+        "parameters",
+        [
+            {"Ponder": "true"},
+            {"Ponder": "false"},
+            {"UCI_LimitStrength": "true"},
+            {"UCI_LimitStrength": "false"},
+            {"UCI_Chess960": "true"},
+            {"UCI_Chess960": "false"},
+        ],
+    )
+    def test_update_engine_parameters_wrong_type(self, stockfish, parameters):
         with pytest.raises(ValueError):
-            stockfish.update_engine_parameters({"Ponder": "true"})
-        with pytest.raises(ValueError):
-            stockfish.update_engine_parameters({"Ponder": "false"})
-        with pytest.raises(ValueError):
-            stockfish.update_engine_parameters({"UCI_LimitStrength": "true"})
-        with pytest.raises(ValueError):
-            stockfish.update_engine_parameters({"UCI_LimitStrength": "false"})
-        with pytest.raises(ValueError):
-            stockfish.update_engine_parameters({"UCI_Chess960": "true"})
-        with pytest.raises(ValueError):
-            stockfish.update_engine_parameters({"UCI_Chess960": "false"})
+            stockfish.update_engine_parameters(parameters)
 
     def test_deprecated_get_parameters(self, stockfish):
         with pytest.raises(ValueError):
