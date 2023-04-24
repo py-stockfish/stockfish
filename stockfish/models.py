@@ -6,12 +6,13 @@
 """
 
 import subprocess
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
 import copy
 from os import path
 from dataclasses import dataclass
 from enum import Enum
 import re
+from datetime import datetime
 
 
 class StockfishException(Exception):
@@ -23,6 +24,17 @@ class Stockfish:
 
     _del_counter = 0
     # Used in test_models: will count how many times the del function is called.
+
+    _releases = {
+        "15.1": "2022-12-04",
+        "15.0": "2022-04-18",
+        "14.1": "2021-10-28",
+        "14.0": "2021-07-02",
+        "13.0": "2021-02-19",
+        "12.0": "2020-09-02",
+        "11.0": "2020-01-18",
+        "10.0": "2018-11-29",
+    }
 
     def __init__(
         self,
@@ -60,9 +72,7 @@ class Stockfish:
 
         self._has_quit_command_been_sent = False
 
-        self._stockfish_major_version: int = int(
-            self._read_line().split(" ")[1].split(".")[0].replace("-", "")
-        )
+        self._set_stockfish_version()
 
         self._put("uci")
 
@@ -878,25 +888,122 @@ class Stockfish:
         else:
             return Stockfish.Capture.NO_CAPTURE
 
+    def get_stockfish_full_version(self) -> float:
+        """Returns Stockfish engine full version."""
+        return self._version["full"]
+
     def get_stockfish_major_version(self) -> int:
         """Returns Stockfish engine major version."""
+        return self._version["major"]
 
-        return self._stockfish_major_version
+    def get_stockfish_minor_version(self) -> int:
+        """Returns Stockfish engine minor version."""
+        return self._version["minor"]
+
+    def get_stockfish_patch_version(self) -> str:
+        """Returns Stockfish engine patch version."""
+        return self._version["patch"]
+
+    def get_stockfish_sha_version(self) -> str:
+        """Returns Stockfish engine patch version."""
+        return self._version["sha"]
 
     def is_development_build_of_engine(self) -> bool:
         """Returns whether the version of Stockfish being used is a
            development build.
 
         Returns:
-            True if the major version is a date, indicating SF is a
-            development build. E.g., 020122 is the major version of the SF
-            development build released on Jan 2, 2022. Otherwise, False is
-            returned (which means the engine is an official release of SF).
+            True if the version of Stockfish being used is a development build, False otherwise.
         """
-        return (
-            self._stockfish_major_version >= 10109
-            and self._stockfish_major_version <= 311299
-        )
+        return self._version["is_dev_build"]
+
+    def _set_stockfish_version(self) -> None:
+        # send uci command to print version text
+        self._put("uci")
+
+        # read version text
+        version_text = ""
+        while True:
+            line = self._read_line()
+            if line.startswith("id name"):
+                version_text = line.split(" ")[3]
+                break
+
+        self._parse_stockfish_version(version_text)
+
+    def _parse_stockfish_version(self, version_text: str = "") -> None:
+        try:
+            self._version: Dict["str", Any] = {
+                "full": 0,
+                "major": 0,
+                "minor": 0,
+                "patch": "",
+                "sha": "",
+                "is_dev_build": False,
+                "text": version_text,
+            }
+
+            # check if version is a development build, eg. dev-20221219-61ea1534
+            if self._version["text"].startswith("dev-"):
+                self._version["is_dev_build"] = True
+
+                # parse patch and sha from dev version text
+                self._version["patch"] = self._version["text"].split("-")[1]
+                self._version["sha"] = self._version["text"].split("-")[2]
+
+                # get major.minor version as text from build date
+                build_date = self._version["text"].split("-")[1]
+                date_string = f"{int(build_date[:4])}-{int(build_date[4:6]):02d}-{int(build_date[6:8]):02d}"
+                self._version["text"] = self._get_stockfish_version_from_build_date(
+                    date_string
+                )
+
+            # check if version is a development build, eg. 280322
+            if len(self._version["text"]) == 6:
+                self._version["is_dev_build"] = True
+
+                # parse version number from DDMMYY
+                self._version["patch"] = self._version["text"]
+
+                # parse build date from dev version text
+                build_date = self._version["text"]
+                date_string = f"20{build_date[4:6]}-{build_date[2:4]}-{build_date[0:2]}"
+                self._version["text"] = self._get_stockfish_version_from_build_date(
+                    date_string
+                )
+
+            # parse version number for all versions
+            self._version["major"] = int(self._version["text"].split(".")[0])
+            try:
+                self._version["minor"] = int(self._version["text"].split(".")[1])
+            except IndexError:
+                self._version["minor"] = 0
+            self._version["full"] = self._version["major"] + self._version["minor"] / 10
+        except Exception as e:
+            raise Exception(
+                "Unable to parse Stockfish version. You may be using an unsupported version of Stockfish."
+            )
+
+    def _get_stockfish_version_from_build_date(
+        self, date_string: str = ""
+    ) -> Optional[str]:
+        # Convert date string to datetime object
+        date_object = datetime.strptime(date_string, "%Y-%m-%d")
+
+        # Convert release date strings to datetime objects
+        releases_datetime = {
+            key: datetime.strptime(value, "%Y-%m-%d")
+            for key, value in self._releases.items()
+        }
+
+        # Find the key for the given date
+        key_for_date = None
+        for key, value in releases_datetime.items():
+            if value <= date_object:
+                if key_for_date is None or value > releases_datetime[key_for_date]:
+                    key_for_date = key
+
+        return key_for_date
 
     def send_quit_command(self) -> None:
         """Sends the 'quit' command to the Stockfish engine, getting the process
