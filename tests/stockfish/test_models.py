@@ -10,6 +10,7 @@ class TestStockfish:
     def stockfish(self):
         return Stockfish()
 
+    @pytest.mark.slow
     def test_constructor_defaults(self):
         sf = Stockfish()
         assert sf is not None
