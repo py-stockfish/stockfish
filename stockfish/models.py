@@ -519,7 +519,7 @@ class Stockfish:
             A string of move in algebraic notation or `None` if it's a mate now.
 
         Example:
-            >>> stockfish.get_best_move_time(1000)
+            >>> move = stockfish.get_best_move_time(1000)
         """
         self._go_time(time)
         return self._get_best_move_from_sf_popen_process()
