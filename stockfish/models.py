@@ -5,6 +5,7 @@
     :license: MIT, see LICENSE for more details.
 """
 
+from __future__ import annotations
 import subprocess
 from typing import Any, List, Optional
 import copy
@@ -19,25 +20,6 @@ class Stockfish:
 
     _del_counter = 0
     # Used in test_models: will count how many times the del function is called.
-
-    class Piece(Enum):
-        WHITE_PAWN = "P"
-        BLACK_PAWN = "p"
-        WHITE_KNIGHT = "N"
-        BLACK_KNIGHT = "n"
-        WHITE_BISHOP = "B"
-        BLACK_BISHOP = "b"
-        WHITE_ROOK = "R"
-        BLACK_ROOK = "r"
-        WHITE_QUEEN = "Q"
-        BLACK_QUEEN = "q"
-        WHITE_KING = "K"
-        BLACK_KING = "k"
-
-    class Capture(Enum):
-        DIRECT_CAPTURE = "direct capture"
-        EN_PASSANT = "en passant"
-        NO_CAPTURE = "no capture"
 
     def __init__(
         self,
@@ -971,6 +953,25 @@ class Stockfish:
     def __del__(self) -> None:
         Stockfish._del_counter += 1
         self.send_quit_command()
+
+    class Piece(Enum):
+        WHITE_PAWN = "P"
+        BLACK_PAWN = "p"
+        WHITE_KNIGHT = "N"
+        BLACK_KNIGHT = "n"
+        WHITE_BISHOP = "B"
+        BLACK_BISHOP = "b"
+        WHITE_ROOK = "R"
+        BLACK_ROOK = "r"
+        WHITE_QUEEN = "Q"
+        BLACK_QUEEN = "q"
+        WHITE_KING = "K"
+        BLACK_KING = "k"
+
+    class Capture(Enum):
+        DIRECT_CAPTURE = "direct capture"
+        EN_PASSANT = "en passant"
+        NO_CAPTURE = "no capture"
 
     @dataclass
     class BenchmarkParameters:
