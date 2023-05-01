@@ -20,6 +20,25 @@ class Stockfish:
     _del_counter = 0
     # Used in test_models: will count how many times the del function is called.
 
+    class Piece(Enum):
+        WHITE_PAWN = "P"
+        BLACK_PAWN = "p"
+        WHITE_KNIGHT = "N"
+        BLACK_KNIGHT = "n"
+        WHITE_BISHOP = "B"
+        BLACK_BISHOP = "b"
+        WHITE_ROOK = "R"
+        BLACK_ROOK = "r"
+        WHITE_QUEEN = "Q"
+        BLACK_QUEEN = "q"
+        WHITE_KING = "K"
+        BLACK_KING = "k"
+
+    class Capture(Enum):
+        DIRECT_CAPTURE = "direct capture"
+        EN_PASSANT = "en passant"
+        NO_CAPTURE = "no capture"
+
     def __init__(
         self,
         path: str = "stockfish",
@@ -28,6 +47,12 @@ class Stockfish:
         num_nodes: int = 1000000,
         turn_perspective: bool = True,
     ) -> None:
+        """Initializes the Stockfish engine.
+
+        Example:
+            >>> from stockfish import Stockfish
+            >>> stockfish = Stockfish()
+        """
         self._DEFAULT_STOCKFISH_PARAMS = {
             "Debug Log File": "",
             "Contempt": 0,
@@ -105,6 +130,9 @@ class Stockfish:
 
         Returns:
             `None`
+
+        Example:
+            >>> stockfish.update_engine_parameters({'Threads': 2})
         """
         if not parameters:
             return
@@ -233,6 +261,9 @@ class Stockfish:
 
         Returns:
             `None`
+
+        Example:
+            >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
         """
         self._prepare_for_new_position(send_ucinewgame_token)
         self._put(f"position fen {fen_position}")
@@ -244,10 +275,12 @@ class Stockfish:
             moves:
               A list of moves to set this position on the board.
               Must be in full algebraic notation.
-              For example: `['e2e4', 'e7e5']`
 
         Returns:
             `None`
+
+        Example:
+            >>> stockfish.set_position(['e2e4', 'e7e5'])
         """
         self.set_fen_position(
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", True
@@ -261,10 +294,12 @@ class Stockfish:
             moves:
               A list of moves to play in the current position, in order to reach a new position.
               Must be in full algebraic notation.
-              Example: `["g4d7", "a8b8", "f1d1"]`
 
         Returns:
             `None`
+
+        Example:
+            >>> stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1"])
         """
         if not moves:
             return
@@ -366,6 +401,9 @@ class Stockfish:
 
         Returns:
             `None`
+
+        Example:
+            >>> stockfish.set_skill_level(10)
         """
         self.update_engine_parameters(
             {"UCI_LimitStrength": False, "Skill Level": skill_level}
@@ -379,6 +417,9 @@ class Stockfish:
 
         Returns:
             `None`
+
+        Example:
+            >>> stockfish.set_elo_rating(2500)
         """
         self.update_engine_parameters(
             {"UCI_LimitStrength": True, "UCI_Elo": elo_rating}
@@ -392,13 +433,20 @@ class Stockfish:
 
         Returns:
             `None`
+
+        Example:
+            >>> stockfish.set_depth(16)
         """
         if not isinstance(depth, int) or depth < 1 or isinstance(depth, bool):
             raise TypeError("depth must be an integer higher than 0")
         self._depth = depth
 
     def get_depth(self) -> int:
-        """Returns configured depth to search"""
+        """Returns configured depth to search
+
+        Returns:
+            `Integer`
+        """
         return self._depth
 
     def set_num_nodes(self, num_nodes: int = 1000000) -> None:
@@ -409,6 +457,9 @@ class Stockfish:
 
         Returns:
             `None`
+
+        Example:
+            >>> stockfish.set_num_nodes(1000000)
         """
         if (
             not isinstance(num_nodes, int)
@@ -436,6 +487,9 @@ class Stockfish:
 
         Returns:
             `None`
+
+        Example:
+            >>> stockfish.set_turn_perspective(False)
         """
         if not isinstance(turn_perspective, bool):
             raise TypeError("turn_perspective must be a Boolean")
@@ -454,8 +508,17 @@ class Stockfish:
         """Returns best move with current position on the board.
         `wtime` and `btime` arguments influence the search only if provided.
 
+        Args:
+            wtime:
+                Time for white player in milliseconds (int)
+            btime:
+                Time for black player in milliseconds (int)
+
         Returns:
             A string of move in algebraic notation or `None` if it's a mate now.
+
+        Example:
+            >>> move = stockfish.get_best_move(wtime=1000, btime=1000)
         """
         if wtime is not None or btime is not None:
             self._go_remaining_time(wtime, btime)
@@ -472,6 +535,9 @@ class Stockfish:
 
         Returns:
             A string of move in algebraic notation or `None` if it's a mate now.
+
+        Example:
+            >>> stockfish.get_best_move_time(1000)
         """
         self._go_time(time)
         return self._get_best_move_from_sf_popen_process()
@@ -524,6 +590,9 @@ class Stockfish:
 
         Returns:
             `Boolean`
+
+        Example:
+            >>> stockfish.is_fen_valid("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         """
         if not Stockfish._is_fen_syntax_valid(fen):
             return False
@@ -556,6 +625,9 @@ class Stockfish:
 
         Returns:
             `True` if new move is correct, else `False`.
+
+        Example:
+            >>> is_correct = stockfish.is_move_correct("f4f5")
         """
         old_self_info = self.info
         self._put(f"go depth 1 searchmoves {move_value}")
@@ -619,7 +691,7 @@ class Stockfish:
         """Evaluates current position
 
         Returns:
-            A dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in-)
+            A dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (mate in N)
         """
         evaluation = dict()
         fen_position = self.get_fen_position()
@@ -671,6 +743,9 @@ class Stockfish:
 
             If `verbose` is `True`, the dictionary will also include the following keys: `SelectiveDepth`, `Time`,
             `Nodes`, `NodesPerSecond`, `MultiPVLine`, and `WDL` (if available).
+
+        Example:
+            >>> moves = stockfish.get_top_moves(2, num_nodes=1000000, verbose=True)
         """
         if num_top_moves <= 0:
             raise ValueError("num_top_moves is not a positive number.")
@@ -782,66 +857,6 @@ class Stockfish:
     def _pick(self, line: list, value: str = "", index: int = 1) -> str:
         return line[line.index(value) + index]
 
-    @dataclass
-    class BenchmarkParameters:
-        ttSize: int = 16
-        threads: int = 1
-        limit: int = 13
-        fenFile: str = "default"
-        limitType: str = "depth"
-        evalType: str = "mixed"
-
-        def __post_init__(self):
-            self.ttSize = self.ttSize if self.ttSize in range(1, 128001) else 16
-            self.threads = self.threads if self.threads in range(1, 513) else 1
-            self.limit = self.limit if self.limit in range(1, 10001) else 13
-            self.fenFile = (
-                self.fenFile
-                if self.fenFile.endswith(".fen") and path.isfile(self.fenFile)
-                else "default"
-            )
-            self.limitType = (
-                self.limitType
-                if self.limitType in ["depth", "perft", "nodes", "movetime"]
-                else "depth"
-            )
-            self.evalType = (
-                self.evalType
-                if self.evalType in ["mixed", "classical", "NNUE"]
-                else "mixed"
-            )
-
-    def benchmark(self, params: BenchmarkParameters) -> str:
-        """Benchmark will run the bench command with BenchmarkParameters.
-        It is an Additional custom non-UCI command, mainly for debugging.
-        Do not use this command during a search!
-        """
-        if type(params) != self.BenchmarkParameters:
-            params = self.BenchmarkParameters()
-
-        self._put(
-            f"bench {params.ttSize} {params.threads} {params.limit} {params.fenFile} {params.limitType} {params.evalType}"
-        )
-        while True:
-            text = self._read_line()
-            splitted_text = text.split(" ")
-            if splitted_text[0] == "Nodes/second":
-                return text
-
-    class Piece(Enum):
-        WHITE_PAWN = "P"
-        BLACK_PAWN = "p"
-        WHITE_KNIGHT = "N"
-        BLACK_KNIGHT = "n"
-        WHITE_BISHOP = "B"
-        BLACK_BISHOP = "b"
-        WHITE_ROOK = "R"
-        BLACK_ROOK = "r"
-        WHITE_QUEEN = "Q"
-        BLACK_QUEEN = "q"
-        WHITE_KING = "K"
-        BLACK_KING = "k"
-
     def get_what_is_on_square(self, square: str) -> Optional[Piece]:
         """Returns what is on the specified square.
 
@@ -852,6 +867,9 @@ class Stockfish:
         Returns:
             Either one of the 12 enum members in the Piece enum, or the None
             object if the square is empty.
+
+        Example:
+            >>> piece = stockfish.get_what_is_on_square("e2")
         """
 
         file_letter = square[0].lower()
@@ -873,11 +891,6 @@ class Stockfish:
         else:
             return Stockfish.Piece(piece_as_char)
 
-    class Capture(Enum):
-        DIRECT_CAPTURE = "direct capture"
-        EN_PASSANT = "en passant"
-        NO_CAPTURE = "no capture"
-
     def will_move_be_a_capture(self, move_value: str) -> Capture:
         """Returns whether the proposed move will be a direct capture,
            en passant, or not a capture at all.
@@ -892,6 +905,9 @@ class Stockfish:
             - DIRECT_CAPTURE if the move will be a direct capture.
             - EN_PASSANT if the move is a capture done with en passant.
             - NO_CAPTURE if the move does not capture anything.
+
+        Example:
+            >>> capture = stockfish.will_move_be_a_capture("e2e4")
         """
         if not self.is_move_correct(move_value):
             raise ValueError("The proposed move is not valid in the current position.")
@@ -955,6 +971,52 @@ class Stockfish:
     def __del__(self) -> None:
         Stockfish._del_counter += 1
         self.send_quit_command()
+
+    @dataclass
+    class BenchmarkParameters:
+        ttSize: int = 16
+        threads: int = 1
+        limit: int = 13
+        fenFile: str = "default"
+        limitType: str = "depth"
+        evalType: str = "mixed"
+
+        def __post_init__(self):
+            self.ttSize = self.ttSize if self.ttSize in range(1, 128001) else 16
+            self.threads = self.threads if self.threads in range(1, 513) else 1
+            self.limit = self.limit if self.limit in range(1, 10001) else 13
+            self.fenFile = (
+                self.fenFile
+                if self.fenFile.endswith(".fen") and path.isfile(self.fenFile)
+                else "default"
+            )
+            self.limitType = (
+                self.limitType
+                if self.limitType in ["depth", "perft", "nodes", "movetime"]
+                else "depth"
+            )
+            self.evalType = (
+                self.evalType
+                if self.evalType in ["mixed", "classical", "NNUE"]
+                else "mixed"
+            )
+
+    def benchmark(self, params: BenchmarkParameters) -> str:
+        """Benchmark will run the bench command with BenchmarkParameters.
+        It is an Additional custom non-UCI command, mainly for debugging.
+        Do not use this command during a search!
+        """
+        if type(params) != self.BenchmarkParameters:
+            params = self.BenchmarkParameters()
+
+        self._put(
+            f"bench {params.ttSize} {params.threads} {params.limit} {params.fenFile} {params.limitType} {params.evalType}"
+        )
+        while True:
+            text = self._read_line()
+            splitted_text = text.split(" ")
+            if splitted_text[0] == "Nodes/second":
+                return text
 
 
 class StockfishException(Exception):
