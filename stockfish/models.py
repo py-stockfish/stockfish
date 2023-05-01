@@ -574,7 +574,7 @@ class Stockfish:
             `Boolean`
 
         Example:
-            >>> stockfish.is_fen_valid("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+            >>> is_valid = stockfish.is_fen_valid("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         """
         if not Stockfish._is_fen_syntax_valid(fen):
             return False
