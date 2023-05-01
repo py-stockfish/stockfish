@@ -1,16 +1,10 @@
 name: Docs
 
-# build the documentation whenever there are new commits on main
+# build the documentation whenever there are new commits on master
 on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
-    # Alternative: only build for tags.
-    # tags:
-    #   - '*'
 
 # security: restrict permissions for CI jobs.
 permissions:
@@ -26,11 +20,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      # ADJUST THIS: install all dependencies (including pdoc)
       - run: pip install pdoc
-      # ADJUST THIS: build your documentation into docs/.
-      # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
-      # - run: python docs/make.py
       - run: pdoc -o docs/ -d google stockfish/models.py
 
       - uses: actions/upload-pages-artifact@v1
