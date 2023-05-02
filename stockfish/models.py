@@ -321,7 +321,7 @@ class Stockfish:
             +---+---+---+---+---+---+---+---+
             | R | N | B | Q | K | B | N | R | 1
             +---+---+---+---+---+---+---+---+
-                a   b   c   d   e   f   g   h
+              a   b   c   d   e   f   g   h
             ```
         """
         self._put("d")
@@ -497,7 +497,7 @@ class Stockfish:
                 Time for black player in milliseconds (int)
 
         Returns:
-            A string of move in algebraic notation or `None` if it's a mate now.
+            A string of move in algebraic notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move(wtime=1000, btime=1000)
@@ -513,10 +513,10 @@ class Stockfish:
 
         Args:
             time:
-              Time for stockfish to determine best move in milliseconds (int)
+              Time for Stockfish to determine best move in milliseconds (int)
 
         Returns:
-            A string of move in algebraic notation or `None` if it's a mate now.
+            A string of move in algebraic notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move_time(1000)
@@ -606,7 +606,7 @@ class Stockfish:
               New move value in algebraic notation.
 
         Returns:
-            `True` if new move is correct, else `False`.
+            `True` if new move is correct, otherwise `False`.
 
         Example:
             >>> is_correct = stockfish.is_move_correct("f4f5")
@@ -673,7 +673,7 @@ class Stockfish:
         """Evaluates current position
 
         Returns:
-            A dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (mate in N)
+            A dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (mate in n moves)
         """
         evaluation = dict()
         fen_position = self.get_fen_position()
@@ -712,7 +712,7 @@ class Stockfish:
             verbose:
               Option to include the full info from the engine in the returned dictionary,
               including seldepth, multipv, time, nodes, nps, and wdl if available.
-              Boolean. Default is False.
+              `Boolean`. Default is `False`.
 
             num_nodes:
               Option to search until a certain number of nodes have been searched, instead of depth.
@@ -844,10 +844,10 @@ class Stockfish:
 
         Args:
             square:
-                The coordinate of the square in question. E.g., e4.
+                The coordinate of the square in question, eg. e4.
 
         Returns:
-            Either one of the 12 enum members in the Piece enum, or the None
+            Either one of the 12 enum members in the `Piece` enum, or the `None`
             object if the square is empty.
 
         Example:
@@ -883,7 +883,7 @@ class Stockfish:
                 E.g., "e2e4", "g1f3", etc.
 
         Returns:
-            One of the following members of the Capture enum:
+            One of the following members of the `Capture` enum:
             - DIRECT_CAPTURE if the move will be a direct capture.
             - EN_PASSANT if the move is a capture done with en passant.
             - NO_CAPTURE if the move does not capture anything.
