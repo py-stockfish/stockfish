@@ -905,7 +905,7 @@ class Stockfish:
         return self._version["patch"]
 
     def get_stockfish_sha_version(self) -> str:
-        """Returns Stockfish engine patch version."""
+        """Returns Stockfish engine build version."""
         return self._version["sha"]
 
     def is_development_build_of_engine(self) -> bool:
