@@ -23,6 +23,10 @@ $ sudo apt install stockfish
 $ brew install stockfish
 ```
 
+## API Documentation
+
+See [API Documentation](https://py-stockfish.github.io/stockfish/) for more information.
+
 ## Features and usage examples
 
 ### Initialize Stockfish class
@@ -448,6 +452,14 @@ try:
 
 except StockfishException:
     # Error handling
+```
+
+### Debug view
+
+You can (de-)activate the debug view option with the `set_debug_view` function. Like this you can see all communication between the engine and the library.
+
+```python
+stockfish.set_debug_view(True)
 ```
 
 ## Testing
