@@ -26,7 +26,7 @@ class Stockfish:
 
     def __init__(
         self,
-        path: str = "stockfish-engine",
+        path: str = "stockfish",
         depth: int = 15,
         parameters: Optional[dict] = None,
         num_nodes: int = 1000000,
