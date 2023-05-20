@@ -378,8 +378,10 @@ stockfish.get_static_eval()
 
 Sends the 'eval' command to Stockfish. This will get it to 'directly' evaluate the current position 
 (i.e., no search is involved), and output a float value (not a whole number centipawn).
+
 If one side is in check or mated, recent versions of Stockfish will output 'none' for the static eval.
 In this case, the function will return None.
+
 Some example return values:
 
 ```text
