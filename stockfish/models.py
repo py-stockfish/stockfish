@@ -739,7 +739,9 @@ class Stockfish:
         self._put("eval")
         while True:
             text = self._read_line()
-            if text.startswith("Final evaluation"):
+            if text.startswith("Final evaluation") or text.startswith(
+                "Total Evaluation"
+            ):
                 splitted_text = text.split()
                 eval = splitted_text[2]
                 if eval == "none":
