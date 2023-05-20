@@ -533,14 +533,14 @@ class TestStockfish:
 
     def test_get_static_eval(self, stockfish):
         stockfish.set_turn_perspective(False)
-        stockfish.set_fen_position("r7/8/8/8/8/4k3/4p3/4K3 w - - 0 1")
+        stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1")
         assert stockfish.get_static_eval() < -3
         assert isinstance(stockfish.get_static_eval(), float)
-        stockfish.set_fen_position("r7/8/8/8/8/4k3/4p3/4K3 b - - 0 1")
+        stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 b - - 0 1")
         assert stockfish.get_static_eval() < -3
         stockfish.set_turn_perspective()
         assert stockfish.get_static_eval() > 3
-        stockfish.set_fen_position("r7/8/8/8/8/4k3/4p3/4K3 w - - 0 1")
+        stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1")
         assert stockfish.get_static_eval() < -3
         stockfish.set_fen_position("8/8/8/8/8/4k3/4p3/r3K3 w - - 0 1")
         assert stockfish.get_static_eval() is None
