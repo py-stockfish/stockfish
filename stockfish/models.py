@@ -720,12 +720,12 @@ class Stockfish:
                 + """ get_evaluation will still return full strength Stockfish's evaluation of the position."""
             )
 
-        fen_position = self.get_fen_position()
-        compare = 1 if self.get_turn_perspective() or ("w" in fen_position) else -1
+        compare = (
+            1 if self.get_turn_perspective() or ("w" in self.get_fen_position()) else -1
+        )
         # If the user wants the evaluation specified relative to who is to move, this will be done.
         # Otherwise, the evaluation will be in terms of white's side (positive meaning advantage white,
         # negative meaning advantage black).
-        self._put(f"position {fen_position}")
         self._go()
         evaluation = dict()
         while True:
@@ -750,10 +750,12 @@ class Stockfish:
             in which case None is returned.
         """
 
-        fen_position = self.get_fen_position()
         # Stockfish gives the static eval from white's perspective:
-        compare = 1 if not self.get_turn_perspective() or ("w" in fen_position) else -1
-        self._put(f"position {fen_position}")
+        compare = (
+            1
+            if not self.get_turn_perspective() or ("w" in self.get_fen_position())
+            else -1
+        )
         self._put("eval")
         while True:
             text = self._read_line()
