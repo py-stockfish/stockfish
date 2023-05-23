@@ -13,6 +13,7 @@ from os import path
 from dataclasses import dataclass
 from enum import Enum
 import re
+import warnings
 
 
 class Stockfish:
@@ -242,6 +243,10 @@ class Stockfish:
             self._parameters["UCI_LimitStrength"]
             or self._parameters["Skill Level"] < 20
         )
+
+    def _weaker_setting_warning(self, message: str) -> None:
+        """Will issue a warning, referring to the function that calls this one."""
+        warnings.warn(message, stacklevel=3)
 
     def set_fen_position(
         self, fen_position: str, send_ucinewgame_token: bool = True
@@ -655,6 +660,12 @@ class Stockfish:
             raise RuntimeError(
                 "Your version of Stockfish isn't recent enough to have the UCI_ShowWDL option."
             )
+        if self._on_weaker_setting():
+            self._weaker_setting_warning(
+                """Note that even though you've set Stockfish to play on a weaker elo or skill level,"""
+                + """ get_wdl_stats will still return full strength Stockfish's wdl stats of the position."""
+            )
+
         self._go()
         lines = []
         while True:
@@ -702,7 +713,13 @@ class Stockfish:
         Returns:
             A dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (mate in n moves)
         """
-        evaluation = dict()
+
+        if self._on_weaker_setting():
+            self._weaker_setting_warning(
+                """Note that even though you've set Stockfish to play on a weaker elo or skill level,"""
+                + """ get_evaluation will still return full strength Stockfish's evaluation of the position."""
+            )
+
         fen_position = self.get_fen_position()
         compare = 1 if self.get_turn_perspective() or ("w" in fen_position) else -1
         # If the user wants the evaluation specified relative to who is to move, this will be done.
@@ -710,6 +727,7 @@ class Stockfish:
         # negative meaning advantage black).
         self._put(f"position {fen_position}")
         self._go()
+        evaluation = dict()
         while True:
             text = self._read_line()
             splitted_text = text.split(" ")
@@ -786,6 +804,11 @@ class Stockfish:
         """
         if num_top_moves <= 0:
             raise ValueError("num_top_moves is not a positive number.")
+        if self._on_weaker_setting():
+            self._weaker_setting_warning(
+                """Note that even though you've set Stockfish to play on a weaker elo or skill level,"""
+                + """ get_top_moves will still return the top moves of full strength Stockfish."""
+            )
 
         # remember global values
         old_multipv = self._parameters["MultiPV"]

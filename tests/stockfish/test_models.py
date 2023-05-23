@@ -1,6 +1,7 @@
 import pytest
 from timeit import default_timer
 import time
+import warnings
 
 from stockfish import Stockfish, StockfishException
 
@@ -509,12 +510,21 @@ class TestStockfish:
             stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
         ) != stockfish.is_development_build_of_engine()
 
+    @pytest.mark.slow
     def test_get_evaluation_cp(self, stockfish):
         stockfish.set_depth(20)
         stockfish.set_fen_position(
             "r4rk1/pppb1p1p/2nbpqp1/8/3P4/3QBN2/PPP1BPPP/R4RK1 w - - 0 11"
         )
         evaluation = stockfish.get_evaluation()
+        assert (
+            evaluation["type"] == "cp"
+            and evaluation["value"] >= 60
+            and evaluation["value"] <= 150
+        )
+        stockfish.set_skill_level(1)
+        with pytest.warns(UserWarning):
+            evaluation = stockfish.get_evaluation()
         assert (
             evaluation["type"] == "cp"
             and evaluation["value"] >= 60
@@ -697,6 +707,13 @@ class TestStockfish:
             {"Move": "g1f1", "Centipawn": None, "Mate": -2},
             {"Move": "g1h1", "Centipawn": None, "Mate": -1},
         ]
+        stockfish.set_elo_rating()
+        with pytest.warns(UserWarning):
+            top_moves = stockfish.get_top_moves(2)
+        assert top_moves == [
+            {"Move": "g1f1", "Centipawn": None, "Mate": -2},
+            {"Move": "g1h1", "Centipawn": None, "Mate": -1},
+        ]
 
     def test_get_top_moves_mate(self, stockfish):
         stockfish.set_depth(10)
@@ -871,6 +888,10 @@ class TestStockfish:
 
             stockfish.set_fen_position("8/8/8/8/8/3k4/3p4/3K4 w - - 0 1")
             assert stockfish.get_wdl_stats() is None
+
+            stockfish.set_skill_level(1)
+            with pytest.warns(UserWarning):
+                stockfish.get_wdl_stats()
         else:
             with pytest.raises(RuntimeError):
                 stockfish.get_wdl_stats()
