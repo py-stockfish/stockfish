@@ -546,14 +546,17 @@ class TestStockfish:
     def test_get_static_eval(self, stockfish: Stockfish):
         stockfish.set_turn_perspective(False)
         stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1")
-        assert stockfish.get_static_eval() < -3
-        assert isinstance(stockfish.get_static_eval(), float)
+        static_eval_1 = stockfish.get_static_eval()
+        assert isinstance(static_eval_1, float) and static_eval_1 < -3
         stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 b - - 0 1")
-        assert stockfish.get_static_eval() < -3
+        static_eval_2 = stockfish.get_static_eval()
+        assert isinstance(static_eval_2, float) and static_eval_2 < -3
         stockfish.set_turn_perspective()
-        assert stockfish.get_static_eval() > 3
+        static_eval_3 = stockfish.get_static_eval()
+        assert isinstance(static_eval_3, float) and static_eval_3 > 3
         stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1")
-        assert stockfish.get_static_eval() < -3
+        static_eval_4 = stockfish.get_static_eval()
+        assert isinstance(static_eval_4, float) and static_eval_4 < -3
         if stockfish.get_stockfish_major_version() >= 12:
             stockfish.set_fen_position("8/8/8/8/8/4k3/4p3/r3K3 w - - 0 1")
             assert stockfish.get_static_eval() is None
@@ -785,7 +788,7 @@ class TestStockfish:
 
     def test_turn_perspective_raises_type_error(self, stockfish: Stockfish):
         with pytest.raises(TypeError):
-            stockfish.set_turn_perspective("not a bool")
+            stockfish.set_turn_perspective("not a bool")  # type: ignore
 
     def test_make_moves_from_current_position(self, stockfish: Stockfish):
         stockfish.set_fen_position(
@@ -850,6 +853,7 @@ class TestStockfish:
         for i in range(5):
             start = default_timer()
             chosen_move = stockfish.get_best_move()
+            assert isinstance(chosen_move, str)
             total_time_calculating_first += default_timer() - start
             positions_considered.append(stockfish.get_fen_position())
             stockfish.make_moves_from_current_position([chosen_move])
@@ -870,6 +874,7 @@ class TestStockfish:
             stockfish.get_wdl_stats()  # Testing that this doesn't raise a RuntimeError.
             stockfish.set_fen_position("7k/4R3/4P1pp/7N/8/8/1q5q/3K4 w - - 0 1")
             wdl_stats = stockfish.get_wdl_stats()
+            assert isinstance(wdl_stats, list)
             assert wdl_stats[1] > wdl_stats[0] * 7
             assert abs(wdl_stats[0] - wdl_stats[2]) / wdl_stats[0] < 0.1
 
@@ -877,6 +882,7 @@ class TestStockfish:
                 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             )
             wdl_stats_2 = stockfish.get_wdl_stats()
+            assert isinstance(wdl_stats_2, list)
             assert wdl_stats_2[1] > wdl_stats_2[0] * 3.5
             assert wdl_stats_2[0] > wdl_stats_2[2] * 1.8
 
@@ -886,7 +892,8 @@ class TestStockfish:
             stockfish.set_fen_position(
                 "rnbqkb1r/pp3ppp/3p1n2/1B2p3/3NP3/2N5/PPP2PPP/R1BQK2R b KQkq - 0 6"
             )
-            assert len(stockfish.get_wdl_stats()) == 3
+            wdl_stats_3 = stockfish.get_wdl_stats()
+            assert isinstance(wdl_stats_3, list) and len(wdl_stats_3) == 3
 
             stockfish.set_fen_position("8/8/8/8/8/3k4/3p4/3K4 w - - 0 1")
             assert stockfish.get_wdl_stats() is None
@@ -944,7 +951,7 @@ class TestStockfish:
             "limitType": "depth",
             "evalType": "mixed",
         }
-        result = stockfish.benchmark(params)
+        result = stockfish.benchmark(params)  # type: ignore
         # result should contain the last line of a successful method call
         assert result.split(" ")[0] == "Nodes/second"
 
@@ -1023,7 +1030,7 @@ class TestStockfish:
         for row in rows:
             for col in cols:
                 val = stockfish.get_what_is_on_square(row + col)
-                assert val == None or val.name in expected_enum_members
+                assert val is None or val.name in expected_enum_members
 
     def test_will_move_be_a_capture(self, stockfish: Stockfish):
         stockfish.set_fen_position(
