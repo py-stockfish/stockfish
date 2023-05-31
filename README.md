@@ -23,6 +23,10 @@ $ sudo apt install stockfish
 $ brew install stockfish
 ```
 
+## API Documentation
+
+See [API Documentation](https://py-stockfish.github.io/stockfish/) for more information.
+
 ## Features and usage examples
 
 ### Initialize Stockfish class
@@ -160,7 +164,8 @@ True
 
 ### Get info on the top n moves
 
-Get moves, centipawns, and mates for the top n moves. If the move is a mate, the Centipawn value will be None, and vice versa.
+Get moves, centipawns, and mates for the top n moves. If the move is a mate, the Centipawn value will be None, and vice versa. Note that if you have stockfish on a weaker elo or skill level setting, the top moves returned by this
+function will still be for full strength.
 
 ```python
 stockfish.get_top_moves(3)
@@ -239,6 +244,11 @@ stockfish.set_skill_level(15)
 
 ```python
 stockfish.set_elo_rating(1350)
+```
+
+### Put the engine back to full strength (if you've previously lowered the ELO or skill level)
+```python
+stockfish.resume_full_strength()
 ```
 
 ### Set the engine's depth
@@ -342,17 +352,44 @@ stockfish.get_board_visual(False)
   h   g   f   e   d   c   b   a
 ```
 
-### Get the current board evaluation in centipawns or mate in x
+### Get the current position's evaluation in centipawns or mate in x
 
 ```python
 stockfish.get_evaluation()
 ```
 
-Positive is advantage white, negative is advantage black
+Stockfish searches to the specified depth and evaluates the current position.
+A dictionary is returned representing the evaluation. Two example return values:
 
 ```text
 {"type":"cp", "value":12}
+
 {"type":"mate", "value":-3}
+```
+
+If stockfish.get_turn_perspective() is True, then the eval value is relative to the side to move.
+Otherwise, positive is advantage white, negative is advantage black.
+
+### Get the current position's 'static evaluation'
+
+```python
+stockfish.get_static_eval()
+```
+
+Sends the 'eval' command to Stockfish. This will get it to 'directly' evaluate the current position 
+(i.e., no search is involved), and output a float value (not a whole number centipawn).
+
+If one side is in check or mated, recent versions of Stockfish will output 'none' for the static eval.
+In this case, the function will return None.
+
+Some example return values:
+
+```text
+-5.27
+
+0.28
+
+None
 ```
 
 ### Run benchmark
@@ -450,10 +487,22 @@ except StockfishException:
     # Error handling
 ```
 
+### Debug view
+
+You can (de-)activate the debug view option with the `set_debug_view` function. Like this you can see all communication between the engine and the library.
+
+```python
+stockfish.set_debug_view(True)
+```
+
 ## Testing
 
 ```bash
 $ python setup.py test
+```
+To skip some of the slower tests, run:
+```bash
+$ python setup.py skip_slow_tests
 ```
 
 ## Security
