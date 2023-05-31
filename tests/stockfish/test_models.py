@@ -8,7 +8,7 @@ from stockfish import Stockfish, StockfishException
 
 class TestStockfish:
     @pytest.fixture
-    def stockfish(self):
+    def stockfish(self) -> Stockfish:
         return Stockfish()
 
     def test_constructor_defaults(self):
@@ -1114,6 +1114,12 @@ class TestStockfish:
             and stockfish.get_stockfish_major_version() >= 14
         ):
             # Since for that FEN, SF 15 actually outputs a best move without crashing (unlike SF 14 and earlier).
+            return
+        if (
+            fen == "2k2q2/8/8/8/8/8/8/2Q2K2 w - - 0 1"
+            and stockfish.get_stockfish_major_version() >= 15
+        ):
+            # Development versions post SF 15 seem to output a bestmove for this fen.
             return
         assert not stockfish.is_fen_valid(fen)
         assert Stockfish._del_counter == old_del_counter + 2
