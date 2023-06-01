@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 import subprocess
-from typing import Any, List, Optional, Dict, Union
+from typing import Any, List, Optional, Union, Dict
 import copy
 from os import path
 from dataclasses import dataclass
@@ -1034,7 +1034,7 @@ class Stockfish:
            development build.
 
         Returns:
-             True if the version of Stockfish being used is a development build, False otherwise.
+             `True` if the version of Stockfish being used is a development build, `False` otherwise.
 
         """
         return self._version["is_dev_build"]
