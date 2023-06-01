@@ -22,3 +22,4 @@ __pycache/
 coverage.xml
 .coverage
 docs/
+.vscode/
