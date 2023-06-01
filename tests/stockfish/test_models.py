@@ -507,9 +507,6 @@ class TestStockfish:
             == "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
         )
 
-    def test_get_stockfish_major_version(self, stockfish):
-        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
-
     @pytest.mark.slow
     def test_get_evaluation_cp(self, stockfish: Stockfish):
         stockfish.set_depth(20)
@@ -1167,6 +1164,15 @@ class TestStockfish:
         stockfish.__del__()
         assert stockfish._stockfish.poll() is not None
         assert Stockfish._del_counter == old_del_counter + 1
+
+    def test_set_stockfish_version(self, stockfish: Stockfish):
+        stockfish._set_stockfish_version()
+        assert stockfish.get_stockfish_full_version() > 0
+        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
+        assert stockfish.get_stockfish_minor_version() >= 0
+
+    def test_get_stockfish_major_version(self, stockfish: Stockfish):
+        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
 
     def test_parse_stockfish_version(self, stockfish: Stockfish):
         stockfish._parse_stockfish_version("dev-20221219-61ea1534")
