@@ -1125,6 +1125,11 @@ class Stockfish:
                 if key_for_date is None or value > releases_datetime[key_for_date]:
                     key_for_date = key
 
+        if key_for_date is None:
+            raise Exception(
+                "There was a problem with finding the release associated with the engine publish date."
+            )
+
         return key_for_date
 
     def send_quit_command(self) -> None:
