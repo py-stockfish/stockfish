@@ -1208,6 +1208,12 @@ class TestStockfish:
         with pytest.raises(Exception):
             stockfish._parse_stockfish_version("not a version")
 
+    def test_get_stockfish_version_from_build_date_raise_exception(
+        self, stockfish: Stockfish
+    ):
+        with pytest.raises(Exception):
+            stockfish._get_stockfish_version_from_build_date("2015-12-19")
+
     def test_set_option(self, stockfish: Stockfish):
         stockfish._set_option("MultiPV", 3)
         assert stockfish.get_engine_parameters()["MultiPV"] == 3
