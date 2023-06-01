@@ -1028,7 +1028,6 @@ class Stockfish:
         """Returns Stockfish engine build version."""
         return self._version["sha"]
 
-
     def is_development_build_of_engine(self) -> bool:
         """Returns whether the version of Stockfish being used is a
            development build.
