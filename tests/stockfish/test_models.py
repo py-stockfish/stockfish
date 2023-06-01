@@ -1,7 +1,7 @@
 import pytest
 from timeit import default_timer
 import time
-import warnings
+from typing import Optional, List
 
 from stockfish import Stockfish, StockfishException
 
@@ -43,13 +43,7 @@ class TestStockfish:
 
     def test_get_best_move_first_move(self, stockfish: Stockfish):
         best_move = stockfish.get_best_move()
-        assert best_move in (
-            "e2e3",
-            "e2e4",
-            "g1f3",
-            "b1c3",
-            "d2d4",
-        )
+        assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
 
     def test_get_best_move_time_first_move(self, stockfish: Stockfish):
         best_move = stockfish.get_best_move_time(1000)
@@ -137,7 +131,7 @@ class TestStockfish:
 
         stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/r7/4K3 b - - 11 52")
         stockfish.get_best_move()
-        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53", False)
+        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53")
         assert stockfish.info == ""
 
     def test_set_fen_position_starts_new_game(self, stockfish: Stockfish):
@@ -149,20 +143,21 @@ class TestStockfish:
         stockfish.set_fen_position("3kn3/p5rp/1p3p2/3B4/3P1P2/2P5/1P3K2/8 w - - 0 53")
         assert stockfish.info == ""
 
-    def test_set_fen_position_second_argument(self, stockfish: Stockfish):
+    def test_set_fen_position_ucinewgame(self, stockfish: Stockfish):
         stockfish.set_depth(16)
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1", True
+            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"
         )
         assert stockfish.get_best_move() == "e4e5"
 
         stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/4P3/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 1", False
+            "rnbqk2r/pppp1ppp/3bpn2/4P3/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 1"
         )
         assert stockfish.get_best_move() == "d6e7"
 
         stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1", False
+            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"
         )
         assert stockfish.get_best_move() == "e4e5"
 
@@ -605,11 +600,7 @@ class TestStockfish:
         stockfish.set_depth(2)
         wrong_fen = "3kk3/8/8/8/8/8/8/3KK3 w - - 0 0"
         stockfish.set_fen_position(wrong_fen)
-        assert stockfish.get_best_move() in (
-            "d1e2",
-            "d1c1",
-            "d1c2",
-        )
+        assert stockfish.get_best_move() in ("d1e2", "d1c1", "d1c2")
 
     def test_constructor(self, stockfish: Stockfish):
         # Will also use a new stockfish instance in order to test sending
@@ -833,14 +824,8 @@ class TestStockfish:
     @pytest.mark.slow
     def test_make_moves_transposition_table_speed(self, stockfish: Stockfish):
         """
-        make_moves_from_current_position won't send the "ucinewgame" token to Stockfish, since it
-        will reach a new position similar to the current one. Meanwhile, set_fen_position will send this
-        token (unless the user specifies otherwise), since it could be going to a completely new position.
-
-        A big effect of sending this token is that it resets SF's transposition table. If the
-        new position is similar to the current one, this will affect SF's speed. This function tests
-        that make_moves_from_current_position doesn't reset the transposition table, by verifying SF is faster in
-        evaluating a consecutive set of positions when the make_moves_from_current_position function is used.
+        Test if not sending the ucinewgame token allows SF to calculate a bit faster,
+        since it can use data in its TT from previous calculations.
         """
 
         stockfish.set_depth(16)
@@ -860,6 +845,7 @@ class TestStockfish:
 
         total_time_calculating_second = 0.0
         for i in range(len(positions_considered)):
+            stockfish.send_ucinewgame_command()
             stockfish.set_fen_position(positions_considered[i])
             start = default_timer()
             stockfish.get_best_move()
@@ -1099,7 +1085,6 @@ class TestStockfish:
         "fen",
         [
             "2k2q2/8/8/8/8/8/8/2Q2K2 w - - 0 1",
-            "8/8/8/3k4/3K4/8/8/8 b - - 0 1",
             "1q2nB2/pP1k2KP/NN1Q1qP1/8/1P1p4/4p1br/3R4/6n1 w - - 0 1",
             "3rk1n1/ppp3pp/8/8/8/8/PPP5/1KR1R3 w - - 0 1",
         ],
@@ -1134,25 +1119,44 @@ class TestStockfish:
         old_info = stockfish.info
         old_depth = stockfish._depth
         old_fen = stockfish.get_fen_position()
-        correct_fens = [
+        correct_fens: List[Optional[str]] = [
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
             "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK1 b kq - 0 8",
             "4k3/8/4K3/8/8/8/8/8 w - - 10 50",
             "r1b1kb1r/ppp2ppp/3q4/8/P2Q4/8/1PP2PPP/RNB2RK1 w kq - 8 15",
+            "4k3/8/4K3/8/8/8/8/8 w - - 99 50",
         ]
+        correct_fens.extend([None] * 12)
         invalid_syntax_fens = [
             "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK b kq - 0 8",
             "rnbqkb1r/pppp1ppp/4pn2/8/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 3",
             "rn1q1rk1/pbppbppp/1p2pn2/8/2PP4/5NP1/PP2PPBP/RNBQ1RK1 w w - 5 7",
             "4k3/8/4K3/71/8/8/8/8 w - - 10 50",
+            "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2R2 b kq - 0 8",
+            "r1bQ1b1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK1 b kq - 0 8",
+            "4k3/8/4K3/8/8/8/8/8 w - - 100 50",
+            "4k3/8/4K3/8/8/8/8/8 w - - 101 50",
+            "4k3/8/4K3/8/8/8/8/8 w - - -1 50",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0",
+            "r1b1kb1r/ppp2ppp/3q4/8/P2Q4/8/1PP2PPP/RNB2RK1 w kq - - 8 15",
+            "r1b1kb1r/ppp2ppp/3q4/8/P2Q4/8/1PP2PPP/RNB2RK1 w kq 8 15",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR W KQkq - 0 1",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR - KQkq - 0 1",
+            "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK1 b kq - - 8",
+            "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK1 b kq - 0 -",
+            "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK1 b kq - -1 8",
         ]
+        assert len(correct_fens) == len(invalid_syntax_fens)
         for correct_fen, invalid_syntax_fen in zip(correct_fens, invalid_syntax_fens):
             old_del_counter = Stockfish._del_counter
-            assert stockfish.is_fen_valid(correct_fen)
+            if correct_fen is not None:
+                assert stockfish.is_fen_valid(correct_fen)
+                assert stockfish._is_fen_syntax_valid(correct_fen)
             assert not stockfish.is_fen_valid(invalid_syntax_fen)
-            assert stockfish._is_fen_syntax_valid(correct_fen)
             assert not stockfish._is_fen_syntax_valid(invalid_syntax_fen)
-            assert Stockfish._del_counter == old_del_counter + 2
+            assert Stockfish._del_counter == old_del_counter + (
+                2 if correct_fen is not None else 0
+            )
 
         time.sleep(2.0)
         assert stockfish._stockfish.poll() is None
@@ -1182,3 +1186,227 @@ class TestStockfish:
         assert stockfish._pick(line, "depth") == "10"
         assert stockfish._pick(line, "multipv") == "1"
         assert stockfish._pick(line, "wdl", 3) == "1000"
+
+    def test_convert_human_notation_to_sf_notation(self, stockfish: Stockfish):
+        stockfish.set_fen_position(
+            "rnbbk1nr/pPP1pp1p/1p2B3/2PpPN1Q/3p1B2/1N2Pq2/P4PPP/R3K2R w KQkq d6 0 2"
+        )
+        input_test_moves_1 = "exd6 Bxc8 cxd8Q+ cxd8R bxc8=Q bxc8Q bxa8=N cxd6".split()
+        expected_outputs_1 = "e5d6 e6c8 c7d8Q  c7d8R b7c8Q  b7c8Q b7a8N  c5d6".split()
+
+        for i in range(len(input_test_moves_1)):
+            assert (
+                stockfish.convert_human_notation_to_sf_notation(input_test_moves_1[i])
+                == expected_outputs_1[i]
+            )
+
+        input_test_moves_2 = "gxf3 g2xf3 Bxf7+ Bxf7 nd6+ Nxe7 0-0  00  ".split()
+        expected_outputs_2 = "g2f3 g2f3  e6f7  e6f7 f5d6 f5e7 e1g1 e1g1".split()
+
+        for i in range(len(input_test_moves_2)):
+            assert (
+                stockfish.convert_human_notation_to_sf_notation(input_test_moves_2[i])
+                == expected_outputs_2[i]
+            )
+
+        input_test_moves_3 = "Qxf7 Qxf7# e1g1 h1f1 O-O  nbxd4 Nfxd4 b3xd4 b3d4".split()
+        expected_outputs_3 = "h5f7 h5f7  e1g1 h1f1 e1g1 b3d4  f5d4  b3d4  b3d4".split()
+
+        for i in range(len(input_test_moves_3)):
+            assert (
+                stockfish.convert_human_notation_to_sf_notation(input_test_moves_3[i])
+                == expected_outputs_3[i]
+            )
+
+        input_test_moves_4 = "Nb3xd4 c5c6 c6".split()
+        expected_outputs_4 = "b3d4   c5c6 c5c6".split()
+
+        for i in range(len(input_test_moves_4)):
+            assert (
+                stockfish.convert_human_notation_to_sf_notation(input_test_moves_4[i])
+                == expected_outputs_4[i]
+            )
+
+        wrong_test_moves = "ed bxc8 bxa8 0-0-0 OOO Bd5 Nxg3 nbd4".split()
+
+        for move in wrong_test_moves:
+            with pytest.raises(ValueError):
+                stockfish.convert_human_notation_to_sf_notation(move)
+
+    @pytest.mark.parametrize(
+        "fen",
+        [
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b - - 10 20",
+        ],
+    )
+    def test_get_num_pieces(self, stockfish: Stockfish, fen):
+        stockfish.set_fen_position(fen)
+        assert stockfish.get_num_pieces() == 32
+        assert stockfish.get_num_pieces(file_range=["h", "H"]) == 4
+        assert (
+            stockfish.get_num_pieces(
+                file_range=["a", "a"],
+                pieces_to_count=[Stockfish.Piece.WHITE_PAWN, "r", "P"],
+            )
+            == 2
+        )
+        assert stockfish.get_num_pieces(rank_range=[2, 2]) == 8
+        assert stockfish.get_num_pieces(rank_range=[2, 2], pieces_to_count=["p"]) == 0
+        assert (
+            stockfish.get_num_pieces(
+                rank_range=[2, 2], pieces_to_count=[Stockfish.Piece.BLACK_PAWN]
+            )
+            == 0
+        )
+        assert stockfish.get_num_pieces(rank_range=[-1, -1], pieces_to_count=[]) == 0
+
+        expected_num_pieces_per_rank = [8, 8, 0, 0, 0, 0, 8, 8]
+        expected_num_pawns_per_rank = [0, 8, 0, 0, 0, 0, 8, 0]
+
+        expected_num_white_pawns_per_rank = [0, 0, 0, 0, 0, 0, 8, 0]
+        expected_num_black_pawns_per_rank = [0, 8, 0, 0, 0, 0, 0, 0]
+
+        back_rank_pieces = ["R", "N", "B", "Q", "K", "B", "N", "R"]
+
+        for i in range(8):
+            a_file_plus_i = [chr(ord("a") + i), chr(ord("a") + i)]
+            a_file_plus_7_minus_i = [chr(ord("a") + 7 - i), chr(ord("a") + 7 - i)]
+            assert (
+                stockfish.get_num_pieces(rank_range=[8 - i, 8 - i])
+                == expected_num_pieces_per_rank[i]
+            )
+            assert (
+                stockfish.get_num_pieces(
+                    rank_range=[8 - i, 8 - i], file_range=a_file_plus_i
+                )
+                == expected_num_pieces_per_rank[i] / 8
+            )
+
+            assert (
+                stockfish.get_num_pieces(
+                    rank_range=[8 - i, 8 - i],
+                    pieces_to_count=[
+                        Stockfish.Piece.WHITE_PAWN,
+                        Stockfish.Piece.BLACK_PAWN,
+                    ],
+                )
+                == expected_num_pawns_per_rank[i]
+            )
+            assert (
+                stockfish.get_num_pieces(
+                    rank_range=[8 - i, 8 - i],
+                    pieces_to_count=["P", "p"],
+                    file_range=a_file_plus_7_minus_i,
+                )
+                == expected_num_pawns_per_rank[i] / 8
+            )
+
+            assert (
+                stockfish.get_num_pieces(
+                    rank_range=[8 - i, 8 - i],
+                    pieces_to_count=[Stockfish.Piece.WHITE_PAWN],
+                )
+                == expected_num_white_pawns_per_rank[i]
+            )
+            assert (
+                stockfish.get_num_pieces(
+                    rank_range=[8 - i, 8 - i],
+                    pieces_to_count=["P"],
+                    file_range=a_file_plus_i,
+                )
+                == expected_num_white_pawns_per_rank[i] / 8
+            )
+
+            assert (
+                stockfish.get_num_pieces(
+                    rank_range=[8 - i, 8 - i], pieces_to_count=["p"]
+                )
+                == expected_num_black_pawns_per_rank[i]
+            )
+            assert (
+                stockfish.get_num_pieces(
+                    rank_range=[8 - i, 8 - i],
+                    pieces_to_count=[Stockfish.Piece.BLACK_PAWN],
+                    file_range=a_file_plus_7_minus_i,
+                )
+                == expected_num_black_pawns_per_rank[i] / 8
+            )
+
+            assert stockfish.get_num_pieces(file_range=a_file_plus_i) == 4
+            assert stockfish.get_num_pieces(
+                file_range=a_file_plus_i, rank_range=[8 - i, 8 - i]
+            ) == (0 if 3 <= 8 - i <= 6 else 1)
+
+            assert (
+                stockfish.get_num_pieces(
+                    file_range=a_file_plus_i,
+                    pieces_to_count=[Stockfish.Piece.WHITE_PAWN, "p"],
+                )
+                == 2
+            )
+            assert stockfish.get_num_pieces(
+                file_range=a_file_plus_i,
+                rank_range=[i + 1, i + 1],
+                pieces_to_count=["P"],
+            ) == (1 if i + 1 == 2 else 0)
+            assert stockfish.get_num_pieces(
+                file_range=a_file_plus_i,
+                rank_range=[8 - i, 8 - i],
+                pieces_to_count=[Stockfish.Piece.BLACK_PAWN],
+            ) == (1 if 8 - i == 7 else 0)
+
+            for j in range(len(back_rank_pieces)):
+                i_j_in_sync = (i == j) or (i == 7 - j and i not in [3, 4])
+                assert stockfish.get_num_pieces(
+                    file_range=a_file_plus_i,
+                    pieces_to_count=[back_rank_pieces[j], back_rank_pieces[j].lower()],
+                ) == (2 if i_j_in_sync else 0)
+                assert stockfish.get_num_pieces(
+                    file_range=a_file_plus_i, pieces_to_count=[back_rank_pieces[j]]
+                ) == (1 if i_j_in_sync else 0)
+                assert stockfish.get_num_pieces(
+                    file_range=a_file_plus_i,
+                    pieces_to_count=[back_rank_pieces[j].lower()],
+                ) == (1 if i_j_in_sync else 0)
+
+        with pytest.raises(ValueError):
+            stockfish.get_num_pieces(rank_range=[-1, -1])
+        with pytest.raises(ValueError):
+            stockfish.get_num_pieces(rank_range=[2, 9])
+        with pytest.raises(ValueError):
+            stockfish.get_num_pieces(rank_range=[9, 2])
+        with pytest.raises(ValueError):
+            stockfish.get_num_pieces(file_range=["ah"])
+        with pytest.raises(ValueError):
+            stockfish.get_num_pieces(file_range=["a", "j"])
+        with pytest.raises(ValueError):
+            stockfish.get_num_pieces(pieces_to_count=["K", "q", "L"])
+        with pytest.raises(ValueError):
+            stockfish.get_num_pieces(pieces_to_count=["K", 3, "r"])
+        with pytest.raises(ValueError):
+            stockfish.get_num_pieces(
+                pieces_to_count=["K", Stockfish.Piece.BLACK_QUEEN, "L"]
+            )
+
+    def test_get_num_pieces_custom_ranges(self, stockfish: Stockfish):
+        stockfish.set_fen_position(
+            "r4rk1/pp1bbpp1/1qp2n2/3p4/3PnN1p/1PNQ2P1/PB2PPBP/2R1R1K1 w q - 0 1"
+        )
+        assert stockfish.get_num_pieces() == 30
+        assert stockfish.get_num_pieces(file_range=["a", "d"]) == 14
+        assert stockfish.get_num_pieces(file_range=["a", "d"], rank_range=[1, 4]) == 7
+        assert (
+            stockfish.get_num_pieces(file_range=["f", "h"], pieces_to_count=["P", "p"])
+            == 6
+        )
+        assert (
+            stockfish.get_num_pieces(rank_range=[4, 6], pieces_to_count=["P", "p"]) == 4
+        )
+        assert stockfish.get_num_pieces(rank_range=[7, 8], file_range=["e", "H"]) == 5
+
+    def test_get_engine_parameters(self, stockfish: Stockfish):
+        params = stockfish.get_engine_parameters()
+        params.update({"Skill Level": 10})
+        assert params["Skill Level"] == 10
+        assert stockfish._parameters["Skill Level"] == 20

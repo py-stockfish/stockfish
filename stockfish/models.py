@@ -22,6 +22,8 @@ class Stockfish:
     _del_counter = 0
     # Used in test_models: will count how many times the del function is called.
 
+    _PIECE_CHARS = ["P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k"]
+
     def __init__(
         self,
         path: str = "stockfish",
@@ -85,7 +87,7 @@ class Stockfish:
         if self.does_current_engine_version_have_wdl_option():
             self._set_option("UCI_ShowWDL", True, False)
 
-        self._prepare_for_new_position(True)
+        self._prepare_for_new_position()
 
     def set_debug_view(self, activate: bool) -> None:
         self._debug_view = activate
@@ -94,9 +96,10 @@ class Stockfish:
         """Returns the current engine parameters being used.
 
         Returns:
-            Dictionary of current Stockfish engine's parameters.
+            A deep copy of the dictionary storing the current engine parameters.
         """
-        return self._parameters
+
+        return copy.deepcopy(self._parameters)
 
     def get_parameters(self) -> dict:
         """Returns the current engine parameters being used. *Deprecated, see `get_engine_parameters()`*."""
@@ -114,7 +117,7 @@ class Stockfish:
         Args:
             parameters:
                 Contains (key, value) pairs which will be used to update
-                the current Stockfish engine's parameters.
+                the Stockfish engine's current parameters.
 
         Returns:
             `None`
@@ -167,7 +170,7 @@ class Stockfish:
 
         for name, value in new_param_values.items():
             self._set_option(name, value)
-        self.set_fen_position(self.get_fen_position(), False)
+        self.set_fen_position(self.get_fen_position())
         # Getting SF to set the position again, since UCI option(s) have been updated.
 
     def reset_engine_parameters(self) -> None:
@@ -178,9 +181,7 @@ class Stockfish:
         """
         self.update_engine_parameters(self._DEFAULT_STOCKFISH_PARAMS)
 
-    def _prepare_for_new_position(self, send_ucinewgame_token: bool = True) -> None:
-        if send_ucinewgame_token:
-            self._put("ucinewgame")
+    def _prepare_for_new_position(self) -> None:
         self._is_ready()
         self.info = ""
 
@@ -248,19 +249,12 @@ class Stockfish:
         """Will issue a warning, referring to the function that calls this one."""
         warnings.warn(message, stacklevel=3)
 
-    def set_fen_position(
-        self, fen_position: str, send_ucinewgame_token: bool = True
-    ) -> None:
-        """Sets current board position in Forsyth-Edwards notation (FEN).
+    def set_fen_position(self, fen_position: str) -> None:
+        """Sets current board position in Forsyth–Edwards notation (FEN).
 
         Args:
             fen_position:
               FEN string of board position.
-
-            send_ucinewgame_token:
-              Whether to send the `ucinewgame` token to the Stockfish engine.
-              The most prominent effect this will have is clearing Stockfish's transposition table,
-              which should be done if the new position is unrelated to the current position.
 
         Returns:
             `None`
@@ -268,7 +262,7 @@ class Stockfish:
         Example:
             >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
         """
-        self._prepare_for_new_position(send_ucinewgame_token)
+        self._prepare_for_new_position()
         self._put(f"position fen {fen_position}")
 
     def set_position(self, moves: Optional[List[str]] = None) -> None:
@@ -286,7 +280,7 @@ class Stockfish:
             >>> stockfish.set_position(['e2e4', 'e7e5'])
         """
         self.set_fen_position(
-            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", True
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         )
         self.make_moves_from_current_position(moves)
 
@@ -306,7 +300,7 @@ class Stockfish:
         """
         if not moves:
             return
-        self._prepare_for_new_position(False)
+        self._prepare_for_new_position()
         for move in moves:
             if not self.is_move_correct(move):
                 raise ValueError(f"Cannot make move: {move}")
@@ -572,16 +566,22 @@ class Stockfish:
     def _is_fen_syntax_valid(fen: str) -> bool:
         # Code for this function taken from: https://gist.github.com/Dani4kor/e1e8b439115878f8c6dcf127a4ed5d3e
         # Some small changes have been made to the code.
-        regexMatch = re.match(
+        if not re.match(
             r"\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s(-|[K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$",
             fen,
-        )
-        if not regexMatch:
+        ):
             return False
-        regexList = regexMatch.groups()
-        if len(regexList[0].split("/")) != 8:
+
+        fen_fields = fen.split()
+
+        if len(fen_fields) != 6:
+            return False  # An FEN must have 6 fields.
+        if len(fen_fields[0].split("/")) != 8:
             return False  # 8 rows not present.
-        for fenPart in regexList[0].split("/"):
+        if "K" not in fen_fields[0] or "k" not in fen_fields[0]:
+            return False
+
+        for fenPart in fen_fields[0].split("/"):
             field_sum: int = 0
             previous_was_digit: bool = False
             for c in fenPart:
@@ -590,13 +590,17 @@ class Stockfish:
                         return False  # Two digits next to each other.
                     field_sum += int(c)
                     previous_was_digit = True
-                elif c.lower() in ["p", "n", "b", "r", "q", "k"]:
+                elif c in Stockfish._PIECE_CHARS:
                     field_sum += 1
                     previous_was_digit = False
                 else:
                     return False  # Invalid character.
             if field_sum != 8:
                 return False  # One of the rows doesn't have 8 columns.
+
+        if int(fen_fields[4]) >= int(fen_fields[5]) * 2:
+            return False  # The max value the halfmove clock field can be is 1 less than 2x the fullmove counter.
+
         return True
 
     def is_fen_valid(self, fen: str) -> bool:
@@ -614,7 +618,7 @@ class Stockfish:
         # Using a new temporary SF instance, in case the fen is an illegal position that causes
         # the SF process to crash.
         best_move: Optional[str] = None
-        temp_sf.set_fen_position(fen, False)
+        temp_sf.set_fen_position(fen)
         try:
             temp_sf._put("go depth 10")
             best_move = temp_sf._get_best_move_from_sf_popen_process()
@@ -999,6 +1003,269 @@ class Stockfish:
         else:
             return Stockfish.Capture.NO_CAPTURE
 
+    def get_num_pieces(
+        self,
+        file_range: List[str] = ["a", "h"],
+        rank_range: List[int] = [1, 8],
+        pieces_to_count: List = copy.deepcopy(_PIECE_CHARS),
+    ) -> int:
+        """
+        Parameters
+        ----------
+        file_range : List[str], optional
+            A list of two strings, each being a letter representing a file. The function
+            will count the number of pieces within the range between these two files.
+            The default is ["a", "h"], which means all files in the board are counted.
+        rank_range : List[int], optional
+            A list of two ints, representing the range of rows to include in the
+            count. The default is [1, 8], meaning all ranks in the board get counted.
+        pieces_to_count : List, optional
+            Which pieces to count as part of the sum. The default is
+            all types of pieces: ["P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k"].
+            To specify a piece, each element can either be of type char, or an enum member of
+            the Stockfish.Piece enum.
+
+        Returns
+        -------
+        int
+            The number of pieces.
+        """
+
+        if not pieces_to_count:
+            return 0
+        # Get parameters in ideal formats, if not already:
+        file_range = sorted([x.lower() for x in file_range])
+        rank_range.sort()
+        pieces_to_count = [
+            x.value if isinstance(x, Stockfish.Piece) else x for x in pieces_to_count
+        ]
+        pieces_to_count = list(
+            dict.fromkeys(pieces_to_count)
+        )  # In case of any duplicates, remove them.
+
+        # Error checking:
+        if len(file_range) != 2 or len(rank_range) != 2:
+            raise ValueError(
+                "At least one of file_rank or rank_range doesn't have a length of 2 elements."
+            )
+        if not all([(len(x) == 1 and ("a" <= x <= "h")) for x in file_range]):
+            raise ValueError(
+                "The letters in file_range must be in the range of 'a' to 'h'."
+            )
+        if not all([1 <= x <= 8 for x in rank_range]):
+            raise ValueError("The ints in rank_range must be in the range of 1 to 8.")
+        if not all(
+            [
+                (isinstance(x, str) and x in Stockfish._PIECE_CHARS)
+                for x in pieces_to_count
+            ]
+        ):
+            raise ValueError(
+                f"{pieces_to_count} contains an element which doesn't represent a piece."
+            )
+
+        # Count:
+        num_pieces_counter = 0
+        for rank in range(rank_range[0], rank_range[1] + 1):
+            for file_as_int in range(ord(file_range[0]), ord(file_range[1]) + 1):
+                piece = self.get_what_is_on_square(chr(file_as_int) + str(rank))
+                if piece is not None and piece.value in pieces_to_count:
+                    num_pieces_counter += 1
+        return num_pieces_counter
+
+    def convert_human_notation_to_sf_notation(self, move: str) -> str:
+        """
+        Args:
+            move:
+                A string which is the notation for a move, in a format that's used
+                by humans. E.g., stuff like Nf3, bxe5, etc.
+        Returns:
+            A string representation of the notation for this move, in the form that
+            SF uses. E.g., Nf3 might become g1f3.
+        """
+
+        move_param = move
+        move = move.replace(" ", "").replace("-", "")
+        while move[-1:] in ["+", "#"]:
+            move = move[:-1]
+        is_whites_turn = "w" in self.get_fen_position()
+        if len(move) == 0:
+            raise ValueError("Empty move sent in to function.")
+        if re.match("^(?:[a-h][1-8]){2}[qrnb]?$", move.lower()):
+            move = move.lower()
+            if self.is_move_correct(move):
+                return move
+            else:
+                raise ValueError(f"{move_param} is an invalid move.")
+        else:
+            if move.lower() in ["oo", "00"]:
+                # castle kingside
+                # Need to check if it's actually a king there as another piece could also have a valid move.
+                if (
+                    is_whites_turn
+                    and self.get_what_is_on_square("e1") == Stockfish.Piece.WHITE_KING
+                ):
+                    move = "e1g1"
+                elif (
+                    not is_whites_turn
+                    and self.get_what_is_on_square("e8") == Stockfish.Piece.BLACK_KING
+                ):
+                    move = "e8g8"
+                else:
+                    raise ValueError("Cannot castle kingside.")
+                if self.is_move_correct(move):
+                    return move
+                else:
+                    raise ValueError("Cannot castle kingside.")
+            elif move.lower() in ["ooo", "000"]:
+                # castle queenside
+                if (
+                    is_whites_turn
+                    and self.get_what_is_on_square("e1") == Stockfish.Piece.WHITE_KING
+                ):
+                    move = "e1c1"
+                elif (
+                    not is_whites_turn
+                    and self.get_what_is_on_square("e8") == Stockfish.Piece.BLACK_KING
+                ):
+                    move = "e8c8"
+                else:
+                    raise ValueError("Cannot castle queenside.")
+                if self.is_move_correct(move):
+                    return move
+                else:
+                    raise ValueError("Cannot castle queenside.")
+
+            # Resolve the rest with regex.
+            # Do not allow lower case 'b' in first group because it conflicts with second group.
+            # Allow other lower case letters for convenience.
+            match = re.match(
+                "^([RNBKQrnkq]?)([a-h]?)([1-8]?)(x?)([a-h][1-8])(=?[RNBKQrnbkq]?)$",
+                move,
+            )
+            if match is None:
+                raise ValueError(f"{move_param} is not a valid move string.")
+            groups = match.groups()
+            piece = None
+
+            # resolve piece class
+            if len(groups[0]) == 0:
+                piece = (
+                    Stockfish.Piece.WHITE_PAWN
+                    if is_whites_turn
+                    else Stockfish.Piece.BLACK_PAWN
+                )
+            else:
+                if groups[0].lower() == "r":
+                    piece = (
+                        Stockfish.Piece.WHITE_ROOK
+                        if is_whites_turn
+                        else Stockfish.Piece.BLACK_ROOK
+                    )
+                elif groups[0] == "B":  # bxc6 is a pawn from b, not a bishop.
+                    piece = (
+                        Stockfish.Piece.WHITE_BISHOP
+                        if is_whites_turn
+                        else Stockfish.Piece.BLACK_BISHOP
+                    )
+                elif groups[0].lower() == "n":
+                    piece = (
+                        Stockfish.Piece.WHITE_KNIGHT
+                        if is_whites_turn
+                        else Stockfish.Piece.BLACK_KNIGHT
+                    )
+                elif groups[0].lower() == "k":
+                    piece = (
+                        Stockfish.Piece.WHITE_KING
+                        if is_whites_turn
+                        else Stockfish.Piece.BLACK_KING
+                    )
+                elif groups[0].lower() == "q":
+                    piece = (
+                        Stockfish.Piece.WHITE_QUEEN
+                        if is_whites_turn
+                        else Stockfish.Piece.BLACK_QUEEN
+                    )
+                else:
+                    raise ValueError(f"Cannot determine piece to move ('{groups[0]}').")
+
+            # resolve source file
+            src_file = None
+            if len(groups[1]) == 1:
+                src_file = groups[1]
+
+            # resolve source rank
+            src_rank = None
+            if len(groups[2]) == 1:
+                src_rank = groups[2]
+
+            # resolve capture
+            isCapture = groups[3] == "x"
+
+            # pawn conversion
+            turnsInto = groups[5].lstrip("=")
+
+            # resolve dst
+            dst = groups[4]
+
+            # resolve src
+            src = None
+            # find src
+            if src_file is not None and src_rank is not None:
+                src = f"{src_file}{src_rank}"
+            else:
+                possibleSrc = []
+                # run through all the squares and check all the pieces if they can move to the square
+                for file_as_unicode_int in range(ord("a"), ord("h") + 1):
+                    file = chr(file_as_unicode_int)
+                    if src_file is not None and src_file != file:
+                        continue
+                    for rank_as_int in range(1, 8 + 1):
+                        rank = str(rank_as_int)
+                        if src_rank is not None and src_rank != rank:
+                            continue
+                        src = f"{file}{rank}"
+                        if piece == self.get_what_is_on_square(
+                            src
+                        ) and self.is_move_correct(f"{src}{dst}{turnsInto}"):
+                            possibleSrc.append(src)
+                if len(possibleSrc) == 1:
+                    src = possibleSrc[0]
+                elif len(possibleSrc) == 0:
+                    pieceDesc = str(piece).replace("Piece.", "")
+                    if src_rank is not None and src_file is None:
+                        pieceDesc = pieceDesc + f" from rank {src_rank}"
+                    elif src_rank is None and src_file is not None:
+                        pieceDesc = pieceDesc + f" from file {src_file}"
+                    # no need to check for both since that is already covered above
+                    # no need to check for neither since no additional description is needed
+                    raise ValueError(f"No {pieceDesc} can go to {dst}")
+                else:
+                    pieceDesc = str(piece).replace("Piece.", "")
+                    raise ValueError(
+                        f"Could not determine which {pieceDesc} you want to move to {dst}"
+                    )
+            # build stockfish move
+            move = f"{src}{dst}{turnsInto}"
+            # check if resolved move is indeed a capture
+            if self.is_move_correct(move):
+                if (
+                    isCapture
+                    and self.will_move_be_a_capture(move)
+                    == Stockfish.Capture.NO_CAPTURE
+                ):
+                    raise ValueError(f"{move_param} is not a capture.")
+                elif (
+                    not isCapture
+                    and self.will_move_be_a_capture(move)
+                    != Stockfish.Capture.NO_CAPTURE
+                ):
+                    raise ValueError(
+                        f"{move_param} results in a capture, but there isn't an 'x' indicating this in its notation."
+                    )
+                return move
+        raise ValueError(f"{move_param} is an invalid move.")
+
     def get_stockfish_major_version(self) -> int:
         """Returns Stockfish engine major version.
 
@@ -1021,6 +1288,13 @@ class Stockfish:
             self._stockfish_major_version >= 10109
             and self._stockfish_major_version <= 311299
         )
+
+    def send_ucinewgame_command(self) -> None:
+        """Sends the `ucinewgame` command to the Stockfish engine. The most
+        prominent effect this has is clearing SF's transposition table."""
+
+        if self._stockfish.poll() is None:
+            self._put("ucinewgame")
 
     def send_quit_command(self) -> None:
         """Sends the 'quit' command to the Stockfish engine, getting the process
