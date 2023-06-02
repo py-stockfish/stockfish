@@ -507,11 +507,6 @@ class TestStockfish:
             == "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
         )
 
-    def test_get_stockfish_major_version(self, stockfish: Stockfish):
-        assert (
-            stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
-        ) != stockfish.is_development_build_of_engine()
-
     @pytest.mark.slow
     def test_get_evaluation_cp(self, stockfish: Stockfish):
         stockfish.set_depth(20)
@@ -1169,6 +1164,55 @@ class TestStockfish:
         stockfish.__del__()
         assert stockfish._stockfish.poll() is not None
         assert Stockfish._del_counter == old_del_counter + 1
+
+    def test_set_stockfish_version(self, stockfish: Stockfish):
+        stockfish._set_stockfish_version()
+        assert stockfish.get_stockfish_full_version() > 0
+        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
+        assert stockfish.get_stockfish_minor_version() >= 0
+
+    def test_get_stockfish_major_version(self, stockfish: Stockfish):
+        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
+
+    def test_parse_stockfish_version(self, stockfish: Stockfish):
+        stockfish._parse_stockfish_version("dev-20221219-61ea1534")
+        assert stockfish.get_stockfish_full_version() == 15.1
+        assert stockfish.get_stockfish_major_version() == 15
+        assert stockfish.get_stockfish_minor_version() == 1
+        assert stockfish.get_stockfish_patch_version() == "20221219"
+        assert stockfish.get_stockfish_sha_version() == "61ea1534"
+        assert stockfish.is_development_build_of_engine() is True
+        stockfish._parse_stockfish_version("280322")
+        assert stockfish.get_stockfish_full_version() == 14.1
+        assert stockfish.get_stockfish_major_version() == 14
+        assert stockfish.get_stockfish_minor_version() == 1
+        assert stockfish.get_stockfish_patch_version() == "280322"
+        assert stockfish.get_stockfish_sha_version() == ""
+        assert stockfish.is_development_build_of_engine() is True
+        stockfish._parse_stockfish_version("15.1")
+        assert stockfish.get_stockfish_full_version() == 15.1
+        assert stockfish.get_stockfish_major_version() == 15
+        assert stockfish.get_stockfish_minor_version() == 1
+        assert stockfish.get_stockfish_patch_version() == ""
+        assert stockfish.get_stockfish_sha_version() == ""
+        assert stockfish.is_development_build_of_engine() is False
+        stockfish._parse_stockfish_version("14")
+        assert stockfish.get_stockfish_full_version() == 14.0
+        assert stockfish.get_stockfish_major_version() == 14
+        assert stockfish.get_stockfish_minor_version() == 0
+        assert stockfish.get_stockfish_patch_version() == ""
+        assert stockfish.get_stockfish_sha_version() == ""
+        assert stockfish.is_development_build_of_engine() is False
+
+    def test_parse_stockfish_version_raise_exception(self, stockfish: Stockfish):
+        with pytest.raises(Exception):
+            stockfish._parse_stockfish_version("not a version")
+
+    def test_get_stockfish_version_from_build_date_raise_exception(
+        self, stockfish: Stockfish
+    ):
+        with pytest.raises(Exception):
+            stockfish._get_stockfish_version_from_build_date("2015-12-19")
 
     def test_set_option(self, stockfish: Stockfish):
         stockfish._set_option("MultiPV", 3)
