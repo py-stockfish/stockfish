@@ -9,11 +9,11 @@ from __future__ import annotations
 import subprocess
 from typing import Any, List, Optional, Union, Dict
 import copy
-from os import path
+import os
 from dataclasses import dataclass
 from enum import Enum
 import re
-from datetime import datetime
+import datetime
 import warnings
 
 
@@ -737,13 +737,13 @@ class Stockfish:
         # Otherwise, the evaluation will be in terms of white's side (positive meaning advantage white,
         # negative meaning advantage black).
         self._go()
-        evaluation: dict = dict()
+        evaluation: dict = {}
         while True:
             text = self._read_line()
             splitted_text = text.split(" ")
             if splitted_text[0] == "info":
-                for n in range(len(splitted_text)):
-                    if splitted_text[n] == "score":
+                for n, elem in enumerate(splitted_text):
+                    if elem == "score":
                         evaluation = {
                             "type": splitted_text[n + 1],
                             "value": int(splitted_text[n + 2]) * compare,
@@ -773,8 +773,8 @@ class Stockfish:
                 "Total Evaluation"
             ):
                 splitted_text = text.split()
-                eval = splitted_text[2]
-                if eval == "none":
+                static_eval = splitted_text[2]
+                if static_eval == "none":
                     assert "(in check)" in text
                     return None
                 else:
@@ -1110,11 +1110,11 @@ class Stockfish:
         self, date_string: str = ""
     ) -> Optional[str]:
         # Convert date string to datetime object
-        date_object = datetime.strptime(date_string, "%Y-%m-%d")
+        date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d")
 
         # Convert release date strings to datetime objects
         releases_datetime = {
-            key: datetime.strptime(value, "%Y-%m-%d")
+            key: datetime.datetime.strptime(value, "%Y-%m-%d")
             for key, value in self._releases.items()
         }
 
@@ -1179,7 +1179,7 @@ class Stockfish:
             self.limit = self.limit if self.limit in range(1, 10001) else 13
             self.fenFile = (
                 self.fenFile
-                if self.fenFile.endswith(".fen") and path.isfile(self.fenFile)
+                if self.fenFile.endswith(".fen") and os.path.isfile(self.fenFile)
                 else "default"
             )
             self.limitType = (

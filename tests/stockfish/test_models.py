@@ -1,7 +1,6 @@
 import pytest
 from timeit import default_timer
 import time
-import warnings
 
 from stockfish import Stockfish, StockfishException
 
