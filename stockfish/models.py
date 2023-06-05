@@ -567,16 +567,26 @@ class Stockfish:
         return self._get_best_move_from_sf_popen_process()
 
     def _get_best_move_from_sf_popen_process(self) -> Optional[str]:
-        # Precondition - a "go" command must have been sent to SF before calling this function.
-        # This function needs existing output to read from the SF popen process.
-        last_text: str = ""
+        """ Precondition - a "go" command must have been sent to SF before calling this function.
+            This function needs existing output to read from the SF popen process."""
+
+        lines: List[str] = self._get_sf_go_command_output()
+        self.info = lines[-2]
+        last_line_split = lines[-1].split(" ")
+        return None if last_line_split[1] == "(none)" else last_line_split[1]
+    
+    def _get_sf_go_command_output(self) -> List[str]:
+        """ Precondition - a "go" command must have been sent to SF before calling this function.
+            This function needs existing output to read from the SF popen process.
+            
+            A list of strings is returned, where each string represents a line of output. """
+
+        lines: List[str] = []
         while True:
-            text = self._read_line()
-            splitted_text = text.split(" ")
-            if splitted_text[0] == "bestmove":
-                self.info = last_text
-                return None if splitted_text[1] == "(none)" else splitted_text[1]
-            last_text = text
+            lines.append(self._read_line())
+            if lines[-1].startswith("bestmove"):
+                # The "bestmove" line is the last line of the output.
+                return lines
 
     @staticmethod
     def _is_fen_syntax_valid(fen: str) -> bool:
@@ -778,7 +788,7 @@ class Stockfish:
                     assert "(in check)" in text
                     return None
                 else:
-                    return float(eval) * compare
+                    return float(static_eval) * compare
 
     def get_top_moves(
         self,
