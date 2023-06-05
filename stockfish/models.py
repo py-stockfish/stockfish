@@ -567,19 +567,19 @@ class Stockfish:
         return self._get_best_move_from_sf_popen_process()
 
     def _get_best_move_from_sf_popen_process(self) -> Optional[str]:
-        """ Precondition - a "go" command must have been sent to SF before calling this function.
-            This function needs existing output to read from the SF popen process."""
+        """Precondition - a "go" command must have been sent to SF before calling this function.
+        This function needs existing output to read from the SF popen process."""
 
         lines: List[str] = self._get_sf_go_command_output()
         self.info = lines[-2]
         last_line_split = lines[-1].split(" ")
         return None if last_line_split[1] == "(none)" else last_line_split[1]
-    
+
     def _get_sf_go_command_output(self) -> List[str]:
-        """ Precondition - a "go" command must have been sent to SF before calling this function.
-            This function needs existing output to read from the SF popen process.
-            
-            A list of strings is returned, where each string represents a line of output. """
+        """Precondition - a "go" command must have been sent to SF before calling this function.
+        This function needs existing output to read from the SF popen process.
+
+        A list of strings is returned, where each string represents a line of output."""
 
         lines: List[str] = []
         while True:
@@ -687,7 +687,9 @@ class Stockfish:
             )
 
         self._go()
-        lines: List[List[str]] = [line.split(" ") for line in self._get_sf_go_command_output()]
+        lines: List[List[str]] = [
+            line.split(" ") for line in self._get_sf_go_command_output()
+        ]
         for current_line in reversed(lines):
             if current_line[0] == "bestmove" and current_line[1] == "(none)":
                 return None
@@ -842,8 +844,10 @@ class Stockfish:
         else:
             self._num_nodes = num_nodes
             self._go_nodes()
-        
-        lines: List[List[str]] = [line.split(" ") for line in self._get_sf_go_command_output()]
+
+        lines: List[List[str]] = [
+            line.split(" ") for line in self._get_sf_go_command_output()
+        ]
 
         # Stockfish is now done evaluating the position,
         # and the output is stored in the list 'lines'
