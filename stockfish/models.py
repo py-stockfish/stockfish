@@ -687,24 +687,19 @@ class Stockfish:
             )
 
         self._go()
-        lines: List[List[str]] = []
-        while True:
-            text = self._read_line()
-            splitted_text = text.split(" ")
-            lines.append(splitted_text)
-            if splitted_text[0] == "bestmove":
-                break
+        lines: List[List[str]] = [line.split(" ") for line in self._get_sf_go_command_output()]
         for current_line in reversed(lines):
             if current_line[0] == "bestmove" and current_line[1] == "(none)":
                 return None
-            elif "multipv" in current_line:
-                index_of_multipv = current_line.index("multipv")
-                if current_line[index_of_multipv + 1] == "1" and "wdl" in current_line:
-                    index_of_wdl = current_line.index("wdl")
-                    wdl_stats: List[int] = []
-                    for i in range(1, 4):
-                        wdl_stats.append(int(current_line[index_of_wdl + i]))
-                    return wdl_stats
+            elif "multipv" not in current_line:
+                continue
+            index_of_multipv = current_line.index("multipv")
+            if current_line[index_of_multipv + 1] == "1" and "wdl" in current_line:
+                index_of_wdl = current_line.index("wdl")
+                wdl_stats: List[int] = []
+                for i in range(1, 4):
+                    wdl_stats.append(int(current_line[index_of_wdl + i]))
+                return wdl_stats
         raise RuntimeError("Reached the end of the get_wdl_stats function.")
 
     def does_current_engine_version_have_wdl_option(self) -> bool:
@@ -847,33 +842,23 @@ class Stockfish:
         else:
             self._num_nodes = num_nodes
             self._go_nodes()
-
-        lines: List[List[str]] = []
-
-        # parse output into a list of lists
-        # this loop will run until Stockfish has finished evaluating the position
-        while True:
-            text = self._read_line()
-            split_text = text.split(" ")
-            lines.append(split_text)
-            # The "bestmove" line is the last line of the evaluation.
-            if split_text[0] == "bestmove":
-                break
+        
+        lines: List[List[str]] = [line.split(" ") for line in self._get_sf_go_command_output()]
 
         # Stockfish is now done evaluating the position,
         # and the output is stored in the list 'lines'
         top_moves: List[dict] = []
 
-        # set perspective of evaluations. if get_turn_perspective() is True, or white to move,
-        # use Stockfish's values, otherwise invert values.
+        # Set perspective of evaluations. If get_turn_perspective() is True, or white to move,
+        # use Stockfish's values -- otherwise, invert values.
         perspective: int = (
             1 if self.get_turn_perspective() or ("w" in self.get_fen_position()) else -1
         )
 
         # loop through Stockfish output lines in reverse order
         for line in reversed(lines):
-            # if the line is a "bestmove" line, and the best move is "(none)", then
-            # there are no top moves, and we're done. otherwise, continue with next line
+            # If the line is a "bestmove" line, and the best move is "(none)", then
+            # there are no top moves, and we're done. Otherwise, continue with the next line.
             if line[0] == "bestmove":
                 if line[1] == "(none)":
                     top_moves = []
@@ -892,7 +877,7 @@ class Stockfish:
             if (num_nodes > 0) and (int(self._pick(line, "nodes")) < self._num_nodes):
                 break
 
-            move_evaluation: dict[str, Union[str, int, None]] = {
+            move_evaluation: Dict[str, Union[str, int, None]] = {
                 # get move
                 "Move": self._pick(line, "pv"),
                 # get cp if available
