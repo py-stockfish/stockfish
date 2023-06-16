@@ -764,7 +764,9 @@ class Stockfish:
                 text.startswith(x) for x in ("Final evaluation", "Total Evaluation")
             ):
                 static_eval = text.split()[2]
-                self._read_line()  # Consume the remaining line (for some reason `eval` outputs an extra newline)
+                if " none " not in text:
+                    self._read_line()
+                    # Consume the remaining line (for some reason `eval` outputs an extra newline)
                 if static_eval == "none":
                     assert "(in check)" in text
                     return None
