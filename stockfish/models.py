@@ -762,11 +762,10 @@ class Stockfish:
         self._put("eval")
         while True:
             text = self._read_line()
-            if text.startswith("Final evaluation") or text.startswith(
-                "Total Evaluation"
+            if any(
+                text.startswith(x) for x in ("Final evaluation", "Total Evaluation")
             ):
-                splitted_text = text.split()
-                static_eval = splitted_text[2]
+                static_eval = text.split()[2]
                 if static_eval == "none":
                     assert "(in check)" in text
                     return None
