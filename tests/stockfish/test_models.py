@@ -786,12 +786,14 @@ class TestStockfish:
         assert stockfish.get_turn_perspective()
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] > 0
-        assert isinstance(eval := stockfish.get_evaluation()["value"], int) and eval > 0  # type: ignore
+        eval = stockfish.get_evaluation()["value"]
+        assert isinstance(eval, int) and eval > 0
         stockfish.set_turn_perspective(False)
         assert stockfish.get_turn_perspective() is False
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
-        assert isinstance(eval := stockfish.get_evaluation()["value"], int) and eval < 0
+        eval = stockfish.get_evaluation()["value"]
+        assert isinstance(eval, int) and eval < 0
 
     def test_turn_perspective_raises_type_error(self, stockfish: Stockfish):
         with pytest.raises(TypeError):
