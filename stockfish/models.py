@@ -691,7 +691,7 @@ class Stockfish:
         lines = list(reversed(self._get_sf_go_command_output()))
         if lines[0].startswith("bestmove (none)"):
             return None
-        split_line = next(line.split(" ") for line in lines if ' multipv 1 ' in line)
+        split_line = next(line.split(" ") for line in lines if " multipv 1 " in line)
         wdl_index = split_line.index("wdl")
         return [int(split_line[i]) for i in range(wdl_index + 1, wdl_index + 4)]
 

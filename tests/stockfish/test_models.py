@@ -515,6 +515,7 @@ class TestStockfish:
         evaluation = stockfish.get_evaluation()
         assert (
             evaluation["type"] == "cp"
+            and isinstance(evaluation["value"], int)
             and evaluation["value"] >= 60
             and evaluation["value"] <= 150
         )
@@ -523,6 +524,7 @@ class TestStockfish:
             evaluation = stockfish.get_evaluation()
         assert (
             evaluation["type"] == "cp"
+            and isinstance(evaluation["value"], int)
             and evaluation["value"] >= 60
             and evaluation["value"] <= 150
         )
@@ -773,12 +775,12 @@ class TestStockfish:
         assert stockfish.get_turn_perspective()
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] > 0
-        assert stockfish.get_evaluation()["value"] > 0
+        assert isinstance(eval := stockfish.get_evaluation()["value"], int) and eval > 0
         stockfish.set_turn_perspective(False)
         assert stockfish.get_turn_perspective() is False
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
-        assert stockfish.get_evaluation()["value"] < 0
+        assert isinstance(eval := stockfish.get_evaluation()["value"], int) and eval < 0
 
     def test_turn_perspective_raises_type_error(self, stockfish: Stockfish):
         with pytest.raises(TypeError):
