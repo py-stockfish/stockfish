@@ -215,6 +215,11 @@ class Stockfish:
             print(line)
         return line
 
+    def _discard_remaining_stdout_lines(self, substr_in_last_line: str) -> None:
+        """Calls _read_line() until encountering `substr_in_last_line` in the line."""
+        while substr_in_last_line not in self._read_line():
+            pass
+
     def _set_option(
         self, name: str, value: Any, update_parameters_attribute: bool = True
     ) -> None:
@@ -381,10 +386,8 @@ class Stockfish:
                 board_rep_lines.append(f"  {board_str}")
             else:
                 board_rep_lines.append(f"  {board_str[::-1]}")
-        while "Checkers" not in self._read_line():
-            # Gets rid of the remaining lines in _stockfish.stdout.
-            # "Checkers" is in the last line outputted by Stockfish for the "d" command.
-            pass
+        self._discard_remaining_stdout_lines("Checkers")
+        # "Checkers" is in the last line outputted by Stockfish for the "d" command.
         board_rep = "\n".join(board_rep_lines) + "\n"
         return board_rep
 
@@ -401,8 +404,7 @@ class Stockfish:
             text = self._read_line()
             splitted_text = text.split(" ")
             if splitted_text[0] == "Fen:":
-                while "Checkers" not in self._read_line():
-                    pass
+                self._discard_remaining_stdout_lines("Checkers")
                 return " ".join(splitted_text[1:])
 
     def set_skill_level(self, skill_level: int = 20) -> None:
@@ -703,17 +705,13 @@ class Stockfish:
             `True` if Stockfish has the `WDL` option, otherwise `False`.
         """
         self._put("uci")
-        encountered_UCI_ShowWDL = False
         while True:
-            text = self._read_line()
-            splitted_text = text.split(" ")
+            splitted_text = self._read_line().split(" ")
             if splitted_text[0] == "uciok":
-                return encountered_UCI_ShowWDL
+                return False
             elif "UCI_ShowWDL" in splitted_text:
-                encountered_UCI_ShowWDL = True
-                # Not returning right away, since the remaining lines should be read and
-                # discarded. So continue the loop until reaching "uciok", which is
-                # the last line SF outputs for the "uci" command.
+                self._discard_remaining_stdout_lines("uciok")
+                return True
 
     def get_evaluation(self) -> Dict[str, Union[str, int]]:
         """Searches to the specified depth and evaluates the current position.
@@ -766,6 +764,7 @@ class Stockfish:
                 text.startswith(x) for x in ("Final evaluation", "Total Evaluation")
             ):
                 static_eval = text.split()[2]
+                self._read_line()  # Consume the remaining line (for some reason `eval` outputs an extra newline)
                 if static_eval == "none":
                     assert "(in check)" in text
                     return None
@@ -1024,18 +1023,14 @@ class Stockfish:
         return self._version["is_dev_build"]
 
     def _set_stockfish_version(self) -> None:
-        # send uci command to print version text
         self._put("uci")
-
-        # read version text
-        version_text = ""
+        # read version text:
         while True:
             line = self._read_line()
             if line.startswith("id name"):
-                version_text = line.split(" ")[3]
-                break
-
-        self._parse_stockfish_version(version_text)
+                self._discard_remaining_stdout_lines("uciok")
+                self._parse_stockfish_version(line.split(" ")[3])
+                return
 
     def _parse_stockfish_version(self, version_text: str = "") -> None:
         try:
@@ -1190,8 +1185,7 @@ class Stockfish:
         )
         while True:
             text = self._read_line()
-            splitted_text = text.split(" ")
-            if splitted_text[0] == "Nodes/second":
+            if text.split(" ")[0] == "Nodes/second":
                 return text
 
 
