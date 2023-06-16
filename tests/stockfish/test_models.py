@@ -10,6 +10,13 @@ class TestStockfish:
     def stockfish(self) -> Stockfish:
         return Stockfish()
 
+    # change to `autouse=True` to have the below fixture called before each test function, and then
+    # the code after the 'yield' to run after each test.
+    @pytest.fixture(autouse=False)
+    def autouse_fixture(self, stockfish: Stockfish):
+        yield stockfish
+        # Some assert statement testing something about the stockfish object here.
+
     def test_constructor_defaults(self):
         sf = Stockfish()
         assert sf is not None
