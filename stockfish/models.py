@@ -676,6 +676,7 @@ class Stockfish:
             A list of three integers, unless the game is over (in which case
             `None` is returned).
         """
+
         if not self.does_current_engine_version_have_wdl_option():
             raise RuntimeError(
                 "Your version of Stockfish isn't recent enough to have the UCI_ShowWDL option."
@@ -687,22 +688,12 @@ class Stockfish:
             )
 
         self._go()
-        lines: List[List[str]] = [
-            line.split(" ") for line in self._get_sf_go_command_output()
-        ]
-        for current_line in reversed(lines):
-            if current_line[0] == "bestmove" and current_line[1] == "(none)":
-                return None
-            elif "multipv" not in current_line:
-                continue
-            index_of_multipv = current_line.index("multipv")
-            if current_line[index_of_multipv + 1] == "1" and "wdl" in current_line:
-                index_of_wdl = current_line.index("wdl")
-                wdl_stats: List[int] = []
-                for i in range(1, 4):
-                    wdl_stats.append(int(current_line[index_of_wdl + i]))
-                return wdl_stats
-        raise RuntimeError("Reached the end of the get_wdl_stats function.")
+        lines = list(reversed(self._get_sf_go_command_output()))
+        if lines[0].startswith("bestmove (none)"):
+            return None
+        split_line = next(line.split(" ") for line in lines if ' multipv 1 ' in line)
+        wdl_index = split_line.index("wdl")
+        return [int(split_line[i]) for i in range(wdl_index + 1, wdl_index + 4)]
 
     def does_current_engine_version_have_wdl_option(self) -> bool:
         """Returns whether the user's version of Stockfish has the option
