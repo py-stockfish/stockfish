@@ -724,11 +724,15 @@ class Stockfish:
                 # discarded. So continue the loop until reaching "uciok", which is
                 # the last line SF outputs for the "uci" command.
 
-    def get_evaluation(self) -> dict:
-        """Searches to the specified depth and evaluates the current position
+    def get_evaluation(self) -> Dict[str, Union[str, int]]:
+        """Searches to the specified depth and evaluates the current position.
 
         Returns:
-            A dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (mate in n moves)
+            A dictionary of two pairs: {str: str, str: int}
+            - The first pair describes the type of the evaluation. The key is "type", and the value
+              will be either "cp" (centipawns) or "mate".
+            - The second pair describes the value of the evaluation. The key is "value", and the value
+              will be an int (representing either a cp value or a mate in n value).
         """
 
         if self._on_weaker_setting():
@@ -736,7 +740,6 @@ class Stockfish:
                 """Note that even though you've set Stockfish to play on a weaker elo or skill level,"""
                 + """ get_evaluation will still return full strength Stockfish's evaluation of the position."""
             )
-
         compare: int = (
             1 if self.get_turn_perspective() or ("w" in self.get_fen_position()) else -1
         )
@@ -744,19 +747,11 @@ class Stockfish:
         # Otherwise, the evaluation will be in terms of white's side (positive meaning advantage white,
         # negative meaning advantage black).
         self._go()
-        evaluation: dict = {}
-        while True:
-            text = self._read_line()
-            splitted_text = text.split(" ")
-            if splitted_text[0] == "info":
-                for n, elem in enumerate(splitted_text):
-                    if elem == "score":
-                        evaluation = {
-                            "type": splitted_text[n + 1],
-                            "value": int(splitted_text[n + 2]) * compare,
-                        }
-            elif splitted_text[0] == "bestmove":
-                return evaluation
+        lines = list(reversed(self._get_sf_go_command_output()))
+        split_line = next(line.split(" ") for line in lines if line.startswith("info"))
+        score_index = split_line.index("score")
+        eval_type, val = split_line[score_index + 1], split_line[score_index + 2]
+        return {"type": eval_type, "value": int(val) * compare}
 
     def get_static_eval(self) -> Optional[float]:
         """Sends the 'eval' command to stockfish to get the static evaluation. The current position is
