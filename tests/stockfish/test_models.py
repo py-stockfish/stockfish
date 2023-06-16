@@ -565,7 +565,7 @@ class TestStockfish:
             assert stockfish.get_static_eval() is None
         stockfish.set_position(None)
         stockfish.get_static_eval()
-        stockfish._put('go depth 2')
+        stockfish._put("go depth 2")
         assert stockfish._read_line() != ""
 
     def test_set_depth(self, stockfish: Stockfish):
@@ -786,7 +786,7 @@ class TestStockfish:
         assert stockfish.get_turn_perspective()
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] > 0
-        assert isinstance(eval := stockfish.get_evaluation()["value"], int) and eval > 0
+        assert isinstance(eval := stockfish.get_evaluation()["value"], int) and eval > 0  # type: ignore
         stockfish.set_turn_perspective(False)
         assert stockfish.get_turn_perspective() is False
         moves = stockfish.get_top_moves(1)
