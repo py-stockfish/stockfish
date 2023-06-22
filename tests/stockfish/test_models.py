@@ -1,7 +1,6 @@
 import pytest
 from timeit import default_timer
 import time
-import warnings
 
 from stockfish import Stockfish, StockfishException
 
@@ -10,6 +9,13 @@ class TestStockfish:
     @pytest.fixture
     def stockfish(self) -> Stockfish:
         return Stockfish()
+
+    # change to `autouse=True` to have the below fixture called before each test function, and then
+    # the code after the 'yield' to run after each test.
+    @pytest.fixture(autouse=False)
+    def autouse_fixture(self, stockfish: Stockfish):
+        yield stockfish
+        # Some assert statement testing something about the stockfish object here.
 
     def test_constructor_defaults(self):
         sf = Stockfish()
@@ -516,6 +522,7 @@ class TestStockfish:
         evaluation = stockfish.get_evaluation()
         assert (
             evaluation["type"] == "cp"
+            and isinstance(evaluation["value"], int)
             and evaluation["value"] >= 60
             and evaluation["value"] <= 150
         )
@@ -524,6 +531,7 @@ class TestStockfish:
             evaluation = stockfish.get_evaluation()
         assert (
             evaluation["type"] == "cp"
+            and isinstance(evaluation["value"], int)
             and evaluation["value"] >= 60
             and evaluation["value"] <= 150
         )
@@ -555,6 +563,10 @@ class TestStockfish:
         if stockfish.get_stockfish_major_version() >= 12:
             stockfish.set_fen_position("8/8/8/8/8/4k3/4p3/r3K3 w - - 0 1")
             assert stockfish.get_static_eval() is None
+        stockfish.set_position(None)
+        stockfish.get_static_eval()
+        stockfish._put("go depth 2")
+        assert stockfish._read_line() != ""
 
     def test_set_depth(self, stockfish: Stockfish):
         stockfish.set_depth(12)
@@ -774,12 +786,14 @@ class TestStockfish:
         assert stockfish.get_turn_perspective()
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] > 0
-        assert stockfish.get_evaluation()["value"] > 0
+        eval = stockfish.get_evaluation()["value"]
+        assert isinstance(eval, int) and eval > 0
         stockfish.set_turn_perspective(False)
         assert stockfish.get_turn_perspective() is False
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
-        assert stockfish.get_evaluation()["value"] < 0
+        eval = stockfish.get_evaluation()["value"]
+        assert isinstance(eval, int) and eval < 0
 
     def test_turn_perspective_raises_type_error(self, stockfish: Stockfish):
         with pytest.raises(TypeError):

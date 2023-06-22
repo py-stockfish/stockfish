@@ -9,11 +9,11 @@ from __future__ import annotations
 import subprocess
 from typing import Any, List, Optional, Union, Dict
 import copy
-from os import path
+import os
 from dataclasses import dataclass
 from enum import Enum
 import re
-from datetime import datetime
+import datetime
 import warnings
 
 
@@ -215,6 +215,11 @@ class Stockfish:
             print(line)
         return line
 
+    def _discard_remaining_stdout_lines(self, substr_in_last_line: str) -> None:
+        """Calls _read_line() until encountering `substr_in_last_line` in the line."""
+        while substr_in_last_line not in self._read_line():
+            pass
+
     def _set_option(
         self, name: str, value: Any, update_parameters_attribute: bool = True
     ) -> None:
@@ -381,10 +386,8 @@ class Stockfish:
                 board_rep_lines.append(f"  {board_str}")
             else:
                 board_rep_lines.append(f"  {board_str[::-1]}")
-        while "Checkers" not in self._read_line():
-            # Gets rid of the remaining lines in _stockfish.stdout.
-            # "Checkers" is in the last line outputted by Stockfish for the "d" command.
-            pass
+        self._discard_remaining_stdout_lines("Checkers")
+        # "Checkers" is in the last line outputted by Stockfish for the "d" command.
         board_rep = "\n".join(board_rep_lines) + "\n"
         return board_rep
 
@@ -401,8 +404,7 @@ class Stockfish:
             text = self._read_line()
             splitted_text = text.split(" ")
             if splitted_text[0] == "Fen:":
-                while "Checkers" not in self._read_line():
-                    pass
+                self._discard_remaining_stdout_lines("Checkers")
                 return " ".join(splitted_text[1:])
 
     def set_skill_level(self, skill_level: int = 20) -> None:
@@ -567,16 +569,26 @@ class Stockfish:
         return self._get_best_move_from_sf_popen_process()
 
     def _get_best_move_from_sf_popen_process(self) -> Optional[str]:
-        # Precondition - a "go" command must have been sent to SF before calling this function.
-        # This function needs existing output to read from the SF popen process.
-        last_text: str = ""
+        """Precondition - a "go" command must have been sent to SF before calling this function.
+        This function needs existing output to read from the SF popen process."""
+
+        lines: List[str] = self._get_sf_go_command_output()
+        self.info = lines[-2]
+        last_line_split = lines[-1].split(" ")
+        return None if last_line_split[1] == "(none)" else last_line_split[1]
+
+    def _get_sf_go_command_output(self) -> List[str]:
+        """Precondition - a "go" command must have been sent to SF before calling this function.
+        This function needs existing output to read from the SF popen process.
+
+        A list of strings is returned, where each string represents a line of output."""
+
+        lines: List[str] = []
         while True:
-            text = self._read_line()
-            splitted_text = text.split(" ")
-            if splitted_text[0] == "bestmove":
-                self.info = last_text
-                return None if splitted_text[1] == "(none)" else splitted_text[1]
-            last_text = text
+            lines.append(self._read_line())
+            if lines[-1].startswith("bestmove"):
+                # The "bestmove" line is the last line of the output.
+                return lines
 
     @staticmethod
     def _is_fen_syntax_valid(fen: str) -> bool:
@@ -666,6 +678,7 @@ class Stockfish:
             A list of three integers, unless the game is over (in which case
             `None` is returned).
         """
+
         if not self.does_current_engine_version_have_wdl_option():
             raise RuntimeError(
                 "Your version of Stockfish isn't recent enough to have the UCI_ShowWDL option."
@@ -677,25 +690,12 @@ class Stockfish:
             )
 
         self._go()
-        lines: List[List[str]] = []
-        while True:
-            text = self._read_line()
-            splitted_text = text.split(" ")
-            lines.append(splitted_text)
-            if splitted_text[0] == "bestmove":
-                break
-        for current_line in reversed(lines):
-            if current_line[0] == "bestmove" and current_line[1] == "(none)":
-                return None
-            elif "multipv" in current_line:
-                index_of_multipv = current_line.index("multipv")
-                if current_line[index_of_multipv + 1] == "1" and "wdl" in current_line:
-                    index_of_wdl = current_line.index("wdl")
-                    wdl_stats: List[int] = []
-                    for i in range(1, 4):
-                        wdl_stats.append(int(current_line[index_of_wdl + i]))
-                    return wdl_stats
-        raise RuntimeError("Reached the end of the get_wdl_stats function.")
+        lines = self._get_sf_go_command_output()
+        if lines[-1].startswith("bestmove (none)"):
+            return None
+        split_line = [line.split(" ") for line in lines if " multipv 1 " in line][-1]
+        wdl_index = split_line.index("wdl")
+        return [int(split_line[i]) for i in range(wdl_index + 1, wdl_index + 4)]
 
     def does_current_engine_version_have_wdl_option(self) -> bool:
         """Returns whether the user's version of Stockfish has the option
@@ -705,23 +705,23 @@ class Stockfish:
             `True` if Stockfish has the `WDL` option, otherwise `False`.
         """
         self._put("uci")
-        encountered_UCI_ShowWDL = False
         while True:
-            text = self._read_line()
-            splitted_text = text.split(" ")
+            splitted_text = self._read_line().split(" ")
             if splitted_text[0] == "uciok":
-                return encountered_UCI_ShowWDL
+                return False
             elif "UCI_ShowWDL" in splitted_text:
-                encountered_UCI_ShowWDL = True
-                # Not returning right away, since the remaining lines should be read and
-                # discarded. So continue the loop until reaching "uciok", which is
-                # the last line SF outputs for the "uci" command.
+                self._discard_remaining_stdout_lines("uciok")
+                return True
 
-    def get_evaluation(self) -> dict:
-        """Searches to the specified depth and evaluates the current position
+    def get_evaluation(self) -> Dict[str, Union[str, int]]:
+        """Searches to the specified depth and evaluates the current position.
 
         Returns:
-            A dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (mate in n moves)
+            A dictionary of two pairs: {str: str, str: int}
+            - The first pair describes the type of the evaluation. The key is "type", and the value
+              will be either "cp" (centipawns) or "mate".
+            - The second pair describes the value of the evaluation. The key is "value", and the value
+              will be an int (representing either a cp value or a mate in n value).
         """
 
         if self._on_weaker_setting():
@@ -729,7 +729,6 @@ class Stockfish:
                 """Note that even though you've set Stockfish to play on a weaker elo or skill level,"""
                 + """ get_evaluation will still return full strength Stockfish's evaluation of the position."""
             )
-
         compare: int = (
             1 if self.get_turn_perspective() or ("w" in self.get_fen_position()) else -1
         )
@@ -737,19 +736,11 @@ class Stockfish:
         # Otherwise, the evaluation will be in terms of white's side (positive meaning advantage white,
         # negative meaning advantage black).
         self._go()
-        evaluation: dict = dict()
-        while True:
-            text = self._read_line()
-            splitted_text = text.split(" ")
-            if splitted_text[0] == "info":
-                for n in range(len(splitted_text)):
-                    if splitted_text[n] == "score":
-                        evaluation = {
-                            "type": splitted_text[n + 1],
-                            "value": int(splitted_text[n + 2]) * compare,
-                        }
-            elif splitted_text[0] == "bestmove":
-                return evaluation
+        lines = self._get_sf_go_command_output()
+        split_line = [line.split(" ") for line in lines if line.startswith("info")][-1]
+        score_index = split_line.index("score")
+        eval_type, val = split_line[score_index + 1], split_line[score_index + 2]
+        return {"type": eval_type, "value": int(val) * compare}
 
     def get_static_eval(self) -> Optional[float]:
         """Sends the 'eval' command to stockfish to get the static evaluation. The current position is
@@ -769,16 +760,18 @@ class Stockfish:
         self._put("eval")
         while True:
             text = self._read_line()
-            if text.startswith("Final evaluation") or text.startswith(
-                "Total Evaluation"
+            if any(
+                text.startswith(x) for x in ("Final evaluation", "Total Evaluation")
             ):
-                splitted_text = text.split()
-                eval = splitted_text[2]
-                if eval == "none":
+                static_eval = text.split()[2]
+                if " none " not in text:
+                    self._read_line()
+                    # Consume the remaining line (for some reason `eval` outputs an extra newline)
+                if static_eval == "none":
                     assert "(in check)" in text
                     return None
                 else:
-                    return float(eval) * compare
+                    return float(static_eval) * compare
 
     def get_top_moves(
         self,
@@ -838,32 +831,24 @@ class Stockfish:
             self._num_nodes = num_nodes
             self._go_nodes()
 
-        lines: List[List[str]] = []
-
-        # parse output into a list of lists
-        # this loop will run until Stockfish has finished evaluating the position
-        while True:
-            text = self._read_line()
-            split_text = text.split(" ")
-            lines.append(split_text)
-            # The "bestmove" line is the last line of the evaluation.
-            if split_text[0] == "bestmove":
-                break
+        lines: List[List[str]] = [
+            line.split(" ") for line in self._get_sf_go_command_output()
+        ]
 
         # Stockfish is now done evaluating the position,
         # and the output is stored in the list 'lines'
         top_moves: List[dict] = []
 
-        # set perspective of evaluations. if get_turn_perspective() is True, or white to move,
-        # use Stockfish's values, otherwise invert values.
+        # Set perspective of evaluations. If get_turn_perspective() is True, or white to move,
+        # use Stockfish's values -- otherwise, invert values.
         perspective: int = (
             1 if self.get_turn_perspective() or ("w" in self.get_fen_position()) else -1
         )
 
         # loop through Stockfish output lines in reverse order
         for line in reversed(lines):
-            # if the line is a "bestmove" line, and the best move is "(none)", then
-            # there are no top moves, and we're done. otherwise, continue with next line
+            # If the line is a "bestmove" line, and the best move is "(none)", then
+            # there are no top moves, and we're done. Otherwise, continue with the next line.
             if line[0] == "bestmove":
                 if line[1] == "(none)":
                     top_moves = []
@@ -882,7 +867,7 @@ class Stockfish:
             if (num_nodes > 0) and (int(self._pick(line, "nodes")) < self._num_nodes):
                 break
 
-            move_evaluation: dict[str, Union[str, int, None]] = {
+            move_evaluation: Dict[str, Union[str, int, None]] = {
                 # get move
                 "Move": self._pick(line, "pv"),
                 # get cp if available
@@ -1040,18 +1025,14 @@ class Stockfish:
         return self._version["is_dev_build"]
 
     def _set_stockfish_version(self) -> None:
-        # send uci command to print version text
         self._put("uci")
-
-        # read version text
-        version_text = ""
+        # read version text:
         while True:
             line = self._read_line()
             if line.startswith("id name"):
-                version_text = line.split(" ")[3]
-                break
-
-        self._parse_stockfish_version(version_text)
+                self._discard_remaining_stdout_lines("uciok")
+                self._parse_stockfish_version(line.split(" ")[3])
+                return
 
     def _parse_stockfish_version(self, version_text: str = "") -> None:
         try:
@@ -1110,11 +1091,11 @@ class Stockfish:
         self, date_string: str = ""
     ) -> Optional[str]:
         # Convert date string to datetime object
-        date_object = datetime.strptime(date_string, "%Y-%m-%d")
+        date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d")
 
         # Convert release date strings to datetime objects
         releases_datetime = {
-            key: datetime.strptime(value, "%Y-%m-%d")
+            key: datetime.datetime.strptime(value, "%Y-%m-%d")
             for key, value in self._releases.items()
         }
 
@@ -1179,7 +1160,7 @@ class Stockfish:
             self.limit = self.limit if self.limit in range(1, 10001) else 13
             self.fenFile = (
                 self.fenFile
-                if self.fenFile.endswith(".fen") and path.isfile(self.fenFile)
+                if self.fenFile.endswith(".fen") and os.path.isfile(self.fenFile)
                 else "default"
             )
             self.limitType = (
@@ -1206,8 +1187,7 @@ class Stockfish:
         )
         while True:
             text = self._read_line()
-            splitted_text = text.split(" ")
-            if splitted_text[0] == "Nodes/second":
+            if text.split(" ")[0] == "Nodes/second":
                 return text
 
 
