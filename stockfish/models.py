@@ -736,8 +736,8 @@ class Stockfish:
         # Otherwise, the evaluation will be in terms of white's side (positive meaning advantage white,
         # negative meaning advantage black).
         self._go()
-        lines = list(reversed(self._get_sf_go_command_output()))
-        split_line = next(line.split(" ") for line in lines if line.startswith("info"))
+        lines = self._get_sf_go_command_output()
+        split_line = [line.split(" ") for line in lines if line.startswith("info")][-1]
         score_index = split_line.index("score")
         eval_type, val = split_line[score_index + 1], split_line[score_index + 2]
         return {"type": eval_type, "value": int(val) * compare}
