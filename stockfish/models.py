@@ -915,6 +915,19 @@ class Stockfish:
         return top_moves
 
     def get_perft(self, depth: int) -> tuple[int, dict[str, int]]:
+        """Returns perft information of the current position for a given depth
+
+        Args:
+            depth: The search depth given as an integer (1 or higher)
+
+        Returns:
+            A tuple with the total number of nodes searched as the first element and a dictionary as the second element.
+            The dictionary contains all legal moves in the current position as keys and the number of
+            leaf nodes for this move as values.
+
+        Example:
+            >>> num_nodes, move_possibilities = stockfish.get_perft(3)
+        """
         if not isinstance(depth, int) or depth < 1 or isinstance(depth, bool):
             raise TypeError("depth must be an integer higher than 0")
 
