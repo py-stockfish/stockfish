@@ -253,6 +253,9 @@ class Stockfish:
             cmd += f" btime {btime}"
         self._put(cmd)
 
+    def _go_perft(self, depth: int) -> None:
+        self._put(f"go perft {depth}")
+
     def _on_weaker_setting(self) -> bool:
         return (
             self._parameters["UCI_LimitStrength"]
@@ -910,6 +913,25 @@ class Stockfish:
             self._num_nodes = old_num_nodes
 
         return top_moves
+
+    def get_perft(self, depth: int) -> tuple[int, dict[str, int]]:
+        self._go_perft(depth)
+
+        move_possibilities: dict[str, int] = {}
+        num_nodes = 0
+
+        while True:
+            line = self._read_line()
+            if line == "":
+                continue
+            if "searched" in line:
+                num_nodes = int(line.split(":")[1])
+                break
+            move, num = line.split(":")
+            assert move not in move_possibilities
+            move_possibilities[move] = int(num)
+
+        return num_nodes, move_possibilities
 
     def _pick(self, line: list[str], value: str = "", index: int = 1) -> str:
         return line[line.index(value) + index]
