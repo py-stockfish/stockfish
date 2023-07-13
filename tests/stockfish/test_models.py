@@ -780,6 +780,40 @@ class TestStockfish:
         assert len(stockfish.get_top_moves(2)) == 2
         assert stockfish.get_engine_parameters()["MultiPV"] == 1
 
+    @pytest.mark.parametrize(
+        "depth, expected_num_nodes", [(1, 20), (2, 400), (3, 8902), (6, 119060324)]
+    )
+    def test_get_perft_number_nodes(
+        self, stockfish: Stockfish, depth: int, expected_num_nodes: int
+    ):
+        assert stockfish.get_perft(depth)[0] == expected_num_nodes
+
+    def test_get_perft(self, stockfish: Stockfish):
+        move_possibilities = stockfish.get_perft(1)[1]
+        assert len(move_possibilities) == 20
+        assert "a2a3" in move_possibilities.keys()
+        assert "g1h3" in move_possibilities.keys()
+        assert set(move_possibilities.values()) == {1}
+
+        move_possibilities2 = stockfish.get_perft(3)[1]
+        assert move_possibilities.keys() == move_possibilities2.keys()
+        assert min(move_possibilities2.values()) == 380
+        assert max(move_possibilities2.values()) == 600
+        assert move_possibilities2["f2f3"] == 380
+        assert move_possibilities2["e2e3"] == 599
+
+    @pytest.mark.parametrize("depth", [True, 0, "foo", 16.2])
+    def test_get_perft_raises_type_error(self, stockfish: Stockfish, depth):
+        with pytest.raises(TypeError):
+            stockfish.get_perft(depth)
+
+    def test_get_perft_different_position(self, stockfish: Stockfish):
+        stockfish.set_fen_position("1k6/7Q/1K6/8/8/8/8/8 w - - 0 1")
+        num_nodes, move_possibilities = stockfish.get_perft(3)
+        assert num_nodes == 1043
+        assert move_possibilities["h7g8"] == 0
+        assert move_possibilities["h7b1"] == 48
+
     def test_turn_perspective(self, stockfish: Stockfish):
         stockfish.set_depth(15)
         stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
