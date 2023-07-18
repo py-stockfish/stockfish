@@ -197,7 +197,8 @@ Optional parameter `num_nodes` specifies the number of nodes to search. If num_n
 
 ### Get perft information
 
-The [perft](https://www.chessprogramming.org/Perft) command is used to test the move generation and counts the total number of nodes to a certain depth as well as the number of leaf nodes for a certain move.
+The [perft](https://www.chessprogramming.org/Perft) command is used to test the move generation. It counts the total number of leaf nodes to a certain depth, and shows how this node count is divided amongst all legal moves
+of the current position.
 
 The `depth` parameter should be an integer greater than zero and specifies the search depth.
 
