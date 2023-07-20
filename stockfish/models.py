@@ -253,6 +253,9 @@ class Stockfish:
             cmd += f" btime {btime}"
         self._put(cmd)
 
+    def _go_perft(self, depth: int) -> None:
+        self._put(f"go perft {depth}")
+
     def _on_weaker_setting(self) -> bool:
         return (
             self._parameters["UCI_LimitStrength"]
@@ -910,6 +913,43 @@ class Stockfish:
             self._num_nodes = old_num_nodes
 
         return top_moves
+
+    def get_perft(self, depth: int) -> tuple[int, dict[str, int]]:
+        """Returns perft information of the current position for a given depth
+
+        Args:
+            depth: The search depth given as an integer (1 or higher)
+
+        Returns:
+            A 2-tuple where:
+                - The first element is the total number of leaf nodes at the specified depth.
+                - The second element is a dictionary. Each legal move in the current position are keys,
+                  and their associated values are the number of leaf nodes (at the specified depth) for that move.
+
+        Example:
+            >>> num_nodes, move_possibilities = stockfish.get_perft(3)
+        """
+        if not isinstance(depth, int) or depth < 1 or isinstance(depth, bool):
+            raise TypeError("depth must be an integer higher than 0")
+
+        self._go_perft(depth)
+
+        move_possibilities: dict[str, int] = {}
+        num_nodes = 0
+
+        while True:
+            line = self._read_line()
+            if line == "":
+                continue
+            if "searched" in line:
+                num_nodes = int(line.split(":")[1])
+                break
+            move, num = line.split(":")
+            assert move not in move_possibilities
+            move_possibilities[move] = int(num)
+        self._read_line()  # Consumes the remaining newline stockfish outputs.
+
+        return num_nodes, move_possibilities
 
     def _pick(self, line: list[str], value: str = "", index: int = 1) -> str:
         return line[line.index(value) + index]
