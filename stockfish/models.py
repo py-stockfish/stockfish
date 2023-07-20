@@ -921,9 +921,10 @@ class Stockfish:
             depth: The search depth given as an integer (1 or higher)
 
         Returns:
-            A tuple with the total number of nodes searched as the first element and a dictionary as the second element.
-            The dictionary contains all legal moves in the current position as keys and the number of
-            leaf nodes for this move as values.
+            A 2-tuple where:
+                - The first element is the total number of leaf nodes at the specified depth.
+                - The second element is a dictionary. Each legal move in the current position are keys,
+                  and their associated values are the number of leaf nodes (at the specified depth) for that move.
 
         Example:
             >>> num_nodes, move_possibilities = stockfish.get_perft(3)
@@ -946,6 +947,7 @@ class Stockfish:
             move, num = line.split(":")
             assert move not in move_possibilities
             move_possibilities[move] = int(num)
+        self._read_line() # Consumes the remaining newline stockfish outputs.
 
         return num_nodes, move_possibilities
 
