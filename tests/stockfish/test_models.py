@@ -786,7 +786,9 @@ class TestStockfish:
     def test_get_perft_number_nodes(
         self, stockfish: Stockfish, depth: int, expected_num_nodes: int
     ):
-        assert stockfish.get_perft(depth)[0] == expected_num_nodes
+        num_nodes, move_possibilities = stockfish.get_perft(depth)
+        assert num_nodes == expected_num_nodes
+        assert sum(move_possibilities.values()) == expected_num_nodes
 
     def test_get_perft(self, stockfish: Stockfish):
         move_possibilities = stockfish.get_perft(1)[1]

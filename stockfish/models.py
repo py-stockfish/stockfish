@@ -947,7 +947,7 @@ class Stockfish:
             move, num = line.split(":")
             assert move not in move_possibilities
             move_possibilities[move] = int(num)
-        self._read_line() # Consumes the remaining newline stockfish outputs.
+        self._read_line()  # Consumes the remaining newline stockfish outputs.
 
         return num_nodes, move_possibilities
 
