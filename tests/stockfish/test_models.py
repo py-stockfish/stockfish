@@ -1231,28 +1231,47 @@ class TestStockfish:
         assert stockfish.get_stockfish_minor_version() == 1
         assert stockfish.get_stockfish_patch_version() == "20221219"
         assert stockfish.get_stockfish_sha_version() == "61ea1534"
-        assert stockfish.is_development_build_of_engine() is True
+        assert stockfish.is_development_build_of_engine()
+
         stockfish._parse_stockfish_version("280322")
         assert stockfish.get_stockfish_full_version() == 14.1
         assert stockfish.get_stockfish_major_version() == 14
         assert stockfish.get_stockfish_minor_version() == 1
         assert stockfish.get_stockfish_patch_version() == "280322"
         assert stockfish.get_stockfish_sha_version() == ""
-        assert stockfish.is_development_build_of_engine() is True
+        assert stockfish.is_development_build_of_engine()
+
         stockfish._parse_stockfish_version("15.1")
         assert stockfish.get_stockfish_full_version() == 15.1
         assert stockfish.get_stockfish_major_version() == 15
         assert stockfish.get_stockfish_minor_version() == 1
         assert stockfish.get_stockfish_patch_version() == ""
         assert stockfish.get_stockfish_sha_version() == ""
-        assert stockfish.is_development_build_of_engine() is False
+        assert not stockfish.is_development_build_of_engine()
+
         stockfish._parse_stockfish_version("14")
         assert stockfish.get_stockfish_full_version() == 14.0
         assert stockfish.get_stockfish_major_version() == 14
         assert stockfish.get_stockfish_minor_version() == 0
         assert stockfish.get_stockfish_patch_version() == ""
         assert stockfish.get_stockfish_sha_version() == ""
-        assert stockfish.is_development_build_of_engine() is False
+        assert not stockfish.is_development_build_of_engine()
+
+        stockfish._parse_stockfish_version("16")
+        assert stockfish.get_stockfish_full_version() == 16.0
+        assert stockfish.get_stockfish_major_version() == 16
+        assert stockfish.get_stockfish_minor_version() == 0
+        assert stockfish.get_stockfish_patch_version() == ""
+        assert stockfish.get_stockfish_sha_version() == ""
+        assert not stockfish.is_development_build_of_engine()
+
+        stockfish._parse_stockfish_version("250723")
+        assert stockfish.get_stockfish_full_version() == 16.0
+        assert stockfish.get_stockfish_major_version() == 16
+        assert stockfish.get_stockfish_minor_version() == 0
+        assert stockfish.get_stockfish_patch_version() == "250723"
+        assert stockfish.get_stockfish_sha_version() == ""
+        assert stockfish.is_development_build_of_engine()
 
     def test_parse_stockfish_version_raise_exception(self, stockfish: Stockfish):
         with pytest.raises(Exception):

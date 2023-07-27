@@ -24,6 +24,7 @@ class Stockfish:
     # Used in test_models: will count how many times the del function is called.
 
     _releases = {
+        "16.0": "2023-06-30",
         "15.1": "2022-12-04",
         "15.0": "2022-04-18",
         "14.1": "2021-10-28",
