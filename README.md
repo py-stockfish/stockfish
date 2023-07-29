@@ -211,6 +211,16 @@ stockfish.get_perft(3)
 #         'b1a3': 400, 'b1c3': 440, 'g1f3': 440, 'g1h3': 400})
 ```
 
+### Flip
+
+Flip the side to move.
+```python
+stockfish.get_fen_position()
+# rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+stockfish.flip()
+stockfish.get_fen_position()
+# rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1
+```
 
 ### Set perspective of the evaluation
 
