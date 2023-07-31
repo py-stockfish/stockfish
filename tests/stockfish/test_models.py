@@ -760,6 +760,21 @@ class TestStockfish:
         assert move_possibilities["h7g8"] == 0
         assert move_possibilities["h7b1"] == 48
 
+    def test_flip(self, stockfish: Stockfish):
+        stockfish.flip()
+        assert (
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"
+            == stockfish.get_fen_position()
+        )
+        stockfish.set_fen_position("8/4q1k1/8/8/8/8/2K5/8 w - - 0 1")
+        stockfish.flip()
+        assert "b" in stockfish.get_fen_position()
+        stockfish.flip()
+        assert "w" in stockfish.get_fen_position()
+        stockfish.make_moves_from_current_position(["c2c3"])
+        stockfish.flip()
+        assert "w" in stockfish.get_fen_position()
+
     def test_turn_perspective(self, stockfish: Stockfish):
         stockfish.set_depth(15)
         stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")

@@ -952,6 +952,10 @@ class Stockfish:
 
         return num_nodes, move_possibilities
 
+    def flip(self) -> None:
+        """Flip the side to move"""
+        self._put("flip")
+
     def _pick(self, line: list[str], value: str = "", index: int = 1) -> str:
         return line[line.index(value) + index]
 
