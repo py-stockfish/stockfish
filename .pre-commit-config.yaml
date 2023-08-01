@@ -1,0 +1,26 @@
+# See https://pre-commit.com for more information
+default_language_version:
+    python: python3.10
+
+ci:
+    # The pre-commit CI will open PRs with revision updates for this file four times a year
+    autoupdate_schedule: quarterly
+
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: https://github.com/psf/black
+  rev: 1b028cc9d99c2c2e82f9b727742539173a92a373
+  hooks:
+  - id: black
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: 85ef03e3b70ce63828535b85cc222e5ee8c06b7e
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-yaml
+
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: 6e63c9e9c65e1df04465cdcda0f2490e89291f58
+  hooks:
+  - id: mypy
