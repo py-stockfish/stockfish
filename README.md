@@ -27,6 +27,13 @@ $ brew install stockfish
 
 See [API Documentation](https://py-stockfish.github.io/stockfish/) for more information.
 
+## Technical details and setup
+
+* The codebase is compatible with Python3.7+
+* Run `pip install -r requirements.txt` to get all necessary dependencies.
+* Pytest is used to run the unit tests in `/tests`
+* For linting use `pre-commit` by running `pre-commit install` once and the pre-commit hooks will be executed automatically
+
 ## Features and usage examples
 
 ### Initialize Stockfish class
