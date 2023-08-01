@@ -94,7 +94,7 @@ stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1"])
 
 ### Set position by Forsyth–Edwards Notation (FEN)
 
-If you'd like to first check if your fen is valid, call the is_fen_valid() function below.  
+If you'd like to first check if your fen is valid, call the is_fen_valid() function below.
 Also, if you want to play Chess960, it's recommended you first update the "UCI_Chess960" engine parameter to be True, before calling set_fen_position.
 
 ```python
@@ -103,7 +103,7 @@ stockfish.set_fen_position("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQ
 
 ### Check whether the given FEN is valid
 
-This function returns a bool saying whether the passed in FEN is valid (both syntax wise and whether the position represented is legal).  
+This function returns a bool saying whether the passed in FEN is valid (both syntax wise and whether the position represented is legal).
 The function isn't perfect and won't catch all cases, but generally it should return the correct answer.
 For example, one exception is positions which are legal, but have no legal moves.
 I.e., for checkmates and stalemates, this function will incorrectly say the fen is invalid.
@@ -230,7 +230,7 @@ is_turn_perspective = stockfish.get_turn_perspective()
 
 ### Get Stockfish's win/draw/loss stats for the side to move in the current position
 
-Before calling this function, it is recommended that you first check if your version of Stockfish is recent enough to display WDL stats. To do this,  
+Before calling this function, it is recommended that you first check if your version of Stockfish is recent enough to display WDL stats. To do this,
 use the "does_current_engine_version_have_wdl_option()" function below.
 
 ```python
@@ -393,7 +393,7 @@ Otherwise, positive is advantage white, negative is advantage black.
 stockfish.get_static_eval()
 ```
 
-Sends the 'eval' command to Stockfish. This will get it to 'directly' evaluate the current position 
+Sends the 'eval' command to Stockfish. This will get it to 'directly' evaluate the current position
 (i.e., no search is involved), and output a float value (not a whole number centipawn).
 
 If one side is in check or mated, recent versions of Stockfish will output 'none' for the static eval.
@@ -463,9 +463,9 @@ False
 
 ### Find what is on a certain square
 
-If the square is empty, the None object is returned. Otherwise, one of 12 enum members of a custom  
-Stockfish.Piece enum will be returned. Each of the 12 members of this enum is named in the following pattern:  
-_colour_ followed by _underscore_ followed by _piece name_, where the colour and piece name are in all caps.  
+If the square is empty, the None object is returned. Otherwise, one of 12 enum members of a custom
+Stockfish.Piece enum will be returned. Each of the 12 members of this enum is named in the following pattern:
+_colour_ followed by _underscore_ followed by _piece name_, where the colour and piece name are in all caps.
 For example, say the current position is the starting position:
 
 ```python
@@ -477,8 +477,8 @@ stockfish.get_what_is_on_square("b5") # returns None
 
 ### Find if a move will be a capture (and if so, what type of capture)
 
-The argument must be a string that represents the move, using the notation that Stockfish uses (i.e., the coordinate of the starting square followed by the coordinate of the ending square).  
-The function will return one of the following enum members from a custom Stockfish.Capture enum: DIRECT_CAPTURE, EN_PASSANT, or NO_CAPTURE.  
+The argument must be a string that represents the move, using the notation that Stockfish uses (i.e., the coordinate of the starting square followed by the coordinate of the ending square).
+The function will return one of the following enum members from a custom Stockfish.Capture enum: DIRECT_CAPTURE, EN_PASSANT, or NO_CAPTURE.
 For example, say the current position is the one after 1.e4 Nf6 2.Nc3 e6 3.e5 d5.
 
 ```python
