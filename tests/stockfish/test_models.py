@@ -999,7 +999,7 @@ class TestStockfish:
             "g8": Stockfish.Piece.BLACK_KING, "e1": Stockfish.Piece.WHITE_KING,
             "h2": Stockfish.Piece.WHITE_PAWN, "f8": Stockfish.Piece.BLACK_ROOK,
             "d6": None, "h7": Stockfish.Piece.BLACK_PAWN, "c3": Stockfish.Piece.WHITE_KNIGHT,
-            "a3": Stockfish.Piece.WHITE_BISHOP, "h8": None, "d1": Stockfish.Piece.WHITE_QUEEN, 
+            "a3": Stockfish.Piece.WHITE_BISHOP, "h8": None, "d1": Stockfish.Piece.WHITE_QUEEN,
             "d4": None, "f6": Stockfish.Piece.BLACK_KNIGHT, "g7": Stockfish.Piece.BLACK_BISHOP,
             "d8": Stockfish.Piece.BLACK_QUEEN,
         }
