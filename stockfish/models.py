@@ -35,7 +35,8 @@ class Stockfish:
         "10.0": "2018-11-29",
     }
 
-    # The required type for each of the params, and any applicable min and max values:
+    # _PARAM_RESTRICTIONS stores the types of each of the params, and any applicable min and max values, based
+    # off the Stockfish source code: https://github.com/official-stockfish/Stockfish/blob/65ece7d985291cc787d6c804a33f1dd82b75736d/src/ucioption.cpp#L58-L82
     _PARAM_RESTRICTIONS: Dict[str, Tuple[type, Optional[int], Optional[int]]] = {
         "Debug Log File": (str, None, None),
         "Threads": (int, 1, 1024),
