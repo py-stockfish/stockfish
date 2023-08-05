@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 import subprocess
-from typing import Any, List, Optional, Union, Dict
+from typing import Any, List, Optional, Union, Dict, Tuple
 import copy
 import os
 from dataclasses import dataclass
@@ -23,7 +23,7 @@ class Stockfish:
     _del_counter = 0
     # Used in test_models: will count how many times the del function is called.
 
-    _releases = {
+    _RELEASES = {
         "16.0": "2023-06-30",
         "15.1": "2022-12-04",
         "15.0": "2022-04-18",
@@ -33,6 +33,26 @@ class Stockfish:
         "12.0": "2020-09-02",
         "11.0": "2020-01-18",
         "10.0": "2018-11-29",
+    }
+
+    # _PARAM_RESTRICTIONS stores the types of each of the params, and any applicable min and max values, based
+    # off the Stockfish source code: https://github.com/official-stockfish/Stockfish/blob/65ece7d985291cc787d6c804a33f1dd82b75736d/src/ucioption.cpp#L58-L82
+    _PARAM_RESTRICTIONS: Dict[str, Tuple[type, Optional[int], Optional[int]]] = {
+        "Debug Log File": (str, None, None),
+        "Threads": (int, 1, 1024),
+        "Hash": (int, 1, 2048),
+        "Ponder": (bool, None, None),
+        "MultiPV": (int, 1, 500),
+        "Skill Level": (int, 0, 20),
+        "Move Overhead": (int, 0, 5000),
+        "Slow Mover": (int, 10, 1000),
+        "UCI_Chess960": (bool, None, None),
+        "UCI_LimitStrength": (bool, None, None),
+        "UCI_Elo": (int, 1320, 3190),
+        "Contempt": (int, -100, 100),
+        "Min Split Depth": (int, 0, 12),
+        "Minimum Thinking Time": (int, 0, 5000),
+        "UCI_ShowWDL": (bool, None, None),
     }
 
     def __init__(
@@ -138,19 +158,18 @@ class Stockfish:
 
         new_param_values = copy.deepcopy(parameters)
 
-        if len(self._parameters) > 0:
-            for key in new_param_values:
-                if key not in self._parameters:
-                    raise ValueError(f"'{key}' is not a key that exists.")
-
-                elif key in (
-                    "Ponder",
-                    "UCI_Chess960",
-                    "UCI_LimitStrength",
-                ) and not isinstance(new_param_values[key], bool):
-                    raise ValueError(
-                        f"The value for the '{key}' key has been updated from a string to a bool in a new release of the python stockfish package."
-                    )
+        for key in new_param_values:
+            if len(self._parameters) > 0 and key not in self._parameters:
+                raise ValueError(f"'{key}' is not a key that exists.")
+            if key in (
+                "Ponder",
+                "UCI_Chess960",
+                "UCI_LimitStrength",
+            ) and not isinstance(new_param_values[key], bool):
+                raise ValueError(
+                    f"The value for the '{key}' key has been updated from a string to a bool in a new release of the python stockfish package."
+                )
+            self._validate_param_val(key, new_param_values[key])
 
         if ("Skill Level" in new_param_values) != (
             "UCI_Elo" in new_param_values
@@ -224,6 +243,7 @@ class Stockfish:
     def _set_option(
         self, name: str, value: Any, update_parameters_attribute: bool = True
     ) -> None:
+        self._validate_param_val(name, value)
         str_rep_value = str(value)
         if isinstance(value, bool):
             str_rep_value = str_rep_value.lower()
@@ -231,6 +251,17 @@ class Stockfish:
         if update_parameters_attribute:
             self._parameters.update({name: value})
         self._is_ready()
+
+    def _validate_param_val(self, name: str, value: Any) -> None:
+        if name not in Stockfish._PARAM_RESTRICTIONS:
+            raise ValueError(f"{name} is not a supported engine parameter")
+        required_type, minimum, maximum = Stockfish._PARAM_RESTRICTIONS[name]
+        if type(value) is not required_type:
+            raise ValueError(f"{value} is not of type {required_type}")
+        if minimum is not None and type(value) is int and value < minimum:
+            raise ValueError(f"{value} is below {name}'s minimum value of {minimum}")
+        if maximum is not None and type(value) is int and value > maximum:
+            raise ValueError(f"{value} is over {name}'s maximum value of {maximum}")
 
     def _is_ready(self) -> None:
         self._put("isready")
@@ -915,7 +946,7 @@ class Stockfish:
 
         return top_moves
 
-    def get_perft(self, depth: int) -> tuple[int, dict[str, int]]:
+    def get_perft(self, depth: int) -> Tuple[int, dict[str, int]]:
         """Returns perft information of the current position for a given depth
 
         Args:
@@ -1141,7 +1172,7 @@ class Stockfish:
         # Convert release date strings to datetime objects
         releases_datetime = {
             key: datetime.datetime.strptime(value, "%Y-%m-%d")
-            for key, value in self._releases.items()
+            for key, value in self._RELEASES.items()
         }
 
         # Find the key for the given date

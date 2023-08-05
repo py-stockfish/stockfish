@@ -298,22 +298,25 @@ class TestStockfish:
         expected_parameters.update({"Hash": 256, "Threads": 3})
         assert stockfish.get_engine_parameters() == expected_parameters
 
-    @pytest.mark.parametrize(
-        "parameters",
-        [
-            {"Ponder": "true"},
-            {"Ponder": "false"},
-            {"UCI_LimitStrength": "true"},
-            {"UCI_LimitStrength": "false"},
-            {"UCI_Chess960": "true"},
-            {"UCI_Chess960": "false"},
-        ],
-    )
-    def test_update_engine_parameters_wrong_type(
-        self, stockfish: Stockfish, parameters
-    ):
-        with pytest.raises(ValueError):
-            stockfish.update_engine_parameters(parameters)
+    def test_update_engine_parameters_wrong_vals(self, stockfish: Stockfish):
+        assert set(stockfish.get_engine_parameters().keys()) <= set(
+            Stockfish._PARAM_RESTRICTIONS.keys()
+        )
+        bad_values: Dict[str, List] = {
+            "Threads": ["1", False, 0, -1, 1025, 1.0],
+            "UCI_Chess960": ["true", "false", "True", 1],
+            "Contempt": [-101, 101, "0", False],
+            "UCI_LimitStrength": ["true", "false", "False", 1, 0],
+            "Ponder": ["true", "false", "True", "False", 0],
+            "Hash": [-1, 4096, -2048, True, 0],
+            "Not key": [0],
+        }
+        for name in bad_values:
+            for val in bad_values[name]:
+                with pytest.raises(ValueError):
+                    stockfish.update_engine_parameters({name: val})
+                with pytest.raises(ValueError):
+                    stockfish._set_option(name, val)
 
     def test_deprecated_get_parameters(self, stockfish: Stockfish):
         with pytest.raises(ValueError):
