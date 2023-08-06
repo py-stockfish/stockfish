@@ -748,8 +748,14 @@ class Stockfish:
                 self._discard_remaining_stdout_lines("uciok")
                 return True
 
-    def get_evaluation(self) -> Dict[str, Union[str, int]]:
+    def get_evaluation(
+        self, searchtime: Optional[int] = None
+    ) -> Dict[str, Union[str, int]]:
         """Searches to the specified depth and evaluates the current position.
+
+        Args:
+            searchtime:
+              [Optional] Time for Stockfish to evaluate in milliseconds (int)
 
         Returns:
             A dictionary of two pairs: {str: str, str: int}
@@ -770,7 +776,10 @@ class Stockfish:
         # If the user wants the evaluation specified relative to who is to move, this will be done.
         # Otherwise, the evaluation will be in terms of white's side (positive meaning advantage white,
         # negative meaning advantage black).
-        self._go()
+        if searchtime is None:
+            self._go()
+        else:
+            self._go_time(searchtime)
         lines = self._get_sf_go_command_output()
         split_line = [line.split(" ") for line in lines if line.startswith("info")][-1]
         score_index = split_line.index("score")

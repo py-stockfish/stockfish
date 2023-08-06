@@ -388,11 +388,16 @@ stockfish.get_board_visual(False)
 
 ### Get the current position's evaluation in centipawns or mate in x
 
+Stockfish searches to the specified depth and evaluates the current position:
 ```python
 stockfish.get_evaluation()
 ```
 
-Stockfish searches to the specified depth and evaluates the current position.
+Instead of using the depth, you can also specify the time the engine should take to evaluate:
+```python
+stockfish.get_evaluation(searchtime=2000) # searchtime in milliseconds
+```
+
 A dictionary is returned representing the evaluation. Two example return values:
 
 ```text
