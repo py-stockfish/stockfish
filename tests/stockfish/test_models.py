@@ -492,6 +492,18 @@ class TestStockfish:
             and evaluation["value"] <= 150
         )
 
+    @pytest.mark.slow
+    def test_get_evaluation_time(self, stockfish: Stockfish):
+        stockfish.set_fen_position(
+            "r4rk1/pppb1p1p/2nbpqp1/8/3P4/3QBN2/PPP1BPPP/R4RK1 w - - 0 11"
+        )
+        start = time.time()
+        evaluation = stockfish.get_evaluation(searchtime=5000)
+
+        assert round(time.time() - start) == 5
+        assert evaluation["type"] == "cp"
+        assert 30 < evaluation["value"] < 120  # type: ignore
+
     def test_get_evaluation_checkmate(self, stockfish: Stockfish):
         stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
         assert stockfish.get_evaluation() == {"type": "mate", "value": 0}
