@@ -13,8 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
-    name: Python Linux ${{ matrix.python-version }}
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+        stockfish-tag: ['sf_15.1', 'sf_16']
+    name: Python ${{ matrix.python-version }} - ${{ matrix.stockfish-tag }} - Linux
     steps:
       - uses: actions/checkout@v3
       - name: Setup Python
@@ -25,14 +26,31 @@ jobs:
           cache: 'pip'
       - name: Display Python version
         run: python --version
-      - name: Install dependencies
+      - name: Install python dependencies
         run: |
           python -m pip install --upgrade pip
-          sudo apt-get install stockfish
+      - name: Cache stockfish
+        uses: actions/cache@v3
+        id: stockfish-cache
+        with:
+          path: ~/work/stockfish-bin/stockfish
+          key: ubuntu-${{ matrix.stockfish-tag }}
+      - name: Compile stockfish from Source
+        if: steps.stockfish-cache.outputs.cache-hit != 'true'
+        run: |
+          cd /tmp
+          git clone https://github.com/official-stockfish/Stockfish.git -b ${{ matrix.stockfish-tag }}
+          cd Stockfish/src
+          make -j profile-build ARCH=x86-64-avx2
+          mkdir ~/work/stockfish-bin
+          mv ./stockfish ~/work/stockfish-bin/stockfish
+      - name: Add Stockfish to PATH
+        run: echo "$HOME/work/stockfish-bin" >> $GITHUB_PATH
+      - name: Display stockfish version
+        run: stockfish
       - name: Test with pytest
         run: |
           pip install pytest pytest-cov
-          export PATH=$PATH:/usr/games/
           pytest
         env:
           COVERAGE_FILE: ".coverage.${{ matrix.python_version }}"
@@ -46,8 +64,8 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
-    name: Python Windows ${{ matrix.python-version }}
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    name: Python ${{ matrix.python-version }} - Windows
     steps:
       - uses: actions/checkout@v3
       - name: Setup Python
