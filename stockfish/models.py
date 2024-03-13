@@ -706,11 +706,16 @@ class Stockfish:
         self.info = old_self_info
         return is_move_correct
 
-    def get_wdl_stats(self) -> Optional[List[int]]:
+    def get_wdl_stats(self, get_as_tuple: bool = False) -> Union[List[int], Tuple[int, int, int], None]:
         """Returns Stockfish's win/draw/loss stats for the side to move.
 
+        Args:
+            get_as_tuple:
+                Option to return the wdl stats as a tuple instead of a list
+                `Boolean`. Default is `False`.
+        
         Returns:
-            A list of three integers, unless the game is over (in which case
+            A list or tuple of three integers, unless the game is over (in which case
             `None` is returned).
         """
 
@@ -730,6 +735,9 @@ class Stockfish:
             return None
         split_line = [line.split(" ") for line in lines if " multipv 1 " in line][-1]
         wdl_index = split_line.index("wdl")
+
+        if get_as_tuple:
+            return tuple([int(split_line[i]) for i in range(wdl_index + 1, wdl_index + 4)])
         return [int(split_line[i]) for i in range(wdl_index + 1, wdl_index + 4)]
 
     def does_current_engine_version_have_wdl_option(self) -> bool:
