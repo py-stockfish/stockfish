@@ -534,16 +534,6 @@ You can (de-)activate the debug view option with the `set_debug_view` function. 
 stockfish.set_debug_view(True)
 ```
 
-## Testing
-
-```bash
-$ python setup.py test
-```
-To skip some of the slower tests, run:
-```bash
-$ python setup.py skip_slow_tests
-```
-
 ## Contributing
 
 Most contributions will involve making updates to `stockfish/models.py`. To test your changes, download a version of stockfish and paste the executable in the `stockfish` folder. Then, create a file in the `stockfish` folder called `main.py`. Both the executable and `main.py` will be ignored by git.
@@ -560,6 +550,26 @@ if __name__ == "__main__":
     main()
 ```
 Then when navigating to the `stockfish` folder in the terminal, you can run this `main.py` file simply with `python main.py`.
+Once you're satisfied with your changes to `models.py`, see the section below for how to run the project's entire test suite.
+
+## Testing
+
+For your stockfish executable (the same one mentioned in the previous section), paste it also in the project's root directory. Then in `models.py`,
+temporarily modify this line so that the `path`'s default value is changed from "stockfish" to the name of your stockfish executable:
+
+```python
+path: str = "stockfish",
+```
+
+Then in the project's root directory, you can run:
+
+```bash
+$ python setup.py test
+```
+To skip some of the slower tests, run:
+```bash
+$ python setup.py skip_slow_tests
+```
 
 ## Security
 
