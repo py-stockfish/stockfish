@@ -915,13 +915,15 @@ class Stockfish:
                 # get move
                 "Move": self._pick(line, "pv"),
                 # get cp if available
-                "Centipawn": int(self._pick(line, "cp")) * perspective
-                if "cp" in line
-                else None,
+                "Centipawn": (
+                    int(self._pick(line, "cp")) * perspective if "cp" in line else None
+                ),
                 # get mate if available
-                "Mate": int(self._pick(line, "mate")) * perspective
-                if "mate" in line
-                else None,
+                "Mate": (
+                    int(self._pick(line, "mate")) * perspective
+                    if "mate" in line
+                    else None
+                ),
             }
 
             # add more info if verbose
