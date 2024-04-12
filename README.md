@@ -544,6 +544,23 @@ To skip some of the slower tests, run:
 $ python setup.py skip_slow_tests
 ```
 
+## Contributing
+
+Most contributions will involve making updates to `stockfish/models.py`. To test your changes, download a version of stockfish and paste the executable in the `stockfish` folder. Then, create a file in the `stockfish` folder called `main.py`. Both the executable and `main.py` will be ignored by git.
+In `main.py`, start with something like the following:
+
+```python
+from models import Stockfish
+
+def main():
+    sf = Stockfish(path = "name of your stockfish executable")
+    # Use this object as you wish to test your changes.
+
+if __name__ == "__main__":
+    main()
+```
+Then when navigating to the `stockfish` folder in the terminal, you can run this `main.py` file simply with `python main.py`.
+
 ## Security
 
 If you discover any security related issues, please report it via the [Private vulnerability reporting](https://github.com/py-stockfish/stockfish/security) instead of using the issue tracker.
