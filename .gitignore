@@ -3,8 +3,9 @@
 !*/
 !LICENSE
 
-/*.exe
+*.exe
 /Notes/
+/stockfish/main.py
 
 .DS_Store
 *.pyc
