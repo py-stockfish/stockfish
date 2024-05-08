@@ -708,7 +708,7 @@ class Stockfish:
 
     def get_wdl_stats(
         self, get_as_tuple: bool = False
-    ) -> Union[list[int] | tuple[int, ...] | None]:
+    ) -> Union[list[int] | tuple[int, int, int] | None]:
         """Returns Stockfish's win/draw/loss stats for the side to move.
 
         Args:
@@ -741,7 +741,7 @@ class Stockfish:
         wdl_stats = [int(split_line[i]) for i in range(wdl_index + 1, wdl_index + 4)]
 
         if get_as_tuple:
-            return tuple(wdl_stats)
+            return (wdl_stats[0], wdl_stats[1], wdl_stats[2])
         return wdl_stats
 
     def does_current_engine_version_have_wdl_option(self) -> bool:
