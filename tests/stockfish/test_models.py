@@ -590,7 +590,8 @@ class TestStockfish:
 
         stockfish_2 = Stockfish(
             path=binary_path,
-            depth=16, parameters={"MultiPV": 2, "UCI_Elo": 2850, "UCI_Chess960": True}
+            depth=16,
+            parameters={"MultiPV": 2, "UCI_Elo": 2850, "UCI_Chess960": True},
         )
         assert (
             stockfish_2.get_fen_position()

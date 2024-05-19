@@ -3,7 +3,9 @@ import pytest
 
 
 def pytest_addoption(parser):
-    parser.addoption("--binary-path", action="store", default=None, help="Path to the binary")
+    parser.addoption(
+        "--binary-path", action="store", default=None, help="Path to the binary"
+    )
 
 
 @pytest.fixture
