@@ -18,15 +18,17 @@ class TestStockfish:
         yield stockfish
         # Some assert statement testing something about the stockfish object here.
 
-    def test_constructor_defaults(self):
-        sf = Stockfish()
-        assert sf is not None and sf._path == "stockfish"
+    def test_constructor_defaults(self, binary_path):
+        # TODO check is it good idea to use binary_path option here
+        sf = Stockfish(path=binary_path)
+        assert sf is not None and sf._path == binary_path
         assert sf._parameters == sf._DEFAULT_STOCKFISH_PARAMS
         assert sf._depth == 15 and sf._num_nodes == 1000000
         assert sf._turn_perspective is True
 
-    def test_constructor_options(self):
+    def test_constructor_options(self, binary_path):
         sf = Stockfish(
+            path=binary_path,
             depth=20,
             num_nodes=1000,
             turn_perspective=False,
@@ -40,9 +42,9 @@ class TestStockfish:
         "parameters",
         [{"depth": "20"}, {"num_nodes": "100"}, {"turn_perspective": "False"}],
     )
-    def test_constructor_raises_type_errors(self, parameters):
+    def test_constructor_raises_type_errors(self, binary_path, parameters):
         with pytest.raises(TypeError):
-            Stockfish(**parameters)
+            Stockfish(path=binary_path, **parameters)
 
     def test_get_best_move_first_move(self, stockfish: Stockfish):
         best_move = stockfish.get_best_move()
@@ -582,11 +584,12 @@ class TestStockfish:
         stockfish.set_fen_position(wrong_fen)
         assert stockfish.get_best_move() in ("d1e2", "d1c1", "d1c2")
 
-    def test_constructor(self, stockfish: Stockfish):
+    def test_constructor(self, binary_path, stockfish: Stockfish):
         # Will also use a new stockfish instance in order to test sending
         # params to the constructor.
 
         stockfish_2 = Stockfish(
+            path=binary_path,
             depth=16, parameters={"MultiPV": 2, "UCI_Elo": 2850, "UCI_Chess960": True}
         )
         assert (
