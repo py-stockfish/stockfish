@@ -8,8 +8,8 @@ from stockfish import Stockfish, StockfishException
 
 class TestStockfish:
     @pytest.fixture
-    def stockfish(self) -> Stockfish:
-        return Stockfish()
+    def stockfish(self, binary_path) -> Stockfish:
+        return Stockfish(path=binary_path)
 
     # change to `autouse=True` to have the below fixture called before each test function, and then
     # the code after the 'yield' to run after each test.
