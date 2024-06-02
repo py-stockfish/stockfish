@@ -251,7 +251,7 @@ Before calling this function, it is recommended that you first check if your ver
 use the "does_current_engine_version_have_wdl_option()" function below.
 
 ```python
-stockfish.get_wdl_stats()
+stockfish.get_wdl_stats() # include the argument get_as_tuple=True if you'd like to have a tuple returned instead of a list.
 ```
 
 ```text
@@ -534,7 +534,34 @@ You can (de-)activate the debug view option with the `set_debug_view` function. 
 stockfish.set_debug_view(True)
 ```
 
+## Contributing
+
+Most contributions will involve making updates to `stockfish/models.py`. To test your changes, download a version of stockfish and paste the executable in the `stockfish` folder. Then, create a file in the `stockfish` folder called `main.py`. Both the executable and `main.py` will be ignored by git.
+In `main.py`, start with something like the following:
+
+```python
+from models import Stockfish
+
+def main():
+    sf = Stockfish(path = "name of your stockfish executable")
+    # Use this object as you wish to test your changes.
+
+if __name__ == "__main__":
+    main()
+```
+Then when navigating to the `stockfish` folder in the terminal, you can run this `main.py` file simply with `python main.py`.
+Once you're satisfied with your changes to `models.py`, see the section below for how to run the project's entire test suite.
+
 ## Testing
+
+For your stockfish executable (the same one mentioned in the previous section), paste it also in the project's root directory. Then in `models.py`,
+temporarily modify this line so that the `path`'s default value is changed from "stockfish" to the name of your stockfish executable:
+
+```python
+path: str = "stockfish",
+```
+
+Then in the project's root directory, you can run:
 
 ```bash
 $ python setup.py test
