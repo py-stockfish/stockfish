@@ -914,6 +914,11 @@ class TestStockfish:
             wdl_stats_3 = stockfish.get_wdl_stats()
             assert isinstance(wdl_stats_3, list) and len(wdl_stats_3) == 3
 
+            wdl_stats_4 = stockfish.get_wdl_stats(get_as_tuple=True)
+            assert isinstance(wdl_stats_4, tuple) and len(wdl_stats_4) == 3
+            assert wdl_stats_3 == list(wdl_stats_4)
+            assert tuple(wdl_stats_3) == wdl_stats_4
+
             stockfish.set_fen_position("8/8/8/8/8/3k4/3p4/3K4 w - - 0 1")
             assert stockfish.get_wdl_stats() is None
 
