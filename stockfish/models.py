@@ -706,7 +706,9 @@ class Stockfish:
         self.info = old_self_info
         return is_move_correct
 
-    def get_wdl_stats(self, get_as_tuple: bool = False) -> list[int] | tuple[int, int, int] | None:
+    def get_wdl_stats(
+        self, get_as_tuple: bool = False
+    ) -> list[int] | tuple[int, int, int] | None:
         """Returns Stockfish's win/draw/loss stats for the side to move.
 
         Args:
