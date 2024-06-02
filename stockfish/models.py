@@ -706,11 +706,18 @@ class Stockfish:
         self.info = old_self_info
         return is_move_correct
 
-    def get_wdl_stats(self) -> Optional[List[int]]:
+    def get_wdl_stats(
+        self, get_as_tuple: bool = False
+    ) -> Union[list[int] | tuple[int, int, int] | None]:
         """Returns Stockfish's win/draw/loss stats for the side to move.
 
+        Args:
+            get_as_tuple:
+                Option to return the wdl stats as a tuple instead of a list
+                `Boolean`. Default is `False`.
+
         Returns:
-            A list of three integers, unless the game is over (in which case
+            A list or tuple of three integers, unless the game is over (in which case
             `None` is returned).
         """
 
@@ -730,7 +737,12 @@ class Stockfish:
             return None
         split_line = [line.split(" ") for line in lines if " multipv 1 " in line][-1]
         wdl_index = split_line.index("wdl")
-        return [int(split_line[i]) for i in range(wdl_index + 1, wdl_index + 4)]
+
+        wdl_stats = [int(split_line[i]) for i in range(wdl_index + 1, wdl_index + 4)]
+
+        if get_as_tuple:
+            return (wdl_stats[0], wdl_stats[1], wdl_stats[2])
+        return wdl_stats
 
     def does_current_engine_version_have_wdl_option(self) -> bool:
         """Returns whether the user's version of Stockfish has the option
@@ -915,13 +927,15 @@ class Stockfish:
                 # get move
                 "Move": self._pick(line, "pv"),
                 # get cp if available
-                "Centipawn": int(self._pick(line, "cp")) * perspective
-                if "cp" in line
-                else None,
+                "Centipawn": (
+                    int(self._pick(line, "cp")) * perspective if "cp" in line else None
+                ),
                 # get mate if available
-                "Mate": int(self._pick(line, "mate")) * perspective
-                if "mate" in line
-                else None,
+                "Mate": (
+                    int(self._pick(line, "mate")) * perspective
+                    if "mate" in line
+                    else None
+                ),
             }
 
             # add more info if verbose
