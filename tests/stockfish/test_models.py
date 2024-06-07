@@ -61,7 +61,7 @@ class TestStockfish:
         best_move = stockfish.get_best_move(wtime=1000, btime=1000)
         assert best_move in ("g2g3", "g1f3", "e2e4", "d2d4", "c2c4", "e2e3")
         best_move = stockfish.get_best_move(wtime=5 * 60 * 1000, btime=1000)
-        assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
+        assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4", "c2c3")
 
     def test_set_position_resets_info(self, stockfish: Stockfish):
         stockfish.set_position(["e2e4", "e7e6"])
@@ -156,7 +156,7 @@ class TestStockfish:
         stockfish.set_fen_position(
             "rnbqk2r/pppp1ppp/3bpn2/4P3/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 1", False
         )
-        assert stockfish.get_best_move() == "d6e7"
+        assert stockfish.get_best_move() in {"d6e7", "d6b4"}
 
         stockfish.set_fen_position(
             "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1", False
@@ -196,7 +196,7 @@ class TestStockfish:
         stockfish.set_skill_level(1)
         # fmt: off
         assert stockfish.get_best_move() in (
-            "b2b3", "d2d3", "d2d4", "b1c3", "d1e2", "g2g3", "c2c4", "f1e2", "c2c3", "h2h3"
+            "b2b3", "d2d3", "d2d4", "b1c3", "d1e2", "g2g3", "c2c4", "f1e2", "c2c3", "h2h3", "f1b5", "a2a4"
         )
         # fmt: on
         assert stockfish.get_engine_parameters()["Skill Level"] == 1
@@ -220,7 +220,7 @@ class TestStockfish:
         stockfish.set_elo_rating(2000)
         # fmt: off
         assert stockfish.get_best_move() in (
-            "d2d4", "b1c3", "d1e2", "c2c4", "f1e2", "h2h3", "c2c3", "f1d3", "a2a3"
+            "a2a4", "d2d4", "b1c3", "d1e2", "c2c4", "f1e2", "h2h3", "c2c3", "f1d3", "a2a3"
         )
         # fmt: on
         assert stockfish.get_engine_parameters()["UCI_Elo"] == 2000
@@ -1188,11 +1188,31 @@ class TestStockfish:
     def test_set_stockfish_version(self, stockfish: Stockfish):
         stockfish._set_stockfish_version()
         assert stockfish.get_stockfish_full_version() > 0
-        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
+        assert stockfish.get_stockfish_major_version() in (
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+        )
         assert stockfish.get_stockfish_minor_version() >= 0
 
     def test_get_stockfish_major_version(self, stockfish: Stockfish):
-        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
+        assert stockfish.get_stockfish_major_version() in (
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+        )
 
     @pytest.mark.parametrize(
         "info",
