@@ -293,6 +293,8 @@ stockfish.set_depth(15)
 
 ### Get the engine's current parameters
 
+Returns a deep copy of the dictionary storing the engine's current parameters.
+
 ```python
 stockfish.get_engine_parameters()
 ```

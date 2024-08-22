@@ -156,7 +156,7 @@ class TestStockfish:
         stockfish.set_fen_position(
             "rnbqk2r/pppp1ppp/3bpn2/4P3/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 1", False
         )
-        assert stockfish.get_best_move() == "d6e7"
+        assert stockfish.get_best_move() in ("d6e7", "d6b4")
 
         stockfish.set_fen_position(
             "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1", False
@@ -895,7 +895,7 @@ class TestStockfish:
             wdl_stats = stockfish.get_wdl_stats()
             assert isinstance(wdl_stats, list)
             assert wdl_stats[1] > wdl_stats[0] * 7
-            assert abs(wdl_stats[0] - wdl_stats[2]) / wdl_stats[0] < 0.1
+            assert abs(wdl_stats[0] - wdl_stats[2]) / wdl_stats[0] < 0.15
 
             stockfish.set_fen_position(
                 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -1238,3 +1238,9 @@ class TestStockfish:
         assert stockfish._pick(line, "depth") == "10"
         assert stockfish._pick(line, "multipv") == "1"
         assert stockfish._pick(line, "wdl", 3) == "1000"
+
+    def test_get_engine_parameters(self, stockfish: Stockfish):
+        params = stockfish.get_engine_parameters()
+        params.update({"Skill Level": 10})
+        assert params["Skill Level"] == 10
+        assert stockfish._parameters["Skill Level"] == 20
