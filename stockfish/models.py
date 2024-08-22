@@ -125,9 +125,9 @@ class Stockfish:
         """Returns the current engine parameters being used.
 
         Returns:
-            Dictionary of current Stockfish engine's parameters.
+            A deep copy of the dictionary storing the current engine parameters.
         """
-        return self._parameters
+        return copy.deepcopy(self._parameters)
 
     def get_parameters(self) -> dict:
         """Returns the current engine parameters being used. *Deprecated, see `get_engine_parameters()`*."""
@@ -145,7 +145,7 @@ class Stockfish:
         Args:
             parameters:
                 Contains (key, value) pairs which will be used to update
-                the current Stockfish engine's parameters.
+                the Stockfish engine's current parameters.
 
         Returns:
             `None`
