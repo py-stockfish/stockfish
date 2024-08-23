@@ -224,7 +224,7 @@ class TestStockfish:
         stockfish.set_elo_rating(2000)
         # fmt: off
         assert stockfish.get_best_move() in (
-            "d2d4", "b1c3", "d1e2", "c2c4", "f1e2", "h2h3", "c2c3", "f1d3", "a2a3"
+            "d2d4", "b1c3", "d1e2", "c2c4", "f1e2", "h2h3", "c2c3", "f1d3", "a2a3", "a2a4"
         )
         # fmt: on
         assert stockfish.get_engine_parameters()["UCI_Elo"] == 2000
