@@ -208,7 +208,7 @@ class Stockfish:
         """
         self.update_engine_parameters(self._DEFAULT_STOCKFISH_PARAMS)
 
-    def _prepare_for_new_position(self, send_ucinewgame_token: bool = True) -> None:
+    def _prepare_for_new_position(self, send_ucinewgame_token: bool) -> None:
         if send_ucinewgame_token:
             self._put("ucinewgame")
         self._is_ready()
