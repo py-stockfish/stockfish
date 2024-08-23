@@ -321,8 +321,8 @@ class Stockfish:
         self._prepare_for_new_position(send_ucinewgame_token)
         self._put(f"position fen {fen_position}")
 
-    def set_position(self, moves: Optional[List[str]] = None) -> None:
-        """Sets current board position.
+    def make_moves_from_start(self, moves: Optional[List[str]] = None) -> None:
+        """Sets the position by making a sequence of moves from the starting position of chess.
 
         Args:
             moves:
@@ -333,7 +333,7 @@ class Stockfish:
             `None`
 
         Example:
-            >>> stockfish.set_position(['e2e4', 'e7e5'])
+            >>> stockfish.make_moves_from_start(['e2e4', 'e7e5'])
         """
         self.set_fen_position(
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", True

@@ -63,26 +63,26 @@ class TestStockfish:
         best_move = stockfish.get_best_move(wtime=5 * 60 * 1000, btime=1000)
         assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
 
-    def test_set_position_resets_info(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+    def test_make_moves_from_start_resets_info(self, stockfish: Stockfish):
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         stockfish.get_best_move()
         assert stockfish.info != ""
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         assert stockfish.info == ""
 
     def test_get_best_move_not_first_move(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         best_move = stockfish.get_best_move()
         assert best_move in ("d2d4", "g1f3")
 
     def test_get_best_move_time_not_first_move(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         best_move = stockfish.get_best_move_time(1000)
         assert best_move in ("d2d4", "g1f3")
 
     @pytest.mark.slow
     def test_get_best_move_remaining_time_not_first_move(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         best_move = stockfish.get_best_move(wtime=1000)
         assert best_move in ("d2d4", "a2a3", "d1e2", "b1c3")
         best_move = stockfish.get_best_move(btime=1000)
@@ -93,15 +93,15 @@ class TestStockfish:
         assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
 
     def test_get_best_move_checkmate(self, stockfish: Stockfish):
-        stockfish.set_position(["f2f3", "e7e5", "g2g4", "d8h4"])
+        stockfish.make_moves_from_start(["f2f3", "e7e5", "g2g4", "d8h4"])
         assert stockfish.get_best_move() is None
 
     def test_get_best_move_time_checkmate(self, stockfish: Stockfish):
-        stockfish.set_position(["f2f3", "e7e5", "g2g4", "d8h4"])
+        stockfish.make_moves_from_start(["f2f3", "e7e5", "g2g4", "d8h4"])
         assert stockfish.get_best_move_time(1000) is None
 
     def test_get_best_move_remaining_time_checkmate(self, stockfish: Stockfish):
-        stockfish.set_position(["f2f3", "e7e5", "g2g4", "d8h4"])
+        stockfish.make_moves_from_start(["f2f3", "e7e5", "g2g4", "d8h4"])
         assert stockfish.get_best_move(wtime=1000) is None
         assert stockfish.get_best_move(btime=1000) is None
         assert stockfish.get_best_move(wtime=1000, btime=1000) is None
@@ -170,7 +170,7 @@ class TestStockfish:
         assert stockfish.is_move_correct("a2a3") is True
 
     def test_is_move_correct_not_first_move(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         assert stockfish.is_move_correct("e2e1") is False
         assert stockfish.is_move_correct("a2a3") is True
 
@@ -354,7 +354,7 @@ class TestStockfish:
         assert stockfish.will_move_be_a_capture("f1g1") is Stockfish.Capture.NO_CAPTURE
 
     def test_get_board_visual_white(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6", "d2d4", "d7d5"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6", "d2d4", "d7d5"])
         if stockfish.get_stockfish_major_version() >= 12:
             expected_result = (
                 "+---+---+---+---+---+---+---+---+\n"
@@ -406,7 +406,7 @@ class TestStockfish:
         # the second line read after stockfish._put("d") now will be the +---+---+---+ of the new outputted board.
 
     def test_get_board_visual_black(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6", "d2d4", "d7d5"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6", "d2d4", "d7d5"])
         if stockfish.get_stockfish_major_version() >= 12:
             expected_result = (
                 "+---+---+---+---+---+---+---+---+\n"
@@ -467,7 +467,7 @@ class TestStockfish:
         assert "+---+---+---+" in stockfish._read_line()
 
     def test_get_fen_position_after_some_moves(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         assert (
             stockfish.get_fen_position()
             == "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
@@ -535,7 +535,7 @@ class TestStockfish:
         if stockfish.get_stockfish_major_version() >= 12:
             stockfish.set_fen_position("8/8/8/8/8/4k3/4p3/r3K3 w - - 0 1", True)
             assert stockfish.get_static_eval() is None
-        stockfish.set_position(None)
+        stockfish.make_moves_from_start(None)
         stockfish.get_static_eval()
         stockfish._put("go depth 2")
         assert stockfish._read_line() != ""

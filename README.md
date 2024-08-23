@@ -90,7 +90,7 @@ The `__del__()` method of the Stockfish class will call send_quit_command(), but
 ### Set position by a sequence of moves from the starting position
 
 ```python
-stockfish.set_position(["e2e4", "e7e6"])
+stockfish.make_moves_from_start(["e2e4", "e7e6"])
 ```
 
 ### Update position by making a sequence of moves from the current position
