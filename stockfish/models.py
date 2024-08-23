@@ -299,7 +299,7 @@ class Stockfish:
         warnings.warn(message, stacklevel=3)
 
     def set_fen_position(
-        self, fen_position: str, send_ucinewgame_token: bool = True
+        self, fen_position: str, send_ucinewgame_token: bool = False
     ) -> None:
         """Sets current board position in Forsyth-Edwards notation (FEN).
 
@@ -309,8 +309,8 @@ class Stockfish:
 
             send_ucinewgame_token:
               Whether to send the `ucinewgame` token to the Stockfish engine.
-              The most prominent effect this will have is clearing Stockfish's transposition table,
-              which should be done if the new position is unrelated to the current position.
+              This will clear Stockfish's hash table, which should generally only be done if the new
+              position is unrelated to the current one (such as a new game).
 
         Returns:
             `None`
