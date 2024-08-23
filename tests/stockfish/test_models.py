@@ -204,13 +204,13 @@ class TestStockfish:
         )
         # fmt: on
         assert stockfish.get_engine_parameters()["Skill Level"] == 1
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == False
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is False
         assert stockfish._on_weaker_setting()
 
         stockfish.set_skill_level(20)
         assert stockfish.get_best_move() in ("d2d4", "c2c4")
         assert stockfish.get_engine_parameters()["Skill Level"] == 20
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == False
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is False
         assert not stockfish._on_weaker_setting()
 
     def test_set_elo_rating(self, stockfish: Stockfish):
@@ -228,7 +228,7 @@ class TestStockfish:
         )
         # fmt: on
         assert stockfish.get_engine_parameters()["UCI_Elo"] == 2000
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == True
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is True
         assert stockfish._on_weaker_setting()
 
         stockfish.set_elo_rating(1350)
@@ -238,7 +238,7 @@ class TestStockfish:
         )
         # fmt: on
         assert stockfish.get_engine_parameters()["UCI_Elo"] == 1350
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == True
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is True
         assert stockfish._on_weaker_setting()
 
         stockfish.set_elo_rating(2850)
@@ -618,11 +618,11 @@ class TestStockfish:
                 assert stockfish_2_params[key] == 2850
                 assert stockfish_1_params[key] == 1350
             elif key == "UCI_LimitStrength":
-                assert stockfish_2_params[key] == True
-                assert stockfish_1_params[key] == False
+                assert stockfish_2_params[key] is True
+                assert stockfish_1_params[key] is False
             elif key == "UCI_Chess960":
-                assert stockfish_2_params[key] == True
-                assert stockfish_1_params[key] == False
+                assert stockfish_2_params[key] is True
+                assert stockfish_1_params[key] is False
             else:
                 assert stockfish_2_params[key] == stockfish_1_params[key]
 
@@ -652,18 +652,18 @@ class TestStockfish:
             elif key == "MultiPV":
                 assert value == 2
             elif key == "UCI_Chess960":
-                assert value == True
+                assert value is True
             else:
                 assert updated_parameters[key] == old_parameters[key]
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == False
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is False
         stockfish.update_engine_parameters({"UCI_Elo": 2000, "Skill Level": 19})
         assert stockfish.get_engine_parameters()["UCI_Elo"] == 2000
         assert stockfish.get_engine_parameters()["Skill Level"] == 19
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == False
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is False
         stockfish.update_engine_parameters({"UCI_Elo": 2000})
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == True
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is True
         stockfish.update_engine_parameters({"Skill Level": 20})
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == False
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is False
         assert stockfish.get_fen_position() == "4rkr1/4p1p1/8/8/8/8/8/5K1R w H - 0 100"
         stockfish.reset_engine_parameters()
         assert stockfish.get_engine_parameters() == old_parameters
