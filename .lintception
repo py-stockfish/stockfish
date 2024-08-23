@@ -1,0 +1,5 @@
+{
+    "module": "stockfish",
+    "NoVulture": "models.py",
+    "MinVersion": 3.7
+}
