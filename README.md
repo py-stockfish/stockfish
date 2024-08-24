@@ -105,8 +105,8 @@ stockfish.make_moves_from_start()
 
 ### Update position by making a sequence of moves from the current position
 
-Function takes a list of strings as its argument. Each string represents a move, and must have the format of the starting coordinate followed by the ending coordinate. If a move leads to a pawn promoting, then an additional character must be appended at the end (to indicate what piece the pawn promotes into).  
-Other types of special moves (e.g., checks, captures, checkmates, en passants) do not need any special notation; the starting coordinate followed by the ending coordinate is all the information that's needed. Note that castling is represented by the starting coordinate of the king followed by the ending coordinate of the king. So "e1g1" would be used for white castling kingside, assuming the white king is still on e1 and castling is legal.  
+Function takes a list of strings as its argument. Each string represents a move, and must have the format of the starting coordinate followed by the ending coordinate. If a move leads to a pawn promoting, then an additional character must be appended at the end (to indicate what piece the pawn promotes into).
+Other types of special moves (e.g., checks, captures, checkmates, en passants) do not need any special notation; the starting coordinate followed by the ending coordinate is all the information that's needed. Note that castling is represented by the starting coordinate of the king followed by the ending coordinate of the king. So "e1g1" would be used for white castling kingside, assuming the white king is still on e1 and castling is legal.
 Example call (assume in the current position, it is White's turn):
 ```python
 stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1", "b2b1q"]) # Moves the white piece on g4 to d7, then the black piece on a8 to b8, then the white piece on f1 to d1, and finally pushes the black b2-pawn to b1, promoting it into a queen.
@@ -195,7 +195,7 @@ True
 Returns a list of dictionaries, where each dictionary represents a move's info. Each dictionary will contain a value for the 'Move' key, and either the 'Centipawn' or 'Mate' value will be a number (the other will be None).
 Positive values mean advantage white, negative advantage black (unless you're using the turn perspective setting).
 
-Positive values mean advantage White, negative values mean advantage Black (unless you're using the turn perspective option, in which case positive is for the side to move). 
+Positive values mean advantage White, negative values mean advantage Black (unless you're using the turn perspective option, in which case positive is for the side to move).
 
 Note that if you have stockfish on a weaker elo or skill level setting, the top moves returned by this function will still be for full strength.
 
@@ -517,8 +517,8 @@ False
 If the square is empty, the None object is returned. Otherwise, one of 12 enum members of a custom
 Stockfish.Piece enum will be returned. Each of the 12 members of this enum is named in the following pattern:
 _colour_ followed by _underscore_ followed by _piece name_, where the colour and piece name are in all caps.
-The value of each enum member is a char representing the piece (uppercase is white, lowercase is black).  
-For white, it will be one of "P", "N", "B", "R", "Q", or "K". For black the same chars, except lowercase.  
+The value of each enum member is a char representing the piece (uppercase is white, lowercase is black).
+For white, it will be one of "P", "N", "B", "R", "Q", or "K". For black the same chars, except lowercase.
 For example, say the current position is the starting position:
 
 ```python
