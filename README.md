@@ -79,6 +79,12 @@ These parameters can also be updated at any time by calling the "update_engine_p
 stockfish.update_engine_parameters({"Hash": 2048, "UCI_Chess960": True}) # Gets stockfish to use a 2GB hash table, and also to play Chess960.
 ```
 
+As for the depth, it can also be updated, by using the following function. Note that if you don't set depth to a value yourself, the python module will initialize it to 15 by default.
+
+```python
+stockfish.set_depth(12)
+```
+
 When you're done using the Stockfish engine process, you can send the "quit" uci command to it with:
 
 ```python
@@ -92,17 +98,23 @@ The `__del__()` method of the Stockfish class will call send_quit_command(), but
 ```python
 stockfish.make_moves_from_start(["e2e4", "e7e6"])
 ```
+If you'd just like to set up the starting position without making any moves from it, just call this function without sending an argument:
+```python
+stockfish.make_moves_from_start()
+```
 
 ### Update position by making a sequence of moves from the current position
 
+Function takes a list of strings as its argument. Each string represents a move, and must have the format of the starting coordinate followed by the ending coordinate. If a move leads to a pawn promoting, then an additional character must be appended at the end (to indicate what piece the pawn promotes into).  
+Other types of special moves (e.g., checks, captures, checkmates, en passants) do not need any special notation; the starting coordinate followed by the ending coordinate is all the information that's needed. Note that castling is represented by the starting coordinate of the king followed by the ending coordinate of the king. So "e1g1" would be used for white castling kingside, assuming the white king is still on e1 and castling is legal.  
+Example call (assume in the current position, it is White's turn):
 ```python
-stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1"])
+stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1", "b2b1q"]) # Moves the white piece on g4 to d7, then the black piece on a8 to b8, then the white piece on f1 to d1, and finally pushes the black b2-pawn to b1, promoting it into a queen.
 ```
 
 ### Set position by Forsyth–Edwards Notation (FEN)
 
-If you'd like to first check if your fen is valid, call the is_fen_valid() function below.
-Also, if you want to play Chess960, it's recommended you first update the "UCI_Chess960" engine parameter to be True, before calling set_fen_position.
+Note that if you want to play Chess960, it's recommended you first update the "UCI_Chess960" engine parameter to be True, before calling set_fen_position.
 
 ```python
 stockfish.set_fen_position("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2")
@@ -117,6 +129,10 @@ This function returns a bool saying whether the passed in FEN is valid (both syn
 The function isn't perfect and won't catch all cases, but generally it should return the correct answer.
 For example, one exception is positions which are legal, but have no legal moves.
 I.e., for checkmates and stalemates, this function will incorrectly say the fen is invalid.
+
+Note that the function checks whether a position is legal by temporarily creating a new Stockfish process, and
+then seeing if it can return a best move (and also not crash). Whatever the outcome may be though, this
+temporary SF process should terminate after the function call.
 
 ```python
 stockfish.is_fen_valid("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -164,6 +180,8 @@ e2e4
 
 ### Check if a move is legal in the current position
 
+Returns True if the passed in move is legal in the current position.
+
 ```python
 stockfish.is_move_correct('a2a3')
 ```
@@ -174,15 +192,21 @@ True
 
 ### Get info on the top n moves
 
-Get moves, centipawns, and mates for the top n moves. If the move is a mate, the Centipawn value will be None, and vice versa. Note that if you have stockfish on a weaker elo or skill level setting, the top moves returned by this
-function will still be for full strength.
+Returns a list of dictionaries, where each dictionary represents a move's info. Each dictionary will contain a value for the 'Move' key, and either the 'Centipawn' or 'Mate' value will be a number (the other will be None).
+Positive values mean advantage white, negative advantage black (unless you're using the turn perspective setting).
+
+Positive values mean advantage White, negative values mean advantage Black (unless you're using the turn perspective option, in which case positive is for the side to move). 
+
+Note that if you have stockfish on a weaker elo or skill level setting, the top moves returned by this function will still be for full strength.
+
+Let's consider an example where Black is to move, and the top 3 moves are a mate, winning material, or being slightly worse. We'll assume the turn perspective setting is off.
 
 ```python
 stockfish.get_top_moves(3)
 # [
-#   {'Move': 'f5h7', 'Centipawn': None, 'Mate': 1},
-#   {'Move': 'f5d7', 'Centipawn': 713, 'Mate': None},
-#   {'Move': 'f5h5', 'Centipawn': -31, 'Mate': None}
+#   {'Move': 'f5h3', 'Centipawn': None, 'Mate': -1}, # The move f5h3 leads to a mate in 1 for Black.
+#   {'Move': 'f5d7', 'Centipawn': -713, 'Mate': None}, # f5d7 leads to an evaluation of 7.13 in Black's favour.
+#   {'Move': 'f5h5', 'Centipawn': 31, 'Mate': None} # f5h5 leads to an evaluation of 0.31 in White's favour.
 # ]
 ```
 
@@ -288,7 +312,7 @@ stockfish.set_elo_rating(1350)
 stockfish.resume_full_strength()
 ```
 
-### Set the engine's depth
+### Set the engine's search depth
 
 ```python
 stockfish.set_depth(15)
@@ -493,12 +517,19 @@ False
 If the square is empty, the None object is returned. Otherwise, one of 12 enum members of a custom
 Stockfish.Piece enum will be returned. Each of the 12 members of this enum is named in the following pattern:
 _colour_ followed by _underscore_ followed by _piece name_, where the colour and piece name are in all caps.
+The value of each enum member is a char representing the piece (uppercase is white, lowercase is black).  
+For white, it will be one of "P", "N", "B", "R", "Q", or "K". For black the same chars, except lowercase.  
 For example, say the current position is the starting position:
 
 ```python
 stockfish.get_what_is_on_square("e1") # returns Stockfish.Piece.WHITE_KING
+stockfish.get_what_is_on_square("e1").value # result is "K"
 stockfish.get_what_is_on_square("d8") # returns Stockfish.Piece.BLACK_QUEEN
+stockfish.get_what_is_on_square("d8").value # result is "q"
 stockfish.get_what_is_on_square("h2") # returns Stockfish.Piece.WHITE_PAWN
+stockfish.get_what_is_on_square("h2").value # result is "P"
+stockfish.get_what_is_on_square("g8") # returns Stockfish.Piece.BLACK_KNIGHT
+stockfish.get_what_is_on_square("g8").value # result is "n"
 stockfish.get_what_is_on_square("b5") # returns None
 ```
 
