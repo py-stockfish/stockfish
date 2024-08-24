@@ -343,7 +343,8 @@ class Stockfish:
             >>> stockfish.make_moves_from_start(['e2e4', 'e7e5'])
         """
         self.set_fen_position(
-            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", send_ucinewgame_token
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            send_ucinewgame_token,
         )
         self.make_moves_from_current_position(moves)
 
