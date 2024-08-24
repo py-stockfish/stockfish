@@ -35,6 +35,8 @@ class Stockfish:
         "10.0": "2018-11-29",
     }
 
+    _PIECE_CHARS = ("P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k")
+
     # _PARAM_RESTRICTIONS stores the types of each of the params, and any applicable min and max values, based
     # off the Stockfish source code: https://github.com/official-stockfish/Stockfish/blob/65ece7d985291cc787d6c804a33f1dd82b75736d/src/ucioption.cpp#L58-L82
     _PARAM_RESTRICTIONS: Dict[str, Tuple[type, Optional[int], Optional[int]]] = {
@@ -637,25 +639,35 @@ class Stockfish:
     def _is_fen_syntax_valid(fen: str) -> bool:
         # Code for this function taken from: https://gist.github.com/Dani4kor/e1e8b439115878f8c6dcf127a4ed5d3e
         # Some small changes have been made to the code.
-        regexMatch = re.match(
+        if not re.match(
             r"\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s(-|[K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$",
             fen,
-        )
-        if not regexMatch:
+        ):
             return False
-        regexList = regexMatch.groups()
-        if len(regexList[0].split("/")) != 8:
-            return False  # 8 rows not present.
-        for fenPart in regexList[0].split("/"):
+
+        fen_fields = fen.split()
+
+        if any(
+            (
+                len(fen_fields) != 6,
+                len(fen_fields[0].split("/")) != 8,
+                any(x not in fen_fields[0] for x in "Kk"),
+                any(not fen_fields[x].isdigit() for x in (4, 5)),
+                int(fen_fields[4]) >= int(fen_fields[5]) * 2,
+            )
+        ):
+            return False
+
+        for fenPart in fen_fields[0].split("/"):
             field_sum: int = 0
             previous_was_digit: bool = False
             for c in fenPart:
-                if c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
+                if "1" <= c <= "8":
                     if previous_was_digit:
                         return False  # Two digits next to each other.
                     field_sum += int(c)
                     previous_was_digit = True
-                elif c.lower() in ["p", "n", "b", "r", "q", "k"]:
+                elif c in Stockfish._PIECE_CHARS:
                     field_sum += 1
                     previous_was_digit = False
                 else:
