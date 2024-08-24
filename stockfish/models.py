@@ -197,7 +197,7 @@ class Stockfish:
 
         for name, value in new_param_values.items():
             self._set_option(name, value)
-        self.set_fen_position(self.get_fen_position(), False)
+        self.set_fen_position(self.get_fen_position())
         # Getting SF to set the position again, since UCI option(s) have been updated.
 
     def reset_engine_parameters(self) -> None:
@@ -301,7 +301,7 @@ class Stockfish:
     def set_fen_position(
         self, fen_position: str, send_ucinewgame_token: bool = False
     ) -> None:
-        """Sets current board position in Forsyth-Edwards notation (FEN).
+        """Sets the current board position from Forsyth-Edwards notation (FEN).
 
         Args:
             fen_position:
@@ -310,7 +310,7 @@ class Stockfish:
             send_ucinewgame_token:
               Whether to send the `ucinewgame` token to the Stockfish engine.
               This will clear Stockfish's hash table, which should generally only be done if the new
-              position is unrelated to the current one (such as a new game).
+              position will be unrelated to the current one (such as a new game).
 
         Returns:
             `None`
@@ -321,13 +321,20 @@ class Stockfish:
         self._prepare_for_new_position(send_ucinewgame_token)
         self._put(f"position fen {fen_position}")
 
-    def make_moves_from_start(self, moves: Optional[List[str]] = None) -> None:
+    def make_moves_from_start(
+        self, moves: Optional[List[str]] = None, send_ucinewgame_token: bool = False
+    ) -> None:
         """Sets the position by making a sequence of moves from the starting position of chess.
 
         Args:
             moves:
               A list of moves to set this position on the board.
               Must be in full algebraic notation.
+
+            send_ucinewgame_token:
+              Whether to send the `ucinewgame` token to the Stockfish engine.
+              This will clear Stockfish's hash table, which should generally only be done if the new
+              position will be unrelated to the current one (such as a new game).
 
         Returns:
             `None`
@@ -336,7 +343,7 @@ class Stockfish:
             >>> stockfish.make_moves_from_start(['e2e4', 'e7e5'])
         """
         self.set_fen_position(
-            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", True
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", send_ucinewgame_token
         )
         self.make_moves_from_current_position(moves)
 
@@ -671,7 +678,7 @@ class Stockfish:
         # Using a new temporary SF instance, in case the fen is an illegal position that causes
         # the SF process to crash.
         best_move: Optional[str] = None
-        temp_sf.set_fen_position(fen, False)
+        temp_sf.set_fen_position(fen)
         try:
             temp_sf._put("go depth 10")
             best_move = temp_sf._get_best_move_from_sf_popen_process()
