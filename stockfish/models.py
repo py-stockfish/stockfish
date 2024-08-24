@@ -764,7 +764,7 @@ class Stockfish:
             splitted_text = self._read_line().split(" ")
             if splitted_text[0] == "uciok":
                 return False
-            elif "UCI_ShowWDL" in splitted_text:
+            if "UCI_ShowWDL" in splitted_text:
                 self._discard_remaining_stdout_lines("uciok")
                 return True
 
@@ -834,8 +834,7 @@ class Stockfish:
                 if static_eval == "none":
                     assert "(in check)" in text
                     return None
-                else:
-                    return float(static_eval) * compare
+                return float(static_eval) * compare
 
     def get_top_moves(
         self,
@@ -1081,25 +1080,22 @@ class Stockfish:
         if ending_square_piece is not None:
             if not self._parameters["UCI_Chess960"]:
                 return Stockfish.Capture.DIRECT_CAPTURE
-            else:
-                # Check for Chess960 castling:
-                castling_pieces = [
-                    [Stockfish.Piece.WHITE_KING, Stockfish.Piece.WHITE_ROOK],
-                    [Stockfish.Piece.BLACK_KING, Stockfish.Piece.BLACK_ROOK],
-                ]
-                if [starting_square_piece, ending_square_piece] in castling_pieces:
-                    return Stockfish.Capture.NO_CAPTURE
-                else:
-                    return Stockfish.Capture.DIRECT_CAPTURE
-        elif move_value[2:4] == self.get_fen_position().split()[
+            # Check for Chess960 castling:
+            castling_pieces = [
+                [Stockfish.Piece.WHITE_KING, Stockfish.Piece.WHITE_ROOK],
+                [Stockfish.Piece.BLACK_KING, Stockfish.Piece.BLACK_ROOK],
+            ]
+            if [starting_square_piece, ending_square_piece] in castling_pieces:
+                return Stockfish.Capture.NO_CAPTURE
+            return Stockfish.Capture.DIRECT_CAPTURE
+        if move_value[2:4] == self.get_fen_position().split()[
             3
         ] and starting_square_piece in [
             Stockfish.Piece.WHITE_PAWN,
             Stockfish.Piece.BLACK_PAWN,
         ]:
             return Stockfish.Capture.EN_PASSANT
-        else:
-            return Stockfish.Capture.NO_CAPTURE
+        return Stockfish.Capture.NO_CAPTURE
 
     def get_stockfish_full_version(self) -> float:
         """Returns Stockfish engine full version."""
@@ -1192,7 +1188,7 @@ class Stockfish:
         except Exception as e:
             raise Exception(
                 "Unable to parse Stockfish version. You may be using an unsupported version of Stockfish."
-            )
+            ) from e
 
     def _get_stockfish_version_from_build_date(
         self, date_string: str = ""
