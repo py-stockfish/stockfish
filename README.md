@@ -108,6 +108,9 @@ Also, if you want to play Chess960, it's recommended you first update the "UCI_C
 stockfish.set_fen_position("rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2")
 ```
 
+Note that if you'd like to send the `ucinewgame` command to Stockfish (which will reset its hash table),
+send `True` as the second argument to `set_fen_position` or `make_moves_from_starting_position`.
+
 ### Check whether the given FEN is valid
 
 This function returns a bool saying whether the passed in FEN is valid (both syntax wise and whether the position represented is legal).
