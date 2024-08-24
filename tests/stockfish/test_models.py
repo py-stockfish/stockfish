@@ -535,7 +535,7 @@ class TestStockfish:
         if stockfish.get_stockfish_major_version() >= 12:
             stockfish.set_fen_position("8/8/8/8/8/4k3/4p3/r3K3 w - - 0 1", True)
             assert stockfish.get_static_eval() is None
-        stockfish.make_moves_from_start(None)
+        stockfish.make_moves_from_start(None, True)
         stockfish.get_static_eval()
         stockfish._put("go depth 2")
         assert stockfish._read_line() != ""
