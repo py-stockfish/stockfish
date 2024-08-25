@@ -647,14 +647,12 @@ class Stockfish:
 
         fen_fields = fen.split()
 
-        if any(
-            (
-                len(fen_fields) != 6,
-                len(fen_fields[0].split("/")) != 8,
-                any(x not in fen_fields[0] for x in "Kk"),
-                any(not fen_fields[x].isdigit() for x in (4, 5)),
-                int(fen_fields[4]) >= int(fen_fields[5]) * 2,
-            )
+        if (
+            len(fen_fields) != 6
+            or len(fen_fields[0].split("/")) != 8
+            or any(x not in fen_fields[0] for x in "Kk")
+            or any(not fen_fields[x].isdigit() for x in (4, 5))
+            or int(fen_fields[4]) >= int(fen_fields[5]) * 2
         ):
             return False
 
