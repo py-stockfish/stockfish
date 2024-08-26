@@ -219,13 +219,14 @@ class Stockfish:
             self._put("ucinewgame")
 
     def _prepare_for_new_position(self) -> None:
-        self._is_ready()
         self.info = ""
 
     def _put(self, command: str) -> None:
         if not self._stockfish.stdin:
             raise BrokenPipeError()
         if self._stockfish.poll() is None and not self._has_quit_command_been_sent:
+            if command != "isready":
+                self._is_ready()
             if self._debug_view:
                 print(f">>> {command}\n")
             self._stockfish.stdin.write(f"{command}\n")
@@ -258,7 +259,6 @@ class Stockfish:
         self._put(f"setoption name {name} value {str_rep_value}")
         if update_parameters_attribute:
             self._parameters.update({name: value})
-        self._is_ready()
 
     def _validate_param_val(self, name: str, value: Any) -> None:
         if name not in Stockfish._PARAM_RESTRICTIONS:
