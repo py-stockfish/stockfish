@@ -222,6 +222,8 @@ class Stockfish:
         self.info = ""
 
     def _put(self, command: str) -> None:
+        """Sends a command to the Stockfish engine. Note that if there's any existing output still
+        in stdout, it will be cleared."""
         if not self._stockfish.stdin:
             raise BrokenPipeError()
         if self._stockfish.poll() is None and not self._has_quit_command_been_sent:
