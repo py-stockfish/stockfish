@@ -210,9 +210,17 @@ class Stockfish:
         """
         self.update_engine_parameters(self._DEFAULT_STOCKFISH_PARAMS)
 
+    def send_ucinewgame_command(self) -> None:
+        """Sends the `ucinewgame` command to the Stockfish engine. This will clear Stockfish's
+        hash table, which is relatively expensive and should generally only be done if the
+        new position will be completely unrelated to the current one (such as a new game).
+        """
+        if self._stockfish.poll() is None:
+            self._put("ucinewgame")
+
     def _prepare_for_new_position(self, send_ucinewgame_token: bool) -> None:
         if send_ucinewgame_token:
-            self._put("ucinewgame")
+            self.send_ucinewgame_command()
         self._is_ready()
         self.info = ""
 
@@ -300,19 +308,12 @@ class Stockfish:
         """Will issue a warning, referring to the function that calls this one."""
         warnings.warn(message, stacklevel=3)
 
-    def set_fen_position(
-        self, fen_position: str, send_ucinewgame_token: bool = False
-    ) -> None:
+    def set_fen_position(self, fen_position: str) -> None:
         """Sets the current board position from Forsyth-Edwards notation (FEN).
 
         Args:
             fen_position:
               FEN string of board position.
-
-            send_ucinewgame_token:
-              Whether to send the `ucinewgame` token to the Stockfish engine.
-              This will clear Stockfish's hash table, which should generally only be done if the new
-              position will be unrelated to the current one (such as a new game).
 
         Returns:
             `None`
@@ -320,23 +321,16 @@ class Stockfish:
         Example:
             >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
         """
-        self._prepare_for_new_position(send_ucinewgame_token)
+        self._prepare_for_new_position(False)
         self._put(f"position fen {fen_position}")
 
-    def make_moves_from_start(
-        self, moves: Optional[List[str]] = None, send_ucinewgame_token: bool = False
-    ) -> None:
+    def make_moves_from_start(self, moves: Optional[List[str]] = None) -> None:
         """Sets the position by making a sequence of moves from the starting position of chess.
 
         Args:
             moves:
               A list of moves to set this position on the board.
               Must be in full algebraic notation.
-
-            send_ucinewgame_token:
-              Whether to send the `ucinewgame` token to the Stockfish engine.
-              This will clear Stockfish's hash table, which should generally only be done if the new
-              position will be unrelated to the current one (such as a new game).
 
         Returns:
             `None`
@@ -345,8 +339,7 @@ class Stockfish:
             >>> stockfish.make_moves_from_start(['e2e4', 'e7e5'])
         """
         self.set_fen_position(
-            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-            send_ucinewgame_token,
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         )
         self.make_moves_from_current_position(moves)
 

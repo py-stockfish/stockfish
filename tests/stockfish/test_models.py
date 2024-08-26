@@ -127,41 +127,45 @@ class TestStockfish:
         assert stockfish.info == "info depth 0 score mate 0"
 
     def test_clear_info_after_set_new_fen_position(self, stockfish: Stockfish):
-        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/r7/4K3 b - - 11 52", True)
+        stockfish.send_ucinewgame_command()
+        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/r7/4K3 b - - 11 52")
         stockfish.get_best_move()
-        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53", True)
+        stockfish.send_ucinewgame_command()
+        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53")
         assert stockfish.info == ""
 
-        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/r7/4K3 b - - 11 52", True)
+        stockfish.send_ucinewgame_command()
+        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/r7/4K3 b - - 11 52")
         stockfish.get_best_move()
-        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53", False)
+        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53")
         assert stockfish.info == ""
 
     def test_set_fen_position_starts_new_game(self, stockfish: Stockfish):
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position(
-            "7r/1pr1kppb/2n1p2p/2NpP2P/5PP1/1P6/P6K/R1R2B2 w - - 1 27", True
+            "7r/1pr1kppb/2n1p2p/2NpP2P/5PP1/1P6/P6K/R1R2B2 w - - 1 27"
         )
         stockfish.get_best_move()
         assert stockfish.info != ""
-        stockfish.set_fen_position(
-            "3kn3/p5rp/1p3p2/3B4/3P1P2/2P5/1P3K2/8 w - - 0 53", True
-        )
+        stockfish.send_ucinewgame_command()
+        stockfish.set_fen_position("3kn3/p5rp/1p3p2/3B4/3P1P2/2P5/1P3K2/8 w - - 0 53")
         assert stockfish.info == ""
 
     def test_set_fen_position_second_argument(self, stockfish: Stockfish):
         stockfish.set_depth(16)
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1", True
+            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"
         )
         assert stockfish.get_best_move() == "e4e5"
 
         stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/4P3/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 1", False
+            "rnbqk2r/pppp1ppp/3bpn2/4P3/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 1"
         )
         assert stockfish.get_best_move() in ("d6e7", "d6b4")
 
         stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1", False
+            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"
         )
         assert stockfish.get_best_move() == "e4e5"
 
@@ -184,9 +188,8 @@ class TestStockfish:
     )
     # fmt: on
     def test_last_info(self, stockfish: Stockfish, value):
-        stockfish.set_fen_position(
-            "r6k/6b1/2b1Q3/p6p/1p5q/3P2PP/5r1K/8 w - - 1 31", True
-        )
+        stockfish.send_ucinewgame_command()
+        stockfish.set_fen_position("r6k/6b1/2b1Q3/p6p/1p5q/3P2PP/5r1K/8 w - - 1 31")
         stockfish.get_best_move()
         assert value in stockfish.info
 
@@ -520,22 +523,27 @@ class TestStockfish:
 
     def test_get_static_eval(self, stockfish: Stockfish):
         stockfish.set_turn_perspective(False)
-        stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1", True)
+        stockfish.send_ucinewgame_command()
+        stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1")
         static_eval_1 = stockfish.get_static_eval()
         assert isinstance(static_eval_1, float) and static_eval_1 < -3
-        stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 b - - 0 1", True)
+        stockfish.send_ucinewgame_command()
+        stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 b - - 0 1")
         static_eval_2 = stockfish.get_static_eval()
         assert isinstance(static_eval_2, float) and static_eval_2 < -3
         stockfish.set_turn_perspective()
         static_eval_3 = stockfish.get_static_eval()
         assert isinstance(static_eval_3, float) and static_eval_3 > 3
-        stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1", True)
+        stockfish.send_ucinewgame_command()
+        stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1")
         static_eval_4 = stockfish.get_static_eval()
         assert isinstance(static_eval_4, float) and static_eval_4 < -3
         if stockfish.get_stockfish_major_version() >= 12:
-            stockfish.set_fen_position("8/8/8/8/8/4k3/4p3/r3K3 w - - 0 1", True)
+            stockfish.send_ucinewgame_command()
+            stockfish.set_fen_position("8/8/8/8/8/4k3/4p3/r3K3 w - - 0 1")
             assert stockfish.get_static_eval() is None
-        stockfish.make_moves_from_start(None, True)
+        stockfish.send_ucinewgame_command()
+        stockfish.make_moves_from_start(None)
         stockfish.get_static_eval()
         stockfish._put("go depth 2")
         assert stockfish._read_line() != ""
@@ -854,17 +862,8 @@ class TestStockfish:
                 stockfish.make_moves_from_current_position([invalid_move])
 
     @pytest.mark.slow
-    def test_make_moves_transposition_table_speed(self, stockfish: Stockfish):
-        """
-        make_moves_from_current_position won't send the "ucinewgame" token to Stockfish, since it
-        will reach a new position similar to the current one. Meanwhile, set_fen_position will send this
-        token (unless the user specifies otherwise), since it could be going to a completely new position.
-
-        A big effect of sending this token is that it resets SF's transposition table. If the
-        new position is similar to the current one, this will affect SF's speed. This function tests
-        that make_moves_from_current_position doesn't reset the transposition table, by verifying SF is faster in
-        evaluating a consecutive set of positions when the make_moves_from_current_position function is used.
-        """
+    def test_not_resetting_hash_table_speed(self, stockfish: Stockfish):
+        """Tests that not resetting the hash table between related positions makes SF faster."""
 
         stockfish.set_depth(16)
         positions_considered = []
@@ -883,7 +882,8 @@ class TestStockfish:
 
         total_time_calculating_second = 0.0
         for i in range(len(positions_considered)):
-            stockfish.set_fen_position(positions_considered[i], True)
+            stockfish.send_ucinewgame_command()
+            stockfish.set_fen_position(positions_considered[i])
             start = default_timer()
             stockfish.get_best_move()
             total_time_calculating_second += default_timer() - start
@@ -901,8 +901,9 @@ class TestStockfish:
             assert wdl_stats[1] > wdl_stats[0] * 7
             assert abs(wdl_stats[0] - wdl_stats[2]) / wdl_stats[0] < 0.15
 
+            stockfish.send_ucinewgame_command()
             stockfish.set_fen_position(
-                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", True
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             )
             wdl_stats_2 = stockfish.get_wdl_stats()
             assert isinstance(wdl_stats_2, list)
@@ -912,9 +913,9 @@ class TestStockfish:
             stockfish.set_fen_position("8/8/8/8/8/6k1/6p1/6K1 w - - 0 1")
             assert stockfish.get_wdl_stats() is None
 
+            stockfish.send_ucinewgame_command()
             stockfish.set_fen_position(
-                "rnbqkb1r/pp3ppp/3p1n2/1B2p3/3NP3/2N5/PPP2PPP/R1BQK2R b KQkq - 0 6",
-                True,
+                "rnbqkb1r/pp3ppp/3p1n2/1B2p3/3NP3/2N5/PPP2PPP/R1BQK2R b KQkq - 0 6"
             )
             wdl_stats_3 = stockfish.get_wdl_stats()
             assert isinstance(wdl_stats_3, list) and len(wdl_stats_3) == 3
