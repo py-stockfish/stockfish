@@ -118,7 +118,7 @@ class Stockfish:
         if self.does_current_engine_version_have_wdl_option():
             self._set_option("UCI_ShowWDL", True, False)
 
-        self._prepare_for_new_position(True)
+        self._prepare_for_new_position()
 
     def set_debug_view(self, activate: bool) -> None:
         self._debug_view = activate
@@ -218,9 +218,7 @@ class Stockfish:
         if self._stockfish.poll() is None:
             self._put("ucinewgame")
 
-    def _prepare_for_new_position(self, send_ucinewgame_token: bool) -> None:
-        if send_ucinewgame_token:
-            self.send_ucinewgame_command()
+    def _prepare_for_new_position(self) -> None:
         self._is_ready()
         self.info = ""
 
@@ -321,7 +319,7 @@ class Stockfish:
         Example:
             >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
         """
-        self._prepare_for_new_position(False)
+        self._prepare_for_new_position()
         self._put(f"position fen {fen_position}")
 
     def make_moves_from_start(self, moves: Optional[List[str]] = None) -> None:
@@ -359,7 +357,7 @@ class Stockfish:
         """
         if not moves:
             return
-        self._prepare_for_new_position(False)
+        self._prepare_for_new_position()
         for move in moves:
             if not self.is_move_correct(move):
                 raise ValueError(f"Cannot make move: {move}")

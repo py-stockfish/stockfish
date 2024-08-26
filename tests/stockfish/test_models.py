@@ -920,7 +920,8 @@ class TestStockfish:
             wdl_stats_3 = stockfish.get_wdl_stats()
             assert isinstance(wdl_stats_3, list) and len(wdl_stats_3) == 3
 
-            stockfish._prepare_for_new_position(True)
+            stockfish.send_ucinewgame_command()
+            stockfish._prepare_for_new_position()
             wdl_stats_4 = stockfish.get_wdl_stats(get_as_tuple=True)
             assert isinstance(wdl_stats_4, tuple) and len(wdl_stats_4) == 3
             assert wdl_stats_3 == list(wdl_stats_4)
