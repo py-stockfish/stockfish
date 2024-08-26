@@ -222,13 +222,15 @@ class Stockfish:
         self.info = ""
 
     def _put(self, command: str) -> None:
-        """Sends a command to the Stockfish engine. Note that if there's any existing output still
-        in stdout, it will be cleared."""
+        """Sends a command to the Stockfish engine. Note that this function shouldn't be called if
+        there's any existing output in stdout that's still needed."""
         if not self._stockfish.stdin:
             raise BrokenPipeError()
         if self._stockfish.poll() is None and not self._has_quit_command_been_sent:
             if command != "isready":
-                self._is_ready()
+                self._put("isready")
+                while self._read_line() != "readyok":
+                    pass
             if self._debug_view:
                 print(f">>> {command}\n")
             self._stockfish.stdin.write(f"{command}\n")
@@ -272,11 +274,6 @@ class Stockfish:
             raise ValueError(f"{value} is below {name}'s minimum value of {minimum}")
         if maximum is not None and type(value) is int and value > maximum:
             raise ValueError(f"{value} is over {name}'s maximum value of {maximum}")
-
-    def _is_ready(self) -> None:
-        self._put("isready")
-        while self._read_line() != "readyok":
-            pass
 
     def _go(self) -> None:
         self._put(f"go depth {self._depth}")
