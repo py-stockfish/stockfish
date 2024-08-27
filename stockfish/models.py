@@ -15,6 +15,7 @@ from enum import Enum
 import re
 import datetime
 import warnings
+import platform
 
 
 class Stockfish:
@@ -42,7 +43,7 @@ class Stockfish:
     _PARAM_RESTRICTIONS: Dict[str, Tuple[type, Optional[int], Optional[int]]] = {
         "Debug Log File": (str, None, None),
         "Threads": (int, 1, 1024),
-        "Hash": (int, 1, 2048),
+        "Hash": (int, 1, 2 ** (25 if "64" in platform.machine() else 11)),
         "Ponder": (bool, None, None),
         "MultiPV": (int, 1, 500),
         "Skill Level": (int, 0, 20),

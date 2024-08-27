@@ -2,6 +2,7 @@ import pytest
 from timeit import default_timer
 import time
 from typing import List, Optional, Dict
+import platform
 
 from stockfish import Stockfish, StockfishException
 
@@ -309,13 +310,14 @@ class TestStockfish:
         assert set(stockfish.get_engine_parameters().keys()) <= set(
             Stockfish._PARAM_RESTRICTIONS.keys()
         )
+        max_hash = 2 ** (25 if "64" in platform.machine() else 11)
         bad_values: Dict[str, List] = {
             "Threads": ["1", False, 0, -1, 1025, 1.0],
             "UCI_Chess960": ["true", "false", "True", 1],
             "Contempt": [-101, 101, "0", False],
             "UCI_LimitStrength": ["true", "false", "False", 1, 0],
             "Ponder": ["true", "false", "True", "False", 0],
-            "Hash": [-1, 4096, -2048, True, 0],
+            "Hash": [-1, max_hash * 2, max_hash + 1, -2048, True, 0],
             "Not key": [0],
         }
         for name in bad_values:
@@ -1279,3 +1281,7 @@ class TestStockfish:
         start = time.time_ns()
         stockfish.send_ucinewgame_command()
         assert time.time_ns() - start > 1000000
+
+    def test_hash_size_platform(self, stockfish: Stockfish):
+        max_hash = stockfish._PARAM_RESTRICTIONS["Hash"][2]
+        assert max_hash == 2 ** (25 if "64" in platform.machine() else 11)
