@@ -119,6 +119,7 @@ class Stockfish:
             self._set_option("UCI_ShowWDL", True, False)
 
         self._prepare_for_new_position()
+        self._is_ready()
 
     def set_debug_view(self, activate: bool) -> None:
         self._debug_view = activate
@@ -262,6 +263,7 @@ class Stockfish:
         self._put(f"setoption name {name} value {str_rep_value}")
         if update_parameters_attribute:
             self._parameters.update({name: value})
+        self._is_ready()
 
     def _validate_param_val(self, name: str, value: Any) -> None:
         if name not in Stockfish._PARAM_RESTRICTIONS:
