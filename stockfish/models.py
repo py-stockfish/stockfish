@@ -228,9 +228,7 @@ class Stockfish:
             raise BrokenPipeError()
         if self._stockfish.poll() is None and not self._has_quit_command_been_sent:
             if command != "isready":
-                self._put("isready")
-                while self._read_line() != "readyok":
-                    pass
+                self._is_ready()
             if self._debug_view:
                 print(f">>> {command}\n")
             self._stockfish.stdin.write(f"{command}\n")
@@ -274,6 +272,11 @@ class Stockfish:
             raise ValueError(f"{value} is below {name}'s minimum value of {minimum}")
         if maximum is not None and type(value) is int and value > maximum:
             raise ValueError(f"{value} is over {name}'s maximum value of {maximum}")
+
+    def _is_ready(self) -> None:
+        self._put("isready")
+        while self._read_line() != "readyok":
+            pass
 
     def _go(self) -> None:
         self._put(f"go depth {self._depth}")
