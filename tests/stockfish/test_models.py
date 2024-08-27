@@ -1301,6 +1301,10 @@ class TestStockfish:
         )
         assert stockfish.get_evaluation()["value"] == 0
         stockfish.make_moves_from_start(["g1f3", "g8f6", "f3g1", "f6g8", "g1f3"])
-        assert stockfish.get_evaluation()["value"] < 0
+        assert (
+            isinstance((eval := stockfish.get_evaluation()["value"]), int) and eval < 0
+        )
         stockfish.make_moves_from_current_position(["g8f6", "f3g1", "f6g8", "g1f3"])
-        assert stockfish.get_evaluation()["value"] < 0
+        assert (
+            isinstance((eval := stockfish.get_evaluation()["value"]), int) and eval < 0
+        )
