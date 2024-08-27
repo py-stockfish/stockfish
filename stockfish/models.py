@@ -841,7 +841,8 @@ class Stockfish:
                     self._read_line()
                     # Consume the remaining line (for some reason `eval` outputs an extra newline)
                 if static_eval == "none":
-                    assert "(in check)" in text
+                    if "(in check)" not in text:
+                        raise RuntimeError()
                     return None
                 return float(static_eval) * compare
 
@@ -1016,7 +1017,8 @@ class Stockfish:
                 num_nodes = int(line.split(":")[1])
                 break
             move, num = line.split(":")
-            assert move not in move_possibilities
+            if move in move_possibilities:
+                raise RuntimeError()
             move_possibilities[move] = int(num)
         self._read_line()  # Consumes the remaining newline stockfish outputs.
 
