@@ -217,6 +217,7 @@ class Stockfish:
         """
         if self._stockfish.poll() is None:
             self._put("ucinewgame")
+            self._is_ready()
 
     def _prepare_for_new_position(self) -> None:
         self.info = ""
@@ -274,6 +275,8 @@ class Stockfish:
             raise ValueError(f"{value} is over {name}'s maximum value of {maximum}")
 
     def _is_ready(self) -> None:
+        """Waits if the engine is busy. Note that this function shouldn't be called if
+        there's any existing output in stdout that's still needed."""
         self._put("isready")
         while self._read_line() != "readyok":
             pass

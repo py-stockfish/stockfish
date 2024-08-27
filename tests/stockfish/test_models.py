@@ -1272,3 +1272,10 @@ class TestStockfish:
         params.update({"Skill Level": 10})
         assert params["Skill Level"] == 10
         assert stockfish._parameters["Skill Level"] == 20
+
+    @pytest.mark.slow
+    def test_uci_new_game_wait(self, stockfish: Stockfish):
+        stockfish.update_engine_parameters({"Hash": 2048})
+        start = time.time_ns()
+        stockfish.send_ucinewgame_command()
+        assert time.time_ns() - start > 1000000
