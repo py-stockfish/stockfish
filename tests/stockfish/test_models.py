@@ -493,19 +493,17 @@ class TestStockfish:
         )
         evaluation = stockfish.get_evaluation()
         assert (
-            evaluation["type"] == "cp"
-            and isinstance(evaluation["value"], int)
-            and evaluation["value"] >= 60
-            and evaluation["value"] <= 150
+            compare(evaluation["type"], "cp", operator.eq, str)
+            and compare(evaluation["value"], 60, operator.ge, int)
+            and compare(evaluation["value"], 150, operator.le, int)
         )
         stockfish.set_skill_level(1)
         with pytest.warns(UserWarning):
             evaluation = stockfish.get_evaluation()
         assert (
-            evaluation["type"] == "cp"
-            and isinstance(evaluation["value"], int)
-            and evaluation["value"] >= 60
-            and evaluation["value"] <= 150
+            compare(evaluation["type"], "cp", operator.eq, str)
+            and compare(evaluation["value"], 60, operator.ge, int)
+            and compare(evaluation["value"], 150, operator.le, int)
         )
 
     @pytest.mark.slow
@@ -535,18 +533,18 @@ class TestStockfish:
         stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1")
         static_eval_1 = stockfish.get_static_eval()
-        assert isinstance(static_eval_1, float) and static_eval_1 < -3
+        assert compare(static_eval_1, -3, operator.lt, float)
         stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 b - - 0 1")
         static_eval_2 = stockfish.get_static_eval()
-        assert isinstance(static_eval_2, float) and static_eval_2 < -3
+        assert compare(static_eval_2, -3, operator.lt, float)
         stockfish.set_turn_perspective()
         static_eval_3 = stockfish.get_static_eval()
-        assert isinstance(static_eval_3, float) and static_eval_3 > 3
+        assert compare(static_eval_3, 3, operator.gt, float)
         stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1")
         static_eval_4 = stockfish.get_static_eval()
-        assert isinstance(static_eval_4, float) and static_eval_4 < -3
+        assert compare(static_eval_4, -3, operator.lt, float)
         if stockfish.get_stockfish_major_version() >= 12:
             stockfish.send_ucinewgame_command()
             stockfish.set_fen_position("8/8/8/8/8/4k3/4p3/r3K3 w - - 0 1")
@@ -817,14 +815,12 @@ class TestStockfish:
         assert stockfish.get_turn_perspective()
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] > 0
-        eval = stockfish.get_evaluation()["value"]
-        assert isinstance(eval, int) and eval > 0
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.gt, int)
         stockfish.set_turn_perspective(False)
         assert stockfish.get_turn_perspective() is False
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
-        eval = stockfish.get_evaluation()["value"]
-        assert isinstance(eval, int) and eval < 0
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
 
     def test_turn_perspective_raises_type_error(self, stockfish: Stockfish):
         with pytest.raises(TypeError):
@@ -1302,11 +1298,11 @@ class TestStockfish:
         stockfish.make_moves_from_current_position(
             ["g1f3", "g8f6", "f3g1", "f6g8", "g1f3", "g8f6", "f3g1", "f6g8", "g1f3"]
         )
-        assert stockfish.get_evaluation()["value"] == 0
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.eq, int)
         stockfish.make_moves_from_start(
             ["g1f3", "g8f6", "f3g1", "f6g8", "g1f3", "g8f6", "f3g1", "f6g8", "g1f3"]
         )
-        assert stockfish.get_evaluation()["value"] == 0
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.eq, int)
         stockfish.make_moves_from_start(["g1f3", "g8f6", "f3g1", "f6g8", "g1f3"])
         assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
         stockfish.make_moves_from_current_position(["g8f6", "f3g1", "f6g8", "g1f3"])
