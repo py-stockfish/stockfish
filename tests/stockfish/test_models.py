@@ -1137,7 +1137,8 @@ class TestStockfish:
             fen == "8/8/8/3k4/3K4/8/8/8 b - - 0 1"
             and stockfish.get_stockfish_major_version() >= 14
         ):
-            # Since for that FEN, SF 15 actually outputs a best move without crashing (unlike SF 14 and earlier).
+            # Since for this FEN, more recent versions of SF (some dev versions of 14 and later)
+            # output a best move without crashing.
             return
         if (
             fen == "2k2q2/8/8/8/8/8/8/2Q2K2 w - - 0 1"
