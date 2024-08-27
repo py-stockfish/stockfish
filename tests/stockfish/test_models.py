@@ -859,9 +859,12 @@ class TestStockfish:
 
         invalid_moves = ["d1e3", "e1g1", "c3d5", "c1d4", "a7a6", "e1d2", "word"]
 
+        current_fen = stockfish.get_fen_position()
+        stockfish.make_moves_from_current_position(invalid_moves)
+        assert current_fen == stockfish.get_fen_position()
         for invalid_move in invalid_moves:
-            with pytest.raises(ValueError):
-                stockfish.make_moves_from_current_position([invalid_move])
+            stockfish.make_moves_from_current_position([invalid_move])
+            assert current_fen == stockfish.get_fen_position()
 
     @pytest.mark.slow
     def test_not_resetting_hash_table_speed(self, stockfish: Stockfish):
