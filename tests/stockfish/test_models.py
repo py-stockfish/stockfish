@@ -1300,11 +1300,7 @@ class TestStockfish:
             ["g1f3", "g8f6", "f3g1", "f6g8", "g1f3", "g8f6", "f3g1", "f6g8", "g1f3"]
         )
         assert stockfish.get_evaluation()["value"] == 0
-        stockfish.make_moves_from_start(
-            ["g1f3", "g8f6", "f3g1", "f6g8", "g1f3"]
-        )
+        stockfish.make_moves_from_start(["g1f3", "g8f6", "f3g1", "f6g8", "g1f3"])
         assert stockfish.get_evaluation()["value"] < 0
-        stockfish.make_moves_from_start(
-            ["g8f6", "f3g1", "f6g8", "g1f3"]
-        )
+        stockfish.make_moves_from_start(["g8f6", "f3g1", "f6g8", "g1f3"])
         assert stockfish.get_evaluation()["value"] < 0
