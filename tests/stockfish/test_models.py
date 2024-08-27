@@ -1,10 +1,17 @@
 import pytest
 from timeit import default_timer
 import time
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Callable, Type, Any
 import platform
+import operator
 
 from stockfish import Stockfish, StockfishException
+
+
+def compare(first, second, op: Callable[[Any, Any], bool], expected_type: Type) -> bool:
+    return all(isinstance(x, expected_type) for x in (first, second)) and op(
+        first, second
+    )
 
 
 class TestStockfish:
@@ -1301,10 +1308,6 @@ class TestStockfish:
         )
         assert stockfish.get_evaluation()["value"] == 0
         stockfish.make_moves_from_start(["g1f3", "g8f6", "f3g1", "f6g8", "g1f3"])
-        assert (
-            isinstance((eval := stockfish.get_evaluation()["value"]), int) and eval < 0
-        )
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
         stockfish.make_moves_from_current_position(["g8f6", "f3g1", "f6g8", "g1f3"])
-        assert (
-            isinstance((eval := stockfish.get_evaluation()["value"]), int) and eval < 0
-        )
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
