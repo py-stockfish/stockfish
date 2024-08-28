@@ -847,7 +847,7 @@ class Stockfish:
         verbose: bool = False,
         num_nodes: int = 0,
         wtime: Optional[int] = None,
-        btime: Optional[int] = None
+        btime: Optional[int] = None,
     ) -> List[dict]:
         """Returns info on the top moves in the position.
 
@@ -907,6 +907,8 @@ class Stockfish:
         lines: List[List[str]] = [
             line.split(" ") for line in self._get_sf_go_command_output()
         ]
+        for line in lines:
+            print(" ".join(line) + "\n")
 
         # Stockfish is now done evaluating the position,
         # and the output is stored in the list 'lines'
@@ -930,10 +932,6 @@ class Stockfish:
 
             # if the line has no relevant info, we're done
             if ("multipv" not in line) or ("depth" not in line):
-                break
-
-            # if we're searching depth and the line is not our desired depth, we're done
-            if (num_nodes == 0) and (int(self._pick(line, "depth")) != self._depth):
                 break
 
             # if we're searching nodes and the line has less than desired number of nodes, we're done
@@ -975,6 +973,8 @@ class Stockfish:
 
             # add move to list of top moves
             top_moves.insert(0, move_evaluation)
+            if self._pick(line, "multipv") == 1:
+                break
 
         # reset MultiPV to global value
         if old_multipv != self._parameters["MultiPV"]:
