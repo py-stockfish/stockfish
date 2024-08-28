@@ -18,6 +18,20 @@ class TestStockfish:
         yield stockfish
         # Some assert statement testing something about the stockfish object here.
 
+    @pytest.mark.slow
+    def test_get_best_move_remaining_time_not_first_move(self, stockfish: Stockfish):
+        stockfish.set_fen_position(
+            "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2", False
+        )
+        best_move = stockfish.get_best_move(wtime=1000)
+        assert best_move in ("d2d4", "a2a3", "d1e2", "b1c3")
+        best_move = stockfish.get_best_move(btime=1000)
+        assert best_move in ("d2d4", "b1c3")
+        best_move = stockfish.get_best_move(wtime=1000, btime=1000)
+        assert best_move in ("d2d4", "b1c3", "g1f3")
+        best_move = stockfish.get_best_move(wtime=5 * 60 * 1000, btime=1000)
+        assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
+
     def test_constructor_defaults(self):
         sf = Stockfish()
         assert sf is not None and sf._path == "stockfish"
@@ -79,20 +93,6 @@ class TestStockfish:
         stockfish.set_position(["e2e4", "e7e6"])
         best_move = stockfish.get_best_move_time(1000)
         assert best_move in ("d2d4", "g1f3")
-
-    @pytest.mark.slow
-    def test_get_best_move_remaining_time_not_first_move(self, stockfish: Stockfish):
-        stockfish.set_fen_position(
-            "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2", True
-        )
-        best_move = stockfish.get_best_move(wtime=1000)
-        assert best_move in ("d2d4", "a2a3", "d1e2", "b1c3")
-        best_move = stockfish.get_best_move(btime=1000)
-        assert best_move in ("d2d4", "b1c3")
-        best_move = stockfish.get_best_move(wtime=1000, btime=1000)
-        assert best_move in ("d2d4", "b1c3", "g1f3")
-        best_move = stockfish.get_best_move(wtime=5 * 60 * 1000, btime=1000)
-        assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
 
     def test_get_best_move_checkmate(self, stockfish: Stockfish):
         stockfish.set_position(["f2f3", "e7e5", "g2g4", "d8h4"])
