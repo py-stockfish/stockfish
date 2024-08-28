@@ -846,6 +846,8 @@ class Stockfish:
         num_top_moves: int = 5,
         verbose: bool = False,
         num_nodes: int = 0,
+        wtime: Optional[int] = None,
+        btime: Optional[int] = None
     ) -> List[dict]:
         """Returns info on the top moves in the position.
 
@@ -894,7 +896,10 @@ class Stockfish:
 
         # start engine. will go until reaches self._depth or self._num_nodes
         if num_nodes == 0:
-            self._go()
+            if wtime is None and btime is None:
+                self._go()
+            else:
+                self._go_remaining_time(wtime, btime)
         else:
             self._num_nodes = num_nodes
             self._go_nodes()
