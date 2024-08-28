@@ -359,10 +359,7 @@ class Stockfish:
         if not moves:
             return
         self._prepare_for_new_position(False)
-        for move in moves:
-            if not self.is_move_correct(move):
-                raise ValueError(f"Cannot make move: {move}")
-            self._put(f"position fen {self.get_fen_position()} moves {move}")
+        self._put(f"position fen {self.get_fen_position()} moves {' '.join(moves)}")
 
     def get_board_visual(self, perspective_white: bool = True) -> str:
         """Returns a visual representation of the current board position.
