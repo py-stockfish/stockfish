@@ -843,6 +843,12 @@ class TestStockfish:
             "r1bqk2r/pppp1ppp/8/8/1b2n3/2N5/PPP2PPP/R1BQK2R w Qkq - 0 1"
         )
 
+        invalid_moves = ["d1e3", "e1g1", "c3d5", "c1d4", "a7a6", "e1d2", "word"]
+
+        for invalid_move in invalid_moves:
+            with pytest.raises(ValueError):
+                stockfish.make_moves_from_current_position([invalid_move])
+
     @pytest.mark.slow
     def test_make_moves_transposition_table_speed(self, stockfish: Stockfish):
         """
