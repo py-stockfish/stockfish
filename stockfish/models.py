@@ -359,7 +359,8 @@ class Stockfish:
         if not moves:
             return
         self._prepare_for_new_position(False)
-        self._put(f"position fen {self.get_fen_position()} moves {' '.join(moves)}")
+        for move in moves:
+            self._put(f"position fen {self.get_fen_position()} moves {move}")
 
     def get_board_visual(self, perspective_white: bool = True) -> str:
         """Returns a visual representation of the current board position.
@@ -929,6 +930,14 @@ class Stockfish:
 
             # if the line has no relevant info, we're done
             if ("multipv" not in line) or ("depth" not in line):
+                break
+
+            # if we're searching depth and the line is not our desired depth, we're done
+            if (
+                (num_nodes == 0)
+                and (wtime is None and btime is None)
+                and (int(self._pick(line, "depth")) != self._depth)
+            ):
                 break
 
             # if we're searching nodes and the line has less than desired number of nodes, we're done
