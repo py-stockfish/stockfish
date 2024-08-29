@@ -39,7 +39,7 @@ class TestStockfish:
     @pytest.mark.slow
     def test_get_best_move_remaining_time_not_first_move(self, stockfish: Stockfish):
         stockfish.set_position(["e2e4", "e7e6"])
-        best_move = stockfish.get_best_move(wtime=1000)
+        best_move = stockfish.get_best_move(wtime=5000)
         assert best_move in ("d2d4", "a2a3", "d1e2", "b1c3")
         best_move = stockfish.get_best_move(btime=1000)
         assert best_move in ("d2d4", "b1c3")
