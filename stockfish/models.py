@@ -581,6 +581,7 @@ class Stockfish:
         Example:
             >>> move = stockfish.get_best_move(wtime=1000, btime=1000)
         """
+        print("get best move:")
         if wtime is not None or btime is not None:
             self._go_remaining_time(wtime, btime)
         else:
@@ -712,6 +713,7 @@ class Stockfish:
         Example:
             >>> is_correct = stockfish.is_move_correct("f4f5")
         """
+        print("is move correct:")
         old_self_info = self.info
         self._put(f"go depth 1 searchmoves {move_value}")
         is_move_correct = self._get_best_move_from_sf_popen_process() is not None
