@@ -37,5 +37,6 @@ class TestStockfish:
         print(send_command(process, "go wtime 1000"))
         print(send_command(process, "go btime 1000"))
         send_command(process, "quit")
+        assert False
 
 
