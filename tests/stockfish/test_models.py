@@ -11,7 +11,7 @@ def send_command(process: Popen, command: str):
     process.stdin.write(command + "\n")
     process.stdin.flush()
     lines = []
-    if command.startswith('position fen'):
+    if command.startswith("position fen"):
         return []
     while True:
         line = process.stdout.readline()
