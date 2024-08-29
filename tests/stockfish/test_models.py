@@ -24,7 +24,7 @@ class TestStockfish:
 
         # Start the stockfish process
         process = subprocess.Popen(
-            [stockfish_path],
+            "stockfish",
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
