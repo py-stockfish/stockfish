@@ -360,7 +360,7 @@ class Stockfish:
             return
         self._prepare_for_new_position(False)
         for move in moves:
-            #if not self.is_move_correct(move):
+            # if not self.is_move_correct(move):
             #    raise ValueError(f"Cannot make move: {move}")
             self._put(f"position fen {self.get_fen_position()} moves {move}")
 
@@ -611,7 +611,7 @@ class Stockfish:
 
         lines: List[str] = self._get_sf_go_command_output()
         for line in lines:
-            print(' '.join(line))
+            print(" ".join(line))
         self.info = lines[-2]
         last_line_split = lines[-1].split(" ")
         return None if last_line_split[1] == "(none)" else last_line_split[1]
