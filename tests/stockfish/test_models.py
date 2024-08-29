@@ -9,9 +9,13 @@ import os
 def send_command(process: Popen, command):
     process.stdin.write(command + "\n")
     process.stdin.flush()
-    response = process.stdout.readline()
-    return response
-
+    while True:
+        line = process.stdout.readline()
+        print(line)
+        if line in ('', '\n'):
+            return
+        if any(x in line for x in ('bestmove', 'isready', 'readyok', 'uciok')):
+            return
 
 class TestStockfish:
 
@@ -34,9 +38,8 @@ class TestStockfish:
         send_command(process, "uci")
         send_command(process, "isready")
         send_command(process, "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 moves e2e4 e7e6")
-        print(send_command(process, "go wtime 1000"))
-        print(send_command(process, "go btime 1000"))
+        send_command(process, "go wtime 1000")
+        send_command(process, "go btime 1000")
         send_command(process, "quit")
-        assert False
 
 
