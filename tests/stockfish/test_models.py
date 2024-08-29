@@ -44,7 +44,7 @@ class TestStockfish:
         send_command(process, "isready")
         send_command(
             process,
-            "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "position fen rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
         )
         wtime_lines = send_command(process, "go wtime 1000")
         btime_lines = send_command(process, "go btime 1000")
