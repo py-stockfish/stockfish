@@ -15,7 +15,7 @@ def send_command(process, command: str):
         line = process.stdout.readline()
         lines.append(line)
         print(line)
-        if line in ("", "\n"):
+        if line == "":
             break
         if any(x in line for x in ("bestmove", "isready", "readyok", "uciok")):
             break
