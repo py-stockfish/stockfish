@@ -59,6 +59,8 @@ class TestStockfish:
         wtime_lines = send_command(process, "go wtime 1000")
         btime_lines = send_command(process, "go btime 1000")
         send_command(process, "quit")
+        print(wtime_lines)
+        print(btime_lines)
         assert any(
             x.startswith(f"bestmove {move}")
             for move in ("d2d4", "b1c3")
