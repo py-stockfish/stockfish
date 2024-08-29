@@ -127,7 +127,8 @@ class Stockfish:
         """Returns the current engine parameters being used.
 
         Returns:
-            A deep copy of the dictionary storing the current engine parameters.
+            dict:
+                A deep copy of the dictionary storing the current engine parameters.
         """
         return copy.deepcopy(self._parameters)
 
@@ -578,7 +579,7 @@ class Stockfish:
                 Time for black player in milliseconds (int)
 
         Returns:
-            A string of move in algebraic notation, or `None` if it's a mate now.
+            A string of a move in algebraic notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move(wtime=1000, btime=1000)
@@ -593,11 +594,12 @@ class Stockfish:
         """Returns best move with current position on the board after a determined time
 
         Args:
-            time:
-              Time for Stockfish to determine best move in milliseconds (int)
+            time (int):
+                Time for Stockfish to determine best move in milliseconds (int)
 
         Returns:
-            A string of move in algebraic notation, or `None` if it's a mate now.
+            Optional[str]
+                A string of a move in algebraic notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move_time(1000)
@@ -672,7 +674,8 @@ class Stockfish:
         """Checks if FEN string is valid.
 
         Returns:
-            `Boolean`
+            bool:
+                `True` if valid, `False` otherwise.
 
         Example:
             >>> is_valid = stockfish.is_fen_valid("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -758,7 +761,7 @@ class Stockfish:
 
     def does_current_engine_version_have_wdl_option(self) -> bool:
         """Returns whether the user's version of Stockfish has the option
-           to display WDL stats.
+        to display WDL stats.
 
         Returns:
             `True` if Stockfish has the `WDL` option, otherwise `False`.
