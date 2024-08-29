@@ -11,8 +11,6 @@ def send_command(process, command: str):
     process.stdin.write(command + "\n")
     process.stdin.flush()
     lines = []
-    if command.startswith("position fen"):
-        return []
     while True:
         line = process.stdout.readline()
         lines.append(line)
