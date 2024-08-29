@@ -7,7 +7,7 @@ from subprocess import Popen
 import os
 
 
-def send_command(process: Popen, command: str):
+def send_command(process, command: str):
     process.stdin.write(command + "\n")
     process.stdin.flush()
     lines = []
