@@ -28,12 +28,6 @@ def send_command(process, command: str):
 class TestStockfish:
 
     def test_sf_process(self):
-        # Get the path to the current directory
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-
-        # Path to the stockfish executable
-        stockfish_path = os.path.join(current_dir, "stockfish")
-
         # Start the stockfish process
         process = subprocess.Popen(
             "stockfish",
@@ -42,25 +36,10 @@ class TestStockfish:
             stderr=subprocess.PIPE,
             text=True,
         )
-
-        send_command(process, "uci")
-        send_command(process, "isready")
-
-        send_command(
-            process,
-            "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        )
-        send_command(process, "go depth 1 searchmoves e2e4")
-        send_command(
-            process,
-            "position fen rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
-        )
-        send_command(process, "go depth 1 searchmoves e7e6")
         send_command(
             process,
             "position fen rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
         )
-
         wtime_lines = send_command(process, "go wtime 1000")
         btime_lines = send_command(process, "go btime 1000")
         send_command(process, "quit")
