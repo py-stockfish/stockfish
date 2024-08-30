@@ -429,14 +429,11 @@ class Stockfish:
                 return " ".join(splitted_text[1:])
 
     def set_skill_level(self, skill_level: int = 20) -> None:
-        """Sets current skill level of stockfish engine.
+        """Sets the skill level of the stockfish engine.
 
         Args:
-            skill_level:
-              Skill Level option between 0 (weakest level) and 20 (full strength)
-
-        Returns:
-            `None`
+            skill_level (int):
+              Skill Level option between 0 (weakest level) and 20 (full strength).
 
         Example:
             >>> stockfish.set_skill_level(10)
@@ -446,13 +443,11 @@ class Stockfish:
         )
 
     def set_elo_rating(self, elo_rating: int = 1350) -> None:
-        """Sets current Elo rating of Stockfish engine, ignoring skill level.
+        """Sets the elo rating of the Stockfish engine, ignoring skill level.
 
         Args:
-            elo_rating: Aim for an engine strength of the given Elo
-
-        Returns:
-            `None`
+            elo_rating (int):
+                Gets Stockfish to approximate the strength of the given elo.
 
         Example:
             >>> stockfish.set_elo_rating(2500)
@@ -464,22 +459,16 @@ class Stockfish:
     def resume_full_strength(self) -> None:
         """Puts Stockfish back to full strength, if you've previously lowered the elo or skill level.
 
-        Returns:
-            `None`
-
         Example:
             >>> stockfish.reset_to_full_strength()
         """
         self.update_engine_parameters({"UCI_LimitStrength": False, "Skill Level": 20})
 
     def set_depth(self, depth: int = 15) -> None:
-        """Sets current depth of Stockfish engine.
+        """Sets the search depth of the Stockfish engine.
 
         Args:
-            depth: Depth as integer 1 or higher
-
-        Returns:
-            `None`
+            depth (int): The depth should be a positive integer.
 
         Example:
             >>> stockfish.set_depth(16)
@@ -489,21 +478,14 @@ class Stockfish:
         self._depth = depth
 
     def get_depth(self) -> int:
-        """Returns configured depth to search
-
-        Returns:
-            `Integer`
-        """
+        """Returns an int conveying the configured search depth."""
         return self._depth
 
     def set_num_nodes(self, num_nodes: int = 1000000) -> None:
-        """Sets current number of nodes of Stockfish engine.
+        """Sets the number of nodes for Stockfish to explore during its search.
 
         Args:
-            num_nodes: Number of nodes for Stockfish to search.
-
-        Returns:
-            `None`
+            num_nodes (int): Number of nodes for Stockfish to search.
 
         Example:
             >>> stockfish.set_num_nodes(1000000)
@@ -517,23 +499,18 @@ class Stockfish:
         self._num_nodes: int = num_nodes
 
     def get_num_nodes(self) -> int:
-        """Returns configured number of nodes to search
-
-        Returns:
-            `Integer`
-        """
+        """Returns the configured number of nodes for Stockfish to search."""
         return self._num_nodes
 
     def set_turn_perspective(self, turn_perspective: bool = True) -> None:
-        """Sets perspective of centipawn and WDL evaluations.
+        """Sets the turn perspective of centipawn and WDL evaluations.
 
         Args:
-            turn_perspective:
-              Boolean whether perspective is turn-based. Default `True`.
-              If `False`, returned evaluations are from White's perspective.
-
-        Returns:
-            `None`
+            turn_perspective (bool):
+              Boolean representing whether the perspective of evaluation should be turn-based
+              (i.e., positive if it favours whose turn it is, which is what Stockfish does by default).
+              This function's default value for the `turn_perspective` parameter is `True`;
+              if `False`, subsequent evaluations will be from White's perspective.
 
         Example:
             >>> stockfish.set_turn_perspective(False)
