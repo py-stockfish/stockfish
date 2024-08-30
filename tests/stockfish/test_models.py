@@ -50,10 +50,12 @@ class TestStockfish:
             process,
             "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
         )
+        send_command(process, "go depth 1 searchmoves e2e4")
         send_command(
             process,
             "position fen rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
         )
+        send_command(process, "go depth 1 searchmoves e7e6")
         send_command(
             process,
             "position fen rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
