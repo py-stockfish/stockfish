@@ -1,7 +1,7 @@
 """
     This module implements the Stockfish class.
 
-    :copyright: (c) 2016-2021 by Ilya Zhelyabuzhsky.
+    :copyright: (c) 2016-2024 by Ilya Zhelyabuzhsky and [others](https://github.com/py-stockfish/stockfish/graphs/contributors).
     :license: MIT, see LICENSE for more details.
 """
 
@@ -37,8 +37,6 @@ class Stockfish:
 
     _PIECE_CHARS = ("P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k")
 
-    # _PARAM_RESTRICTIONS stores the types of each of the params, and any applicable min and max values, based
-    # off the Stockfish source code: https://github.com/official-stockfish/Stockfish/blob/65ece7d985291cc787d6c804a33f1dd82b75736d/src/ucioption.cpp#L58-L82
     _PARAM_RESTRICTIONS: Dict[str, Tuple[type, Optional[int], Optional[int]]] = {
         "Debug Log File": (str, None, None),
         "Threads": (int, 1, 1024),
@@ -56,6 +54,10 @@ class Stockfish:
         "Minimum Thinking Time": (int, 0, 5000),
         "UCI_ShowWDL": (bool, None, None),
     }
+    """
+        _PARAM_RESTRICTIONS stores the types of each of the params, and any applicable min and max values, based off the Stockfish
+        source code: https://github.com/official-stockfish/Stockfish/blob/65ece7d985291cc787d6c804a33f1dd82b75736d/src/ucioption.cpp#L58-L82
+    """
 
     def __init__(
         self,
@@ -133,7 +135,7 @@ class Stockfish:
         return copy.deepcopy(self._parameters)
 
     def get_parameters(self) -> dict:
-        """Returns the current engine parameters being used. *Deprecated, see `get_engine_parameters()`*."""
+        """Returns the current engine parameters being used. *Deprecated, see `get_engine_parameters()` instead*."""
 
         raise ValueError(
             """The values for 'Ponder', 'UCI_Chess960', and 'UCI_LimitStrength' have been updated from
@@ -146,12 +148,9 @@ class Stockfish:
         """Updates the Stockfish engine parameters.
 
         Args:
-            parameters:
+            parameters (Optional[dict]):
                 Contains (key, value) pairs which will be used to update
                 the Stockfish engine's current parameters.
-
-        Returns:
-            `None`
 
         Example:
             >>> stockfish.update_engine_parameters({'Threads': 2})
@@ -204,11 +203,7 @@ class Stockfish:
         # Getting SF to set the position again, since UCI option(s) have been updated.
 
     def reset_engine_parameters(self) -> None:
-        """Resets the Stockfish engine parameters.
-
-        Returns:
-            `None`
-        """
+        """Resets the Stockfish engine parameters."""
         self.update_engine_parameters(self._DEFAULT_STOCKFISH_PARAMS)
 
     def _prepare_for_new_position(self, send_ucinewgame_token: bool = True) -> None:
@@ -307,16 +302,13 @@ class Stockfish:
         """Sets current board position in Forsyth-Edwards notation (FEN).
 
         Args:
-            fen_position:
-              FEN string of board position.
+            fen_position (str):
+                FEN string of board position.
 
-            send_ucinewgame_token:
-              Whether to send the `ucinewgame` token to the Stockfish engine.
-              The most prominent effect this will have is clearing Stockfish's transposition table,
-              which should be done if the new position is unrelated to the current position.
-
-        Returns:
-            `None`
+            send_ucinewgame_token (bool):
+                Whether to send the `ucinewgame` token to the Stockfish engine.
+                The most prominent effect this will have is clearing Stockfish's transposition table,
+                which should be done if the new position is unrelated to the current position.
 
         Example:
             >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
@@ -328,12 +320,8 @@ class Stockfish:
         """Sets current board position.
 
         Args:
-            moves:
-              A list of moves to set this position on the board.
-              Must be in full algebraic notation.
-
-        Returns:
-            `None`
+            moves (Optional[List[str]]):
+                A list of moves to set this position on the board. Must be in full algebraic notation.
 
         Example:
             >>> stockfish.set_position(['e2e4', 'e7e5'])
@@ -347,12 +335,9 @@ class Stockfish:
         """Sets a new position by playing the moves from the current position.
 
         Args:
-            moves:
+            moves (Optional[List[str]]):
               A list of moves to play in the current position, in order to reach a new position.
               Must be in full algebraic notation.
-
-        Returns:
-            `None`
 
         Example:
             >>> stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1"])
@@ -369,34 +354,32 @@ class Stockfish:
         """Returns a visual representation of the current board position.
 
         Args:
-            perspective_white:
-              A boolean that indicates whether the board should be displayed from the
-              perspective of white. `True` indicates White's perspective.
+            perspective_white (bool):
+                A boolean that indicates whether the board should be displayed from the
+                perspective of white. `True` indicates White's perspective.
 
         Returns:
-            String of visual representation of the chessboard with its pieces in current position.
-
-            For example:
-            ```
-            +---+---+---+---+---+---+---+---+
-            | r | n | b | q | k | b | n | r | 8
-            +---+---+---+---+---+---+---+---+
-            | p | p | p | p | p | p | p | p | 7
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 6
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 5
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 4
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 3
-            +---+---+---+---+---+---+---+---+
-            | P | P | P | P | P | P | P | P | 2
-            +---+---+---+---+---+---+---+---+
-            | R | N | B | Q | K | B | N | R | 1
-            +---+---+---+---+---+---+---+---+
-              a   b   c   d   e   f   g   h
-            ```
+            str:
+                A visual representation of the chessboard in the current position.
+                For example:
+                +---+---+---+---+---+---+---+---+
+                | r | n | b | q | k | b | n | r | 8
+                +---+---+---+---+---+---+---+---+
+                | p | p | p | p | p | p | p | p | 7
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 6
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 5
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 4
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 3
+                +---+---+---+---+---+---+---+---+
+                | P | P | P | P | P | P | P | P | 2
+                +---+---+---+---+---+---+---+---+
+                | R | N | B | Q | K | B | N | R | 1
+                +---+---+---+---+---+---+---+---+
+                  a   b   c   d   e   f   g   h
         """
         self._put("d")
         board_rep_lines: List[str] = []
@@ -430,12 +413,12 @@ class Stockfish:
         return board_rep
 
     def get_fen_position(self) -> str:
-        """Returns current board position in Forsyth-Edwards notation (FEN).
+        """Returns the current board position in Forsyth-Edwards notation (FEN).
 
         Returns:
-            String of current board position in Forsyth-Edwards notation (FEN).
-
-            For example: `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
+            str:
+                A string of the current board position in Forsyth-Edwards notation (FEN).
+                For example: `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
         """
         self._put("d")
         while True:
