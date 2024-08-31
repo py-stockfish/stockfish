@@ -520,16 +520,13 @@ class Stockfish:
         self._turn_perspective = turn_perspective
 
     def get_turn_perspective(self) -> bool:
-        """Returns whether centipawn and WDL values are set from turn perspective.
-        Returns:
-            `Boolean`
-        """
+        """Returns whether centipawn and WDL values are set from turn perspective."""
         return self._turn_perspective
 
     def get_best_move(
         self, wtime: Optional[int] = None, btime: Optional[int] = None
     ) -> Optional[str]:
-        """Returns best move with current position on the board.
+        """Returns the best move in the current position on the board.
         `wtime` and `btime` arguments influence the search only if provided.
 
         Args:
@@ -539,7 +536,8 @@ class Stockfish:
                 Time for black player in milliseconds (int)
 
         Returns:
-            A string of a move in algebraic notation, or `None` if it's a mate now.
+            str:
+                A string of the best move in algebraic notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move(wtime=1000, btime=1000)
@@ -551,14 +549,14 @@ class Stockfish:
         return self._get_best_move_from_sf_popen_process()
 
     def get_best_move_time(self, time: int = 1000) -> Optional[str]:
-        """Returns best move with current position on the board after a determined time
+        """Returns the best move in the current position after a determined time.
 
         Args:
             time (int):
-                Time for Stockfish to determine best move in milliseconds (int)
+                Time for Stockfish to determine the best move (milliseconds).
 
         Returns:
-            Optional[str]
+            Optional[str]:
                 A string of a move in algebraic notation, or `None` if it's a mate now.
 
         Example:
@@ -631,7 +629,7 @@ class Stockfish:
         return True
 
     def is_fen_valid(self, fen: str) -> bool:
-        """Checks if FEN string is valid.
+        """Checks if the FEN string is valid.
 
         Returns:
             bool:
@@ -663,14 +661,15 @@ class Stockfish:
             # temp_sf object goes out of scope, but calling it explicitly guarantees this will happen.
 
     def is_move_correct(self, move_value: str) -> bool:
-        """Checks new move.
+        """Checks if the passed in move is legal.
 
         Args:
-            move_value:
+            move_value (str):
               New move value in algebraic notation.
 
         Returns:
-            `True` if new move is correct, otherwise `False`.
+            bool:
+                `True` if the new move is legal, otherwise `False`.
 
         Example:
             >>> is_correct = stockfish.is_move_correct("f4f5")
@@ -683,17 +682,17 @@ class Stockfish:
 
     def get_wdl_stats(
         self, get_as_tuple: bool = False
-    ) -> list[int] | tuple[int, int, int] | None:
+    ) -> Union[list[int], tuple[int, int, int], None]:
         """Returns Stockfish's win/draw/loss stats for the side to move.
 
         Args:
-            get_as_tuple:
-                Option to return the wdl stats as a tuple instead of a list
-                `Boolean`. Default is `False`.
+            get_as_tuple (bool):
+                Option to return the wdl stats as a tuple instead of a list. Default is `False`.
 
         Returns:
-            A list or tuple of three integers, unless the game is over (in which case
-            `None` is returned).
+            (Union[list[int], tuple[int, int, int], None]):
+                A list or tuple of three integers, unless the game is over (in which case
+                `None` is returned).
         """
 
         if not self.does_current_engine_version_have_wdl_option():
@@ -720,12 +719,7 @@ class Stockfish:
         return wdl_stats
 
     def does_current_engine_version_have_wdl_option(self) -> bool:
-        """Returns whether the user's version of Stockfish has the option
-        to display WDL stats.
-
-        Returns:
-            `True` if Stockfish has the `WDL` option, otherwise `False`.
-        """
+        """Returns whether the user's version of Stockfish has the option to display WDL stats."""
         self._put("uci")
         while True:
             splitted_text = self._read_line().split(" ")
@@ -738,18 +732,20 @@ class Stockfish:
     def get_evaluation(
         self, searchtime: Optional[int] = None
     ) -> Dict[str, Union[str, int]]:
-        """Searches to the specified depth and evaluates the current position.
+        """Performs a search to evaluate the current position.
 
         Args:
-            searchtime:
-              [Optional] Time for Stockfish to evaluate in milliseconds (int)
+            searchtime (Optional[int]):
+              Time for Stockfish to evaluate (milliseconds). If left as `None`, the currently configured
+              search depth will be used (call `get_depth()` to see it).
 
         Returns:
-            A dictionary of two pairs: {str: str, str: int}
-            - The first pair describes the type of the evaluation. The key is "type", and the value
-              will be either "cp" (centipawns) or "mate".
-            - The second pair describes the value of the evaluation. The key is "value", and the value
-              will be an int (representing either a cp value or a mate in n value).
+            (Dict[str, Union[str, int]]):
+            A dictionary of two key-value pairs: {str: str, str: int}
+            - The first key is "type", and its value will be either "cp" or "mate".
+              This describes the type of evaluation (centipawns or mate in x).
+            - The second key is "value", and its value will be some int (representing either
+              centipawns or mate in x, depending on the aforementioned "type").
         """
 
         if self._on_weaker_setting():
@@ -778,8 +774,9 @@ class Stockfish:
            'directly' evaluated -- i.e., no search is involved.
 
         Returns:
-            A float representing the static eval, unless one side is in check or checkmated,
-            in which case None is returned.
+            Optional[float]:
+                A float representing the static eval, unless one side is in check or
+                checkmated, in which case None is returned.
         """
 
         # Stockfish gives the static eval from white's perspective:
