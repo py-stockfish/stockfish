@@ -507,7 +507,7 @@ class Stockfish:
 
         Args:
             turn_perspective (bool):
-              Boolean representing whether the perspective of evaluation should be turn-based
+              Represents whether the perspective of evaluation should be turn-based
               (i.e., positive if it favours whose turn it is, which is what Stockfish does by default).
               This function's default value for the `turn_perspective` parameter is `True`;
               if `False`, subsequent evaluations will be from White's perspective.
@@ -516,7 +516,7 @@ class Stockfish:
             >>> stockfish.set_turn_perspective(False)
         """
         if not isinstance(turn_perspective, bool):
-            raise TypeError("turn_perspective must be a Boolean")
+            raise TypeError("`turn_perspective` must be a bool")
         self._turn_perspective = turn_perspective
 
     def get_turn_perspective(self) -> bool:
@@ -530,10 +530,10 @@ class Stockfish:
         `wtime` and `btime` arguments influence the search only if provided.
 
         Args:
-            wtime:
-                Time for white player in milliseconds (int)
-            btime:
-                Time for black player in milliseconds (int)
+            wtime (int):
+                Time for white player in milliseconds.
+            btime (int):
+                Time for black player in milliseconds.
 
         Returns:
             str:
@@ -810,27 +810,28 @@ class Stockfish:
         """Returns info on the top moves in the position.
 
         Args:
-            num_top_moves:
+            num_top_moves (int):
               The number of moves for which to return information, assuming there
               are at least that many legal moves.
               Default is 5.
 
-            verbose:
+            verbose (bool):
               Option to include the full info from the engine in the returned dictionary,
               including seldepth, multipv, time, nodes, nps, and wdl if available.
-              `Boolean`. Default is `False`.
+              Default is `False`.
 
-            num_nodes:
+            num_nodes (int):
               Option to search until a certain number of nodes have been searched, instead of depth.
               Default is 0.
 
         Returns:
-            A list of dictionaries, where each dictionary contains keys for `Move`, `Centipawn`, and `Mate`.
-            The corresponding value for either the `Centipawn` or `Mate` key will be `None`.
-            If there are no moves in the position, an empty list is returned.
+            List[dict]:
+                A list of dictionaries, where each dictionary contains keys for `Move`, `Centipawn`, and `Mate`.
+                The corresponding value for either the `Centipawn` or `Mate` key will be `None`.
+                If there are no moves in the position, an empty list is returned.
 
-            If `verbose` is `True`, the dictionary will also include the following keys: `SelectiveDepth`, `Time`,
-            `Nodes`, `NodesPerSecond`, `MultiPVLine`, and `WDL` (if available).
+                If `verbose` is `True`, the dictionary will also include the following keys: `SelectiveDepth`, `Time`,
+                `Nodes`, `NodesPerSecond`, `MultiPVLine`, and `WDL` (if available).
 
         Example:
             >>> moves = stockfish.get_top_moves(2, num_nodes=1000000, verbose=True)
@@ -942,16 +943,16 @@ class Stockfish:
         return top_moves
 
     def get_perft(self, depth: int) -> Tuple[int, dict[str, int]]:
-        """Returns perft information of the current position for a given depth
+        """Returns perft information of the current position for a given depth.
 
         Args:
-            depth: The search depth given as an integer (1 or higher)
+            depth (int): The search depth given as an integer (1 or higher).
 
         Returns:
-            A 2-tuple where:
-                - The first element is the total number of leaf nodes at the specified depth.
-                - The second element is a dictionary. Each legal move in the current position are keys,
-                  and their associated values are the number of leaf nodes (at the specified depth) for that move.
+            (Tuple[int, dict[str, int]]):
+            - The first element of the tuple is the total number of leaf nodes at the specified depth.
+            - The second element is a dictionary. Each legal move in the current position are keys,
+              and their associated values are the number of leaf nodes (at the specified depth) for that move.
 
         Example:
             >>> num_nodes, move_possibilities = stockfish.get_perft(3)
@@ -989,12 +990,12 @@ class Stockfish:
         """Returns what is on the specified square.
 
         Args:
-            square:
-                The coordinate of the square in question, eg. e4.
+            square (str):
+                The coordinate of the square in question (e.g., "e4").
 
         Returns:
-            Either one of the 12 enum members in the `Piece` enum, or the `None`
-            object if the square is empty.
+            Optional[Piece]:
+                One of the 12 members of the `Piece` enum, or `None` if the square is empty.
 
         Example:
             >>> piece = stockfish.get_what_is_on_square("e2")
@@ -1018,18 +1019,19 @@ class Stockfish:
 
     def will_move_be_a_capture(self, move_value: str) -> Capture:
         """Returns whether the proposed move will be a direct capture,
-           en passant, or not a capture at all.
+        en passant, or not a capture at all.
 
         Args:
-            move_value:
+            move_value (str):
                 The proposed move, in the notation that Stockfish uses.
                 E.g., "e2e4", "g1f3", etc.
 
         Returns:
-            One of the following members of the `Capture` enum:
-            - DIRECT_CAPTURE if the move will be a direct capture.
-            - EN_PASSANT if the move is a capture done with en passant.
-            - NO_CAPTURE if the move does not capture anything.
+            Stockfish.Capture:
+            One of the members of the `Stockfish.Capture` enum.
+            - `Stockfish.Capture.DIRECT_CAPTURE` if the move will be a direct capture.
+            - `Stockfish.Capture.EN_PASSANT` if the move is a capture done with en passant.
+            - `Stockfish.Capture.NO_CAPTURE` if the move does not capture anything.
 
         Example:
             >>> capture = stockfish.will_move_be_a_capture("e2e4")
@@ -1066,33 +1068,27 @@ class Stockfish:
             return Stockfish.Capture.NO_CAPTURE
 
     def get_stockfish_full_version(self) -> float:
-        """Returns Stockfish engine full version."""
+        """Returns the full version of the Stockfish engine being used."""
         return self._version["full"]
 
     def get_stockfish_major_version(self) -> int:
-        """Returns Stockfish engine major version."""
+        """Returns the major version of the Stockfish engine being used."""
         return self._version["major"]
 
     def get_stockfish_minor_version(self) -> int:
-        """Returns Stockfish engine minor version."""
+        """Returns the minor version of the Stockfish engine being used."""
         return self._version["minor"]
 
     def get_stockfish_patch_version(self) -> str:
-        """Returns Stockfish engine patch version."""
+        """Returns the patch version of the Stockfish engine being used."""
         return self._version["patch"]
 
     def get_stockfish_sha_version(self) -> str:
-        """Returns Stockfish engine build version."""
+        """Returns the build version of the Stockfish engine being used."""
         return self._version["sha"]
 
     def is_development_build_of_engine(self) -> bool:
-        """Returns whether the version of Stockfish being used is a
-           development build.
-
-        Returns:
-             `True` if the version of Stockfish being used is a development build, `False` otherwise.
-
-        """
+        """Returns whether the version of Stockfish being used is a development build."""
         return self._version["is_dev_build"]
 
     def _set_stockfish_version(self) -> None:
@@ -1185,8 +1181,7 @@ class Stockfish:
         return key_for_date
 
     def send_quit_command(self) -> None:
-        """Sends the 'quit' command to the Stockfish engine, getting the process
-        to stop."""
+        """Sends the `quit` command to the Stockfish engine, getting the process to stop."""
 
         if self._stockfish.poll() is None:
             self._put("quit")
@@ -1246,9 +1241,19 @@ class Stockfish:
             )
 
     def benchmark(self, params: BenchmarkParameters) -> str:
-        """Benchmark will run the bench command with BenchmarkParameters.
-        It is an Additional custom non-UCI command, mainly for debugging.
+        """This function will run the `bench` command with BenchmarkParameters.
+        It is an additional custom non-UCI command, mainly for debugging.
         Do not use this command during a search!
+
+        Args:
+            params (BenchmarkParameters):
+                An instance of the `Stockfish.BenchmarkParameters` class, that specifies
+                the parameters with which you want to run the `bench` command.
+
+        Returns:
+            str:
+                The final line of Stockfish's output from running the bench. I.e., the line
+                starting with "Nodes/second".
         """
         if type(params) != self.BenchmarkParameters:
             params = self.BenchmarkParameters()
