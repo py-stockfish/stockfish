@@ -999,6 +999,7 @@ class Stockfish:
         if not isinstance(depth, int) or depth < 1 or isinstance(depth, bool):
             raise TypeError("depth must be an integer higher than 0")
 
+        depth = depth
         self._go_perft(depth)
 
         move_possibilities: dict[str, int] = {}
