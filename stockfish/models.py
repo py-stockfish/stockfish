@@ -1,7 +1,7 @@
 """
     This module implements the Stockfish class.
 
-    :copyright: (c) 2016-2021 by Ilya Zhelyabuzhsky.
+    :copyright: (c) 2016-2024 by Ilya Zhelyabuzhsky and [others](https://github.com/py-stockfish/stockfish/graphs/contributors).
     :license: MIT, see LICENSE for more details.
 """
 
@@ -37,8 +37,6 @@ class Stockfish:
 
     _PIECE_CHARS = ("P", "N", "B", "R", "Q", "K", "p", "n", "b", "r", "q", "k")
 
-    # _PARAM_RESTRICTIONS stores the types of each of the params, and any applicable min and max values, based
-    # off the Stockfish source code: https://github.com/official-stockfish/Stockfish/blob/65ece7d985291cc787d6c804a33f1dd82b75736d/src/ucioption.cpp#L58-L82
     _PARAM_RESTRICTIONS: Dict[str, Tuple[type, Optional[int], Optional[int]]] = {
         "Debug Log File": (str, None, None),
         "Threads": (int, 1, 1024),
@@ -56,6 +54,10 @@ class Stockfish:
         "Minimum Thinking Time": (int, 0, 5000),
         "UCI_ShowWDL": (bool, None, None),
     }
+    """
+        _PARAM_RESTRICTIONS stores the types of each of the params, and any applicable min and max values, based off the Stockfish
+        source code: https://github.com/official-stockfish/Stockfish/blob/65ece7d985291cc787d6c804a33f1dd82b75736d/src/ucioption.cpp#L58-L82
+    """
 
     def __init__(
         self,
@@ -127,12 +129,13 @@ class Stockfish:
         """Returns the current engine parameters being used.
 
         Returns:
-            A deep copy of the dictionary storing the current engine parameters.
+            dict:
+                A deep copy of the dictionary storing the current engine parameters.
         """
         return copy.deepcopy(self._parameters)
 
     def get_parameters(self) -> dict:
-        """Returns the current engine parameters being used. *Deprecated, see `get_engine_parameters()`*."""
+        """Returns the current engine parameters being used. *Deprecated, see `get_engine_parameters()` instead*."""
 
         raise ValueError(
             """The values for 'Ponder', 'UCI_Chess960', and 'UCI_LimitStrength' have been updated from
@@ -145,12 +148,9 @@ class Stockfish:
         """Updates the Stockfish engine parameters.
 
         Args:
-            parameters:
+            parameters (Optional[dict]):
                 Contains (key, value) pairs which will be used to update
                 the Stockfish engine's current parameters.
-
-        Returns:
-            `None`
 
         Example:
             >>> stockfish.update_engine_parameters({'Threads': 2})
@@ -203,11 +203,7 @@ class Stockfish:
         # Getting SF to set the position again, since UCI option(s) have been updated.
 
     def reset_engine_parameters(self) -> None:
-        """Resets the Stockfish engine parameters.
-
-        Returns:
-            `None`
-        """
+        """Resets the Stockfish engine parameters."""
         self.update_engine_parameters(self._DEFAULT_STOCKFISH_PARAMS)
 
     def _prepare_for_new_position(self, send_ucinewgame_token: bool = True) -> None:
@@ -306,16 +302,13 @@ class Stockfish:
         """Sets current board position in Forsyth-Edwards notation (FEN).
 
         Args:
-            fen_position:
-              FEN string of board position.
+            fen_position (str):
+                FEN string of board position.
 
-            send_ucinewgame_token:
-              Whether to send the `ucinewgame` token to the Stockfish engine.
-              The most prominent effect this will have is clearing Stockfish's transposition table,
-              which should be done if the new position is unrelated to the current position.
-
-        Returns:
-            `None`
+            send_ucinewgame_token (bool):
+                Whether to send the `ucinewgame` token to the Stockfish engine.
+                The most prominent effect this will have is clearing Stockfish's transposition table,
+                which should be done if the new position is unrelated to the current position.
 
         Example:
             >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
@@ -327,12 +320,8 @@ class Stockfish:
         """Sets current board position.
 
         Args:
-            moves:
-              A list of moves to set this position on the board.
-              Must be in full algebraic notation.
-
-        Returns:
-            `None`
+            moves (Optional[List[str]]):
+                A list of moves to set this position on the board. Must be in full algebraic notation.
 
         Example:
             >>> stockfish.set_position(['e2e4', 'e7e5'])
@@ -346,12 +335,9 @@ class Stockfish:
         """Sets a new position by playing the moves from the current position.
 
         Args:
-            moves:
+            moves (Optional[List[str]]):
               A list of moves to play in the current position, in order to reach a new position.
               Must be in full algebraic notation.
-
-        Returns:
-            `None`
 
         Example:
             >>> stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1"])
@@ -368,34 +354,32 @@ class Stockfish:
         """Returns a visual representation of the current board position.
 
         Args:
-            perspective_white:
-              A boolean that indicates whether the board should be displayed from the
-              perspective of white. `True` indicates White's perspective.
+            perspective_white (bool):
+                A boolean that indicates whether the board should be displayed from the
+                perspective of white. `True` indicates White's perspective.
 
         Returns:
-            String of visual representation of the chessboard with its pieces in current position.
-
-            For example:
-            ```
-            +---+---+---+---+---+---+---+---+
-            | r | n | b | q | k | b | n | r | 8
-            +---+---+---+---+---+---+---+---+
-            | p | p | p | p | p | p | p | p | 7
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 6
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 5
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 4
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 3
-            +---+---+---+---+---+---+---+---+
-            | P | P | P | P | P | P | P | P | 2
-            +---+---+---+---+---+---+---+---+
-            | R | N | B | Q | K | B | N | R | 1
-            +---+---+---+---+---+---+---+---+
-              a   b   c   d   e   f   g   h
-            ```
+            str:
+                A visual representation of the chessboard in the current position.
+                For example:
+                +---+---+---+---+---+---+---+---+
+                | r | n | b | q | k | b | n | r | 8
+                +---+---+---+---+---+---+---+---+
+                | p | p | p | p | p | p | p | p | 7
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 6
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 5
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 4
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 3
+                +---+---+---+---+---+---+---+---+
+                | P | P | P | P | P | P | P | P | 2
+                +---+---+---+---+---+---+---+---+
+                | R | N | B | Q | K | B | N | R | 1
+                +---+---+---+---+---+---+---+---+
+                  a   b   c   d   e   f   g   h
         """
         self._put("d")
         board_rep_lines: List[str] = []
@@ -429,12 +413,12 @@ class Stockfish:
         return board_rep
 
     def get_fen_position(self) -> str:
-        """Returns current board position in Forsyth-Edwards notation (FEN).
+        """Returns the current board position in Forsyth-Edwards notation (FEN).
 
         Returns:
-            String of current board position in Forsyth-Edwards notation (FEN).
-
-            For example: `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
+            str:
+                A string of the current board position in Forsyth-Edwards notation (FEN).
+                For example: `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
         """
         self._put("d")
         while True:
@@ -445,14 +429,11 @@ class Stockfish:
                 return " ".join(splitted_text[1:])
 
     def set_skill_level(self, skill_level: int = 20) -> None:
-        """Sets current skill level of stockfish engine.
+        """Sets the skill level of the stockfish engine.
 
         Args:
-            skill_level:
-              Skill Level option between 0 (weakest level) and 20 (full strength)
-
-        Returns:
-            `None`
+            skill_level (int):
+              Skill Level option between 0 (weakest level) and 20 (full strength).
 
         Example:
             >>> stockfish.set_skill_level(10)
@@ -462,13 +443,11 @@ class Stockfish:
         )
 
     def set_elo_rating(self, elo_rating: int = 1350) -> None:
-        """Sets current Elo rating of Stockfish engine, ignoring skill level.
+        """Sets the elo rating of the Stockfish engine, ignoring skill level.
 
         Args:
-            elo_rating: Aim for an engine strength of the given Elo
-
-        Returns:
-            `None`
+            elo_rating (int):
+                Gets Stockfish to approximate the strength of the given elo.
 
         Example:
             >>> stockfish.set_elo_rating(2500)
@@ -480,22 +459,16 @@ class Stockfish:
     def resume_full_strength(self) -> None:
         """Puts Stockfish back to full strength, if you've previously lowered the elo or skill level.
 
-        Returns:
-            `None`
-
         Example:
             >>> stockfish.reset_to_full_strength()
         """
         self.update_engine_parameters({"UCI_LimitStrength": False, "Skill Level": 20})
 
     def set_depth(self, depth: int = 15) -> None:
-        """Sets current depth of Stockfish engine.
+        """Sets the search depth of the Stockfish engine.
 
         Args:
-            depth: Depth as integer 1 or higher
-
-        Returns:
-            `None`
+            depth (int): The depth should be a positive integer.
 
         Example:
             >>> stockfish.set_depth(16)
@@ -505,21 +478,14 @@ class Stockfish:
         self._depth = depth
 
     def get_depth(self) -> int:
-        """Returns configured depth to search
-
-        Returns:
-            `Integer`
-        """
+        """Returns an int conveying the configured search depth."""
         return self._depth
 
     def set_num_nodes(self, num_nodes: int = 1000000) -> None:
-        """Sets current number of nodes of Stockfish engine.
+        """Sets the number of nodes for Stockfish to explore during its search.
 
         Args:
-            num_nodes: Number of nodes for Stockfish to search.
-
-        Returns:
-            `None`
+            num_nodes (int): Number of nodes for Stockfish to search.
 
         Example:
             >>> stockfish.set_num_nodes(1000000)
@@ -533,52 +499,45 @@ class Stockfish:
         self._num_nodes: int = num_nodes
 
     def get_num_nodes(self) -> int:
-        """Returns configured number of nodes to search
-
-        Returns:
-            `Integer`
-        """
+        """Returns the configured number of nodes for Stockfish to search."""
         return self._num_nodes
 
     def set_turn_perspective(self, turn_perspective: bool = True) -> None:
-        """Sets perspective of centipawn and WDL evaluations.
+        """Sets the turn perspective of centipawn and WDL evaluations.
 
         Args:
-            turn_perspective:
-              Boolean whether perspective is turn-based. Default `True`.
-              If `False`, returned evaluations are from White's perspective.
-
-        Returns:
-            `None`
+            turn_perspective (bool):
+              Represents whether the perspective of evaluation should be turn-based
+              (i.e., positive if it favours whose turn it is, which is what Stockfish does by default).
+              This function's default value for the `turn_perspective` parameter is `True`;
+              if `False`, subsequent evaluations will be from White's perspective.
 
         Example:
             >>> stockfish.set_turn_perspective(False)
         """
         if not isinstance(turn_perspective, bool):
-            raise TypeError("turn_perspective must be a Boolean")
+            raise TypeError("`turn_perspective` must be a bool")
         self._turn_perspective = turn_perspective
 
     def get_turn_perspective(self) -> bool:
-        """Returns whether centipawn and WDL values are set from turn perspective.
-        Returns:
-            `Boolean`
-        """
+        """Returns whether centipawn and WDL values are set from turn perspective."""
         return self._turn_perspective
 
     def get_best_move(
         self, wtime: Optional[int] = None, btime: Optional[int] = None
     ) -> Optional[str]:
-        """Returns best move with current position on the board.
+        """Returns the best move in the current position on the board.
         `wtime` and `btime` arguments influence the search only if provided.
 
         Args:
-            wtime:
-                Time for white player in milliseconds (int)
-            btime:
-                Time for black player in milliseconds (int)
+            wtime (int):
+                Time for white player in milliseconds.
+            btime (int):
+                Time for black player in milliseconds.
 
         Returns:
-            A string of move in algebraic notation, or `None` if it's a mate now.
+            str:
+                A string of the best move in algebraic notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move(wtime=1000, btime=1000)
@@ -590,14 +549,15 @@ class Stockfish:
         return self._get_best_move_from_sf_popen_process()
 
     def get_best_move_time(self, time: int = 1000) -> Optional[str]:
-        """Returns best move with current position on the board after a determined time
+        """Returns the best move in the current position after a determined time.
 
         Args:
-            time:
-              Time for Stockfish to determine best move in milliseconds (int)
+            time (int):
+                Time for Stockfish to determine the best move (milliseconds).
 
         Returns:
-            A string of move in algebraic notation, or `None` if it's a mate now.
+            Optional[str]:
+                A string of a move in algebraic notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move_time(1000)
@@ -669,10 +629,11 @@ class Stockfish:
         return True
 
     def is_fen_valid(self, fen: str) -> bool:
-        """Checks if FEN string is valid.
+        """Checks if the FEN string is valid.
 
         Returns:
-            `Boolean`
+            bool:
+                `True` if valid, `False` otherwise.
 
         Example:
             >>> is_valid = stockfish.is_fen_valid("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -700,14 +661,15 @@ class Stockfish:
             # temp_sf object goes out of scope, but calling it explicitly guarantees this will happen.
 
     def is_move_correct(self, move_value: str) -> bool:
-        """Checks new move.
+        """Checks if the passed in move is legal.
 
         Args:
-            move_value:
+            move_value (str):
               New move value in algebraic notation.
 
         Returns:
-            `True` if new move is correct, otherwise `False`.
+            bool:
+                `True` if the new move is legal, otherwise `False`.
 
         Example:
             >>> is_correct = stockfish.is_move_correct("f4f5")
@@ -720,17 +682,17 @@ class Stockfish:
 
     def get_wdl_stats(
         self, get_as_tuple: bool = False
-    ) -> list[int] | tuple[int, int, int] | None:
+    ) -> Union[list[int], tuple[int, int, int], None]:
         """Returns Stockfish's win/draw/loss stats for the side to move.
 
         Args:
-            get_as_tuple:
-                Option to return the wdl stats as a tuple instead of a list
-                `Boolean`. Default is `False`.
+            get_as_tuple (bool):
+                Option to return the wdl stats as a tuple instead of a list. Default is `False`.
 
         Returns:
-            A list or tuple of three integers, unless the game is over (in which case
-            `None` is returned).
+            (Union[list[int], tuple[int, int, int], None]):
+                A list or tuple of three integers, unless the game is over (in which case
+                `None` is returned).
         """
 
         if not self.does_current_engine_version_have_wdl_option():
@@ -757,12 +719,7 @@ class Stockfish:
         return wdl_stats
 
     def does_current_engine_version_have_wdl_option(self) -> bool:
-        """Returns whether the user's version of Stockfish has the option
-           to display WDL stats.
-
-        Returns:
-            `True` if Stockfish has the `WDL` option, otherwise `False`.
-        """
+        """Returns whether the user's version of Stockfish has the option to display WDL stats."""
         self._put("uci")
         while True:
             splitted_text = self._read_line().split(" ")
@@ -775,18 +732,20 @@ class Stockfish:
     def get_evaluation(
         self, searchtime: Optional[int] = None
     ) -> Dict[str, Union[str, int]]:
-        """Searches to the specified depth and evaluates the current position.
+        """Performs a search to evaluate the current position.
 
         Args:
-            searchtime:
-              [Optional] Time for Stockfish to evaluate in milliseconds (int)
+            searchtime (Optional[int]):
+              Time for Stockfish to evaluate (milliseconds). If left as `None`, the currently configured
+              search depth will be used (call `get_depth()` to see it).
 
         Returns:
-            A dictionary of two pairs: {str: str, str: int}
-            - The first pair describes the type of the evaluation. The key is "type", and the value
-              will be either "cp" (centipawns) or "mate".
-            - The second pair describes the value of the evaluation. The key is "value", and the value
-              will be an int (representing either a cp value or a mate in n value).
+            (Dict[str, Union[str, int]]):
+            A dictionary of two key-value pairs: {str: str, str: int}
+            - The first key is "type", and its value will be either "cp" or "mate".
+              This describes the type of evaluation (centipawns or mate in x).
+            - The second key is "value", and its value will be some int (representing either
+              centipawns or mate in x, depending on the aforementioned "type").
         """
 
         if self._on_weaker_setting():
@@ -815,8 +774,9 @@ class Stockfish:
            'directly' evaluated -- i.e., no search is involved.
 
         Returns:
-            A float representing the static eval, unless one side is in check or checkmated,
-            in which case None is returned.
+            Optional[float]:
+                A float representing the static eval, unless one side is in check or
+                checkmated, in which case None is returned.
         """
 
         # Stockfish gives the static eval from white's perspective:
@@ -850,27 +810,28 @@ class Stockfish:
         """Returns info on the top moves in the position.
 
         Args:
-            num_top_moves:
+            num_top_moves (int):
               The number of moves for which to return information, assuming there
               are at least that many legal moves.
               Default is 5.
 
-            verbose:
+            verbose (bool):
               Option to include the full info from the engine in the returned dictionary,
               including seldepth, multipv, time, nodes, nps, and wdl if available.
-              `Boolean`. Default is `False`.
+              Default is `False`.
 
-            num_nodes:
+            num_nodes (int):
               Option to search until a certain number of nodes have been searched, instead of depth.
               Default is 0.
 
         Returns:
-            A list of dictionaries, where each dictionary contains keys for `Move`, `Centipawn`, and `Mate`.
-            The corresponding value for either the `Centipawn` or `Mate` key will be `None`.
-            If there are no moves in the position, an empty list is returned.
+            List[dict]:
+                A list of dictionaries, where each dictionary contains keys for `Move`, `Centipawn`, and `Mate`.
+                The corresponding value for either the `Centipawn` or `Mate` key will be `None`.
+                If there are no moves in the position, an empty list is returned.
 
-            If `verbose` is `True`, the dictionary will also include the following keys: `SelectiveDepth`, `Time`,
-            `Nodes`, `NodesPerSecond`, `MultiPVLine`, and `WDL` (if available).
+                If `verbose` is `True`, the dictionary will also include the following keys: `SelectiveDepth`, `Time`,
+                `Nodes`, `NodesPerSecond`, `MultiPVLine`, and `WDL` (if available).
 
         Example:
             >>> moves = stockfish.get_top_moves(2, num_nodes=1000000, verbose=True)
@@ -982,16 +943,16 @@ class Stockfish:
         return top_moves
 
     def get_perft(self, depth: int) -> Tuple[int, dict[str, int]]:
-        """Returns perft information of the current position for a given depth
+        """Returns perft information of the current position for a given depth.
 
         Args:
-            depth: The search depth given as an integer (1 or higher)
+            depth (int): The search depth given as an integer (1 or higher).
 
         Returns:
-            A 2-tuple where:
-                - The first element is the total number of leaf nodes at the specified depth.
-                - The second element is a dictionary. Each legal move in the current position are keys,
-                  and their associated values are the number of leaf nodes (at the specified depth) for that move.
+            (Tuple[int, dict[str, int]]):
+            - The first element of the tuple is the total number of leaf nodes at the specified depth.
+            - The second element is a dictionary. Each legal move in the current position are keys,
+              and their associated values are the number of leaf nodes (at the specified depth) for that move.
 
         Example:
             >>> num_nodes, move_possibilities = stockfish.get_perft(3)
@@ -1029,12 +990,12 @@ class Stockfish:
         """Returns what is on the specified square.
 
         Args:
-            square:
-                The coordinate of the square in question, eg. e4.
+            square (str):
+                The coordinate of the square in question (e.g., "e4").
 
         Returns:
-            Either one of the 12 enum members in the `Piece` enum, or the `None`
-            object if the square is empty.
+            Optional[Piece]:
+                One of the 12 members of the `Piece` enum, or `None` if the square is empty.
 
         Example:
             >>> piece = stockfish.get_what_is_on_square("e2")
@@ -1058,18 +1019,19 @@ class Stockfish:
 
     def will_move_be_a_capture(self, move_value: str) -> Capture:
         """Returns whether the proposed move will be a direct capture,
-           en passant, or not a capture at all.
+        en passant, or not a capture at all.
 
         Args:
-            move_value:
+            move_value (str):
                 The proposed move, in the notation that Stockfish uses.
                 E.g., "e2e4", "g1f3", etc.
 
         Returns:
-            One of the following members of the `Capture` enum:
-            - DIRECT_CAPTURE if the move will be a direct capture.
-            - EN_PASSANT if the move is a capture done with en passant.
-            - NO_CAPTURE if the move does not capture anything.
+            Stockfish.Capture:
+            One of the members of the `Stockfish.Capture` enum.
+            - `Stockfish.Capture.DIRECT_CAPTURE` if the move will be a direct capture.
+            - `Stockfish.Capture.EN_PASSANT` if the move is a capture done with en passant.
+            - `Stockfish.Capture.NO_CAPTURE` if the move does not capture anything.
 
         Example:
             >>> capture = stockfish.will_move_be_a_capture("e2e4")
@@ -1106,33 +1068,27 @@ class Stockfish:
             return Stockfish.Capture.NO_CAPTURE
 
     def get_stockfish_full_version(self) -> float:
-        """Returns Stockfish engine full version."""
+        """Returns the full version of the Stockfish engine being used."""
         return self._version["full"]
 
     def get_stockfish_major_version(self) -> int:
-        """Returns Stockfish engine major version."""
+        """Returns the major version of the Stockfish engine being used."""
         return self._version["major"]
 
     def get_stockfish_minor_version(self) -> int:
-        """Returns Stockfish engine minor version."""
+        """Returns the minor version of the Stockfish engine being used."""
         return self._version["minor"]
 
     def get_stockfish_patch_version(self) -> str:
-        """Returns Stockfish engine patch version."""
+        """Returns the patch version of the Stockfish engine being used."""
         return self._version["patch"]
 
     def get_stockfish_sha_version(self) -> str:
-        """Returns Stockfish engine build version."""
+        """Returns the build version of the Stockfish engine being used."""
         return self._version["sha"]
 
     def is_development_build_of_engine(self) -> bool:
-        """Returns whether the version of Stockfish being used is a
-           development build.
-
-        Returns:
-             `True` if the version of Stockfish being used is a development build, `False` otherwise.
-
-        """
+        """Returns whether the version of Stockfish being used is a development build."""
         return self._version["is_dev_build"]
 
     def _set_stockfish_version(self) -> None:
@@ -1225,8 +1181,7 @@ class Stockfish:
         return key_for_date
 
     def send_quit_command(self) -> None:
-        """Sends the 'quit' command to the Stockfish engine, getting the process
-        to stop."""
+        """Sends the `quit` command to the Stockfish engine, getting the process to stop."""
 
         if self._stockfish.poll() is None:
             self._put("quit")
@@ -1286,9 +1241,19 @@ class Stockfish:
             )
 
     def benchmark(self, params: BenchmarkParameters) -> str:
-        """Benchmark will run the bench command with BenchmarkParameters.
-        It is an Additional custom non-UCI command, mainly for debugging.
+        """This function will run the `bench` command with BenchmarkParameters.
+        It is an additional custom non-UCI command, mainly for debugging.
         Do not use this command during a search!
+
+        Args:
+            params (BenchmarkParameters):
+                An instance of the `Stockfish.BenchmarkParameters` class, that specifies
+                the parameters with which you want to run the `bench` command.
+
+        Returns:
+            str:
+                The final line of Stockfish's output from running the bench. I.e., the line
+                starting with "Nodes/second".
         """
         if type(params) != self.BenchmarkParameters:
             params = self.BenchmarkParameters()
