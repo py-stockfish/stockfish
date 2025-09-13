@@ -1209,11 +1209,11 @@ class TestStockfish:
     def test_set_stockfish_version(self, stockfish: Stockfish):
         stockfish._set_stockfish_version()
         assert stockfish.get_stockfish_full_version() > 0
-        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
+        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15, 16)
         assert stockfish.get_stockfish_minor_version() >= 0
 
     def test_get_stockfish_major_version(self, stockfish: Stockfish):
-        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
+        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15, 16)
 
     @pytest.mark.parametrize(
         "info",
