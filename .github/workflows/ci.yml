@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.8', '3.9', '3.10', '3.11']
     name: Python Linux ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v3
@@ -37,7 +37,7 @@ jobs:
         env:
           COVERAGE_FILE: ".coverage.${{ matrix.python_version }}"
       - name: Store coverage file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: .coverage.${{ matrix.python_version }}
@@ -69,7 +69,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         id: download
         with:
           name: 'coverage'
@@ -84,7 +84,7 @@ jobs:
           MINIMUM_ORANGE: 80
 
       - name: Store Pull Request comment to be posted
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
         with:
           name: python-coverage-comment-action
