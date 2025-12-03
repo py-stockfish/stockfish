@@ -1,7 +1,7 @@
 import pytest
 from timeit import default_timer
 import time
-from typing import List, Optional, Dict
+from typing import Optional, dict
 
 from stockfish import Stockfish, StockfishException
 
@@ -302,7 +302,7 @@ class TestStockfish:
         assert set(stockfish.get_engine_parameters().keys()) <= set(
             Stockfish._PARAM_RESTRICTIONS.keys()
         )
-        bad_values: Dict[str, List] = {
+        bad_values: dict[str, list] = {
             "Threads": ["1", False, 0, -1, 1025, 1.0],
             "UCI_Chess960": ["true", "false", "True", 1],
             "Contempt": [-101, 101, "0", False],
@@ -1012,7 +1012,7 @@ class TestStockfish:
             "rnbq1rk1/ppp1ppbp/5np1/3pP3/8/BPN5/P1PP1PPP/R2QKBNR w KQ d6 0 6"
         )
         # fmt: off
-        squares_and_contents: Dict[str, Optional[Stockfish.Piece]] = {
+        squares_and_contents: dict[str, Optional[Stockfish.Piece]] = {
             "a1": Stockfish.Piece.WHITE_ROOK, "a8": Stockfish.Piece.BLACK_ROOK,
             "g8": Stockfish.Piece.BLACK_KING, "e1": Stockfish.Piece.WHITE_KING,
             "h2": Stockfish.Piece.WHITE_PAWN, "f8": Stockfish.Piece.BLACK_ROOK,
@@ -1149,7 +1149,7 @@ class TestStockfish:
         old_info = stockfish.info
         old_depth = stockfish._depth
         old_fen = stockfish.get_fen_position()
-        correct_fens: List[Optional[str]] = [
+        correct_fens: list[Optional[str]] = [
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
             "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK1 b kq - 0 8",
             "4k3/8/4K3/8/8/8/8/8 w - - 10 50",

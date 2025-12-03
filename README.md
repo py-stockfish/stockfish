@@ -1,38 +1,22 @@
 # Stockfish
 
-> [!NOTE]
-> This section refers to the technical application. If you are looking for information regarding the status of this project and the original repo, please look [here](https://github.com/py-stockfish/stockfish/tree/master#status-of-the-project).
-
 Implements an easy-to-use Stockfish class to integrates the Stockfish chess engine with Python.
 
 ## Install
 
 ```bash
-$ pip install stockfish
-```
-
-#### Ubuntu
-
-```bash
-$ sudo apt install stockfish
-```
-
-#### Mac OS
-
-```bash
-$ brew install stockfish
+uv add stockfish-py
 ```
 
 ## API Documentation
 
-See [API Documentation](https://py-stockfish.github.io/stockfish/) for more information.
+See [API Documentation](https://py-stockfish.github.io/stockfish) for more information.
 
 ## Technical details and setup
 
-* The codebase is compatible with Python3.7+
-* Run `pip install -r requirements.txt` to get all necessary dependencies.
-* Pytest is used to run the unit tests in `/tests`
-* For linting use `pre-commit` by running `pre-commit install` once and the pre-commit hooks will be executed automatically
+- The codebase is compatible with Python 3.12+
+- Run `uv install` to get all necessary dependencies.
+- Pytest is used to run the unit tests in `/tests`
 
 ## Features and usage examples
 
@@ -221,6 +205,7 @@ stockfish.get_perft(3)
 ### Flip
 
 Flip the side to move.
+
 ```python
 stockfish.get_fen_position()
 # rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
@@ -281,6 +266,7 @@ stockfish.set_elo_rating(1350)
 ```
 
 ### Put the engine back to full strength (if you've previously lowered the ELO or skill level)
+
 ```python
 stockfish.resume_full_strength()
 ```
@@ -391,11 +377,13 @@ stockfish.get_board_visual(False)
 ### Get the current position's evaluation in centipawns or mate in x
 
 Stockfish searches to the specified depth and evaluates the current position:
+
 ```python
 stockfish.get_evaluation()
 ```
 
 Instead of using the depth, you can also specify the time the engine should take to evaluate:
+
 ```python
 stockfish.get_evaluation(searchtime=2000) # searchtime in milliseconds
 ```
@@ -551,6 +539,7 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
 Then when navigating to the `stockfish` folder in the terminal, you can run this `main.py` file simply with `python main.py`.
 Once you're satisfied with your changes to `models.py`, see the section below for how to run the project's entire test suite.
 
@@ -568,24 +557,16 @@ Then in the project's root directory, you can run:
 ```bash
 $ python setup.py test
 ```
+
 To skip some of the slower tests, run:
+
 ```bash
 $ python setup.py skip_slow_tests
 ```
 
 ## Security
 
-If you discover any security related issues, please report it via the [Private vulnerability reporting](https://github.com/py-stockfish/stockfish/security) instead of using the issue tracker.
-
-## Status of the project
-
-> **Note**
-> This is just a brief summary. For more information, please look [here](https://github.com/zhelyabuzhsky/stockfish/issues/130).
-
-Due to the [unfortunate death](https://github.com/zhelyabuzhsky/stockfish/pull/112#issuecomment-1367800036) of [Ilya Zhelyabuzhsky](https://github.com/zhelyabuzhsky), the original [repo](https://github.com/zhelyabuzhsky/stockfish) is no longer maintained. For this reason, this fork was created, which continues the project and is currently maintained by [johndoknjas](https://github.com/johndoknjas) and [kieferro](https://github.com/kieferro).
-The official PyPi releases for the [Stockfish package](https://pypi.org/project/stockfish/) will also be created from this repo in the future.
-
-Please submit all bug reports and PRs to this repo instead of the old one.
+If you discover any security related issues, please report it via the [Private vulnerability reporting](https://github.com/stockfish-py/stockfish/security) instead of using the issue tracker.
 
 ## Credits
 
@@ -594,4 +575,4 @@ Please submit all bug reports and PRs to this repo instead of the old one.
 
 ## License
 
-MIT License. Please see [License File](https://github.com/py-stockfish/stockfish/blob/master/LICENSE) for more information.
+MIT License. Please see [License File](./LICENSE) for more information.

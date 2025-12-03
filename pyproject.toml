@@ -1,0 +1,22 @@
+[project]
+name = "stockfish-py"
+version = "0.0.1"
+description = "Wraps the open-source Stockfish chess engine for easy integration into python."
+authors = [
+  { name = "GameRoMan", email = "dev@rman.dev" },
+  { name = "Ilya Zhelyabuzhsky" },
+]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.12"
+keywords = ["stockfish", "chess", "python"]
+classifiers = [
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "License :: OSI Approved :: MIT License",
+]
+dependencies = []
+
+
+[project.urls]
+Source = "https://github.com/stockfish-py/stockfish"
