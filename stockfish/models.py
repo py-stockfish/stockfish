@@ -700,7 +700,10 @@ class Stockfish:
         """
         old_self_info = self.info
         self._put(f"go depth 1 searchmoves {move_value}")
-        is_move_correct = self._get_best_move_from_sf_popen_process() is not None
+        if self.get_stockfish_major_version() < 17:
+            is_move_correct = self._get_best_move_from_sf_popen_process() is not None
+        else:
+            is_move_correct = self._get_best_move_from_sf_popen_process() == move_value
         self.info = old_self_info
         return is_move_correct
 

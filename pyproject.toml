@@ -20,3 +20,9 @@ dependencies = []
 
 [project.urls]
 Source = "https://github.com/stockfish-py/stockfish"
+
+[dependency-groups]
+dev = [
+    "dotenv>=0.9.9",
+    "pytest>=9.0.1",
+]
