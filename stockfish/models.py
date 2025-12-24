@@ -1,8 +1,8 @@
 """
-    This module implements the Stockfish class.
+This module implements the Stockfish class.
 
-    :copyright: (c) 2016-2021 by Ilya Zhelyabuzhsky.
-    :license: MIT, see LICENSE for more details.
+:copyright: (c) 2016-2021 by Ilya Zhelyabuzhsky.
+:license: MIT, see LICENSE for more details.
 """
 
 from __future__ import annotations
