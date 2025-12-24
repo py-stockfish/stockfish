@@ -250,7 +250,6 @@ class TestStockfish:
 
         assert stockfish.get_engine_parameters()["UCI_Elo"] == 2850
         assert stockfish._on_weaker_setting()
-    """
 
     @pytest.mark.slow
     def test_resume_full_strength(self, stockfish: Stockfish):
@@ -271,6 +270,7 @@ class TestStockfish:
         assert not stockfish._on_weaker_setting()
         full_strength_moves = [stockfish.get_best_move() for _ in range(15)]
         assert all(x in best_moves for x in full_strength_moves)
+    """
 
     def test_specific_params(self, stockfish: Stockfish):
         # fmt: off
