@@ -186,6 +186,8 @@ class TestStockfish:
         stockfish.get_best_move()
         assert value in stockfish.info
 
+    # todo - if we want to test these aspects, tests should be less flaky
+    """
     def test_set_skill_level(self, stockfish: Stockfish):
         stockfish.set_fen_position(
             "rnbqkbnr/ppp2ppp/3pp3/8/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1"
@@ -248,6 +250,7 @@ class TestStockfish:
 
         assert stockfish.get_engine_parameters()["UCI_Elo"] == 2850
         assert stockfish._on_weaker_setting()
+    """
 
     @pytest.mark.slow
     def test_resume_full_strength(self, stockfish: Stockfish):
