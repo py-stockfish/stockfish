@@ -1,10 +1,10 @@
 """
 This module implements the Stockfish class.
 
-    :copyright: (c) 2016-2024 by Ilya Zhelyabuzhsky and [others](https://github.com/py-stockfish/stockfish/graphs/contributors).
-    :license: MIT, see LICENSE for more details.
+Copyright (c) 2016-2025 by Ilya Zhelyabuzhsky and contributors.
+Contributors: https://github.com/py-stockfish/stockfish/graphs/contributors
+License: MIT. See LICENSE for more details.
 """
-
 from __future__ import annotations
 import subprocess
 from typing import Any
@@ -322,7 +322,7 @@ class Stockfish:
 
         Args:
             moves:
-                A list of moves to set this position on the board. Must be in full algebraic notation.
+                A list of moves to set this position on the board. Must be in pure algebraic coordinate notation.
 
         Example:
             >>> stockfish.set_position(['e2e4', 'e7e5'])
@@ -338,7 +338,7 @@ class Stockfish:
         Args:
             moves:
               A list of moves to play in the current position, in order to reach a new position.
-              Must be in full algebraic notation.
+              Must be in pure algebraic coordinate notation.
 
         Example:
             >>> stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1"])
@@ -361,25 +361,27 @@ class Stockfish:
 
         Returns:
             A visual representation of the chessboard in the current position.
+
             For example:
-            +---+---+---+---+---+---+---+---+
-            | r | n | b | q | k | b | n | r | 8
-            +---+---+---+---+---+---+---+---+
-            | p | p | p | p | p | p | p | p | 7
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 6
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 5
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 4
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 3
-            +---+---+---+---+---+---+---+---+
-            | P | P | P | P | P | P | P | P | 2
-            +---+---+---+---+---+---+---+---+
-            | R | N | B | Q | K | B | N | R | 1
-            +---+---+---+---+---+---+---+---+
-              a   b   c   d   e   f   g   h
+
+                +---+---+---+---+---+---+---+---+
+                | r | n | b | q | k | b | n | r | 8
+                +---+---+---+---+---+---+---+---+
+                | p | p | p | p | p | p | p | p | 7
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 6
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 5
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 4
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 3
+                +---+---+---+---+---+---+---+---+
+                | P | P | P | P | P | P | P | P | 2
+                +---+---+---+---+---+---+---+---+
+                | R | N | B | Q | K | B | N | R | 1
+                +---+---+---+---+---+---+---+---+
+                a   b   c   d   e   f   g   h
         """
         self._put("d")
         board_rep_lines: list[str] = []
@@ -459,7 +461,7 @@ class Stockfish:
         """Puts Stockfish back to full strength, if you've previously lowered the elo or skill level.
 
         Example:
-            >>> stockfish.reset_to_full_strength()
+            >>> stockfish.resume_full_strength()
         """
         self.update_engine_parameters({"UCI_LimitStrength": False, "Skill Level": 20})
 
@@ -467,7 +469,7 @@ class Stockfish:
         """Sets the search depth of the Stockfish engine.
 
         Args:
-            depth (int): The depth should be a positive integer.
+            depth: The depth should be a positive integer.
 
         Example:
             >>> stockfish.set_depth(16)
@@ -484,7 +486,7 @@ class Stockfish:
         """Sets the number of nodes for Stockfish to explore during its search.
 
         Args:
-            num_nodes (int): Number of nodes for Stockfish to search.
+            num_nodes: Number of nodes for Stockfish to search.
 
         Example:
             >>> stockfish.set_num_nodes(1000000)
@@ -535,7 +537,7 @@ class Stockfish:
                 Time for black player in milliseconds.
 
         Returns:
-            A string of the best move in algebraic notation, or `None` if it's a mate now.
+            A string of the best move in pure algebraic coordinate notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move(wtime=1000, btime=1000)
@@ -554,7 +556,7 @@ class Stockfish:
                 Time for Stockfish to determine the best move (milliseconds).
 
         Returns:
-            A string of a move in algebraic notation, or `None` if it's a mate now.
+            A string of a move in pure algebraic coordinate notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move_time(1000)
@@ -661,7 +663,7 @@ class Stockfish:
 
         Args:
             move_value:
-              New move value in algebraic notation.
+              New move value in pure algebraic coordinate notation.
 
         Returns:
             `True` if the new move is legal, otherwise `False`.
@@ -935,7 +937,7 @@ class Stockfish:
         """Returns perft information of the current position for a given depth.
 
         Args:
-            depth (int): The search depth given as an integer (1 or higher).
+            depth: The search depth given as an integer (1 or higher).
 
         Returns:
             - The first element of the tuple is the total number of leaf nodes at the specified depth.
