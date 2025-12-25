@@ -1,10 +1,10 @@
 """
 This module implements the Stockfish class.
 
-    :copyright: (c) 2016-2024 by Ilya Zhelyabuzhsky and [others](https://github.com/py-stockfish/stockfish/graphs/contributors).
-    :license: MIT, see LICENSE for more details.
+Copyright (c) 2016-2025 by Ilya Zhelyabuzhsky and contributors.
+Contributors: https://github.com/py-stockfish/stockfish/graphs/contributors
+License: MIT. See LICENSE for more details.
 """
-
 from __future__ import annotations
 import subprocess
 from typing import Any
@@ -467,7 +467,7 @@ class Stockfish:
         """Sets the search depth of the Stockfish engine.
 
         Args:
-            depth (int): The depth should be a positive integer.
+            depth: The depth should be a positive integer.
 
         Example:
             >>> stockfish.set_depth(16)
@@ -484,7 +484,7 @@ class Stockfish:
         """Sets the number of nodes for Stockfish to explore during its search.
 
         Args:
-            num_nodes (int): Number of nodes for Stockfish to search.
+            num_nodes: Number of nodes for Stockfish to search.
 
         Example:
             >>> stockfish.set_num_nodes(1000000)
@@ -935,7 +935,7 @@ class Stockfish:
         """Returns perft information of the current position for a given depth.
 
         Args:
-            depth (int): The search depth given as an integer (1 or higher).
+            depth: The search depth given as an integer (1 or higher).
 
         Returns:
             - The first element of the tuple is the total number of leaf nodes at the specified depth.
