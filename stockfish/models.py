@@ -322,7 +322,7 @@ class Stockfish:
 
         Args:
             moves:
-                A list of moves to set this position on the board. Must be in full algebraic notation.
+                A list of moves to set this position on the board. Must be in pure algebraic coordinate notation.
 
         Example:
             >>> stockfish.set_position(['e2e4', 'e7e5'])
@@ -338,7 +338,7 @@ class Stockfish:
         Args:
             moves:
               A list of moves to play in the current position, in order to reach a new position.
-              Must be in full algebraic notation.
+              Must be in pure algebraic coordinate notation.
 
         Example:
             >>> stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1"])
@@ -535,7 +535,7 @@ class Stockfish:
                 Time for black player in milliseconds.
 
         Returns:
-            A string of the best move in algebraic notation, or `None` if it's a mate now.
+            A string of the best move in pure algebraic coordinate notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move(wtime=1000, btime=1000)
@@ -554,7 +554,7 @@ class Stockfish:
                 Time for Stockfish to determine the best move (milliseconds).
 
         Returns:
-            A string of a move in algebraic notation, or `None` if it's a mate now.
+            A string of a move in pure algebraic coordinate notation, or `None` if it's a mate now.
 
         Example:
             >>> move = stockfish.get_best_move_time(1000)
@@ -661,7 +661,7 @@ class Stockfish:
 
         Args:
             move_value:
-              New move value in algebraic notation.
+              New move value in pure algebraic coordinate notation.
 
         Returns:
             `True` if the new move is legal, otherwise `False`.
