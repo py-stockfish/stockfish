@@ -459,7 +459,7 @@ class Stockfish:
         """Puts Stockfish back to full strength, if you've previously lowered the elo or skill level.
 
         Example:
-            >>> stockfish.reset_to_full_strength()
+            >>> stockfish.resume_full_strength()
         """
         self.update_engine_parameters({"UCI_LimitStrength": False, "Skill Level": 20})
 
