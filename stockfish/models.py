@@ -731,9 +731,7 @@ class Stockfish:
                 self._discard_remaining_stdout_lines("uciok")
                 return True
 
-    def get_evaluation(
-        self, searchtime: int | None = None
-    ) -> dict[str, str | int]:
+    def get_evaluation(self, searchtime: int | None = None) -> dict[str, str | int]:
         """Performs a search to evaluate the current position.
 
         Args:
