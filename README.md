@@ -29,7 +29,7 @@ See [API Documentation](https://py-stockfish.github.io/stockfish/) for more info
 
 ## Technical details and setup
 
-* The codebase is compatible with Python3.7+
+* The codebase is compatible with Python 3.10+
 * Run `pip install -r requirements.txt` to get all necessary dependencies.
 * Pytest is used to run the unit tests in `/tests`
 * For linting use `pre-commit` by running `pre-commit install` once and the pre-commit hooks will be executed automatically
