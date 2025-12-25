@@ -361,7 +361,9 @@ class Stockfish:
 
         Returns:
             A visual representation of the chessboard in the current position.
+
             For example:
+            ```
             +---+---+---+---+---+---+---+---+
             | r | n | b | q | k | b | n | r | 8
             +---+---+---+---+---+---+---+---+
@@ -380,6 +382,7 @@ class Stockfish:
             | R | N | B | Q | K | B | N | R | 1
             +---+---+---+---+---+---+---+---+
               a   b   c   d   e   f   g   h
+            ```
         """
         self._put("d")
         board_rep_lines: list[str] = []
