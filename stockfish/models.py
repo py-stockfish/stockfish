@@ -7,7 +7,7 @@ This module implements the Stockfish class.
 
 from __future__ import annotations
 import subprocess
-from typing import Any, List, Optional, Union, Dict, Tuple
+from typing import Any
 import copy
 import os
 from dataclasses import dataclass
@@ -39,7 +39,7 @@ class Stockfish:
 
     # _PARAM_RESTRICTIONS stores the types of each of the params, and any applicable min and max values, based
     # off the Stockfish source code: https://github.com/official-stockfish/Stockfish/blob/65ece7d985291cc787d6c804a33f1dd82b75736d/src/ucioption.cpp#L58-L82
-    _PARAM_RESTRICTIONS: Dict[str, Tuple[type, Optional[int], Optional[int]]] = {
+    _PARAM_RESTRICTIONS: dict[str, tuple[type, int | None, int | None]] = {
         "Debug Log File": (str, None, None),
         "Threads": (int, 1, 1024),
         "Hash": (int, 1, 2048),
@@ -61,7 +61,7 @@ class Stockfish:
         self,
         path: str = "stockfish",
         depth: int = 15,
-        parameters: Optional[dict] = None,
+        parameters: dict | None = None,
         num_nodes: int = 1000000,
         turn_perspective: bool = True,
         debug_view: bool = False,
@@ -141,7 +141,7 @@ class Stockfish:
                unknowingly getting bugs. It has been replaced with 'get_engine_parameters()'."""
         )
 
-    def update_engine_parameters(self, parameters: Optional[dict]) -> None:
+    def update_engine_parameters(self, parameters: dict | None) -> None:
         """Updates the Stockfish engine parameters.
 
         Args:
@@ -279,7 +279,7 @@ class Stockfish:
     def _go_time(self, time: int) -> None:
         self._put(f"go movetime {time}")
 
-    def _go_remaining_time(self, wtime: Optional[int], btime: Optional[int]) -> None:
+    def _go_remaining_time(self, wtime: int | None, btime: int | None) -> None:
         cmd = "go"
         if wtime is not None:
             cmd += f" wtime {wtime}"
@@ -323,7 +323,7 @@ class Stockfish:
         self._prepare_for_new_position(send_ucinewgame_token)
         self._put(f"position fen {fen_position}")
 
-    def set_position(self, moves: Optional[List[str]] = None) -> None:
+    def set_position(self, moves: list[str] | None = None) -> None:
         """Sets current board position.
 
         Args:
@@ -342,7 +342,7 @@ class Stockfish:
         )
         self.make_moves_from_current_position(moves)
 
-    def make_moves_from_current_position(self, moves: Optional[List[str]]) -> None:
+    def make_moves_from_current_position(self, moves: list[str] | None) -> None:
         """Sets a new position by playing the moves from the current position.
 
         Args:
@@ -398,7 +398,7 @@ class Stockfish:
             ```
         """
         self._put("d")
-        board_rep_lines: List[str] = []
+        board_rep_lines: list[str] = []
         count_lines: int = 0
         while count_lines < 17:
             board_str: str = self._read_line()
@@ -566,8 +566,8 @@ class Stockfish:
         return self._turn_perspective
 
     def get_best_move(
-        self, wtime: Optional[int] = None, btime: Optional[int] = None
-    ) -> Optional[str]:
+        self, wtime: int | None = None, btime: int | None = None
+    ) -> str | None:
         """Returns best move with current position on the board.
         `wtime` and `btime` arguments influence the search only if provided.
 
@@ -589,7 +589,7 @@ class Stockfish:
             self._go()
         return self._get_best_move_from_sf_popen_process()
 
-    def get_best_move_time(self, time: int = 1000) -> Optional[str]:
+    def get_best_move_time(self, time: int = 1000) -> str | None:
         """Returns best move with current position on the board after a determined time
 
         Args:
@@ -605,22 +605,22 @@ class Stockfish:
         self._go_time(time)
         return self._get_best_move_from_sf_popen_process()
 
-    def _get_best_move_from_sf_popen_process(self) -> Optional[str]:
+    def _get_best_move_from_sf_popen_process(self) -> str | None:
         """Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process."""
 
-        lines: List[str] = self._get_sf_go_command_output()
+        lines: list[str] = self._get_sf_go_command_output()
         self.info = lines[-2]
         last_line_split = lines[-1].split(" ")
         return None if last_line_split[1] == "(none)" else last_line_split[1]
 
-    def _get_sf_go_command_output(self) -> List[str]:
+    def _get_sf_go_command_output(self) -> list[str]:
         """Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process.
 
         A list of strings is returned, where each string represents a line of output."""
 
-        lines: List[str] = []
+        lines: list[str] = []
         while True:
             lines.append(self._read_line())
             if lines[-1].startswith("bestmove"):
@@ -682,7 +682,7 @@ class Stockfish:
         temp_sf: Stockfish = Stockfish(path=self._path, parameters={"Hash": 1})
         # Using a new temporary SF instance, in case the fen is an illegal position that causes
         # the SF process to crash.
-        best_move: Optional[str] = None
+        best_move: str | None = None
         temp_sf.set_fen_position(fen, False)
         try:
             temp_sf._put("go depth 10")
@@ -773,8 +773,8 @@ class Stockfish:
                 return True
 
     def get_evaluation(
-        self, searchtime: Optional[int] = None
-    ) -> Dict[str, Union[str, int]]:
+        self, searchtime: int | None = None
+    ) -> dict[str, str | int]:
         """Searches to the specified depth and evaluates the current position.
 
         Args:
@@ -810,7 +810,7 @@ class Stockfish:
         eval_type, val = split_line[score_index + 1], split_line[score_index + 2]
         return {"type": eval_type, "value": int(val) * compare}
 
-    def get_static_eval(self) -> Optional[float]:
+    def get_static_eval(self) -> float | None:
         """Sends the 'eval' command to stockfish to get the static evaluation. The current position is
            'directly' evaluated -- i.e., no search is involved.
 
@@ -846,7 +846,7 @@ class Stockfish:
         num_top_moves: int = 5,
         verbose: bool = False,
         num_nodes: int = 0,
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Returns info on the top moves in the position.
 
         Args:
@@ -899,13 +899,13 @@ class Stockfish:
             self._num_nodes = num_nodes
             self._go_nodes()
 
-        lines: List[List[str]] = [
+        lines: list[list[str]] = [
             line.split(" ") for line in self._get_sf_go_command_output()
         ]
 
         # Stockfish is now done evaluating the position,
         # and the output is stored in the list 'lines'
-        top_moves: List[dict] = []
+        top_moves: list[dict] = []
 
         # Set perspective of evaluations. If get_turn_perspective() is True, or white to move,
         # use Stockfish's values -- otherwise, invert values.
@@ -935,7 +935,7 @@ class Stockfish:
             if (num_nodes > 0) and (int(self._pick(line, "nodes")) < self._num_nodes):
                 break
 
-            move_evaluation: Dict[str, Union[str, int, None]] = {
+            move_evaluation: dict[str, str | int | None] = {
                 # get move
                 "Move": self._pick(line, "pv"),
                 # get cp if available
@@ -981,7 +981,7 @@ class Stockfish:
 
         return top_moves
 
-    def get_perft(self, depth: int) -> Tuple[int, dict[str, int]]:
+    def get_perft(self, depth: int) -> tuple[int, dict[str, int]]:
         """Returns perft information of the current position for a given depth
 
         Args:
@@ -1025,7 +1025,7 @@ class Stockfish:
     def _pick(self, line: list[str], value: str = "", index: int = 1) -> str:
         return line[line.index(value) + index]
 
-    def get_what_is_on_square(self, square: str) -> Optional[Piece]:
+    def get_what_is_on_square(self, square: str) -> Piece | None:
         """Returns what is on the specified square.
 
         Args:
@@ -1076,10 +1076,10 @@ class Stockfish:
         """
         if not self.is_move_correct(move_value):
             raise ValueError("The proposed move is not valid in the current position.")
-        starting_square_piece: Optional[Stockfish.Piece] = self.get_what_is_on_square(
+        starting_square_piece: Stockfish.Piece | None = self.get_what_is_on_square(
             move_value[:2]
         )
-        ending_square_piece: Optional[Stockfish.Piece] = self.get_what_is_on_square(
+        ending_square_piece: Stockfish.Piece | None = self.get_what_is_on_square(
             move_value[2:4]
         )
         if ending_square_piece is not None:
@@ -1147,7 +1147,7 @@ class Stockfish:
 
     def _parse_stockfish_version(self, version_text: str = "") -> None:
         try:
-            self._version: Dict["str", Any] = {
+            self._version: dict["str", Any] = {
                 "full": 0,
                 "major": 0,
                 "minor": 0,
@@ -1200,7 +1200,7 @@ class Stockfish:
 
     def _get_stockfish_version_from_build_date(
         self, date_string: str = ""
-    ) -> Optional[str]:
+    ) -> str | None:
         # Convert date string to datetime object
         date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d")
 
