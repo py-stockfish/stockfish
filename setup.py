@@ -31,7 +31,7 @@ setup(
     version="4.0.2",
     license="MIT",
     keywords="chess stockfish",
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     url="https://github.com/py-stockfish/stockfish",
     description="Wraps the open-source Stockfish chess engine for easy integration into python.",
     long_description=long_description,
