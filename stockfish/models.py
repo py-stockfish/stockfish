@@ -7,7 +7,7 @@ This module implements the Stockfish class.
 
 from __future__ import annotations
 import subprocess
-from typing import Any, Optional
+from typing import Any
 import copy
 import os
 from dataclasses import dataclass
