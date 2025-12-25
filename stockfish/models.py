@@ -684,7 +684,7 @@ class Stockfish:
 
     def get_wdl_stats(
         self, get_as_tuple: bool = False
-    ) -> Union[list[int], tuple[int, int, int], None]:
+    ) -> list[int] | tuple[int, int, int] | None:
         """Returns Stockfish's win/draw/loss stats for the side to move.
 
         Args:
@@ -692,7 +692,7 @@ class Stockfish:
                 Option to return the wdl stats as a tuple instead of a list. Default is `False`.
 
         Returns:
-            (Union[list[int], tuple[int, int, int], None]):
+            (list[int] | tuple[int, int, int] | None):
                 A list or tuple of three integers, unless the game is over (in which case
                 `None` is returned).
         """
@@ -740,7 +740,7 @@ class Stockfish:
               search depth will be used (call `get_depth()` to see it).
 
         Returns:
-            (Dict[str, Union[str, int]]):
+            (dict[str, str | int]):
             A dictionary of two key-value pairs: {str: str, str: int}
             - The first key is "type", and its value will be either "cp" or "mate".
               This describes the type of evaluation (centipawns or mate in x).
