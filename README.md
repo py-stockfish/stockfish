@@ -190,7 +190,6 @@ True
 ### Get info on the top n moves
 
 Returns a list of dictionaries, where each dictionary represents a move's info. Each dictionary will contain a value for the 'Move' key, and either the 'Centipawn' or 'Mate' value will be a number (the other will be None).
-Positive values mean advantage white, negative advantage black (unless you're using the turn perspective setting).
 
 Positive values mean advantage White, negative values mean advantage Black (unless you're using the turn perspective option, in which case positive is for the side to move).
 
