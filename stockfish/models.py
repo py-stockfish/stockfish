@@ -436,10 +436,10 @@ class Stockfish:
         self._put("d")
         while True:
             text = self._read_line()
-            splitted_text = text.split(" ")
-            if splitted_text[0] == "Fen:":
+            split_text = text.split(" ")
+            if split_text[0] == "Fen:":
                 self._discard_remaining_stdout_lines("Checkers")
-                return " ".join(splitted_text[1:])
+                return " ".join(split_text[1:])
 
     def set_skill_level(self, skill_level: int = 20) -> None:
         """Sets the skill level of the stockfish engine.
