@@ -1315,7 +1315,7 @@ class TestStockfish:
         assert max_hash == 2 ** (25 if "64" in platform.machine() else 11)
 
     def test_threefold_detection(self, stockfish: Stockfish):
-        stockfish.set_depth(5)
+        stockfish.set_depth(10)
         stockfish.make_moves_from_current_position(
             ["g1f3", "g8f6", "f3g1", "f6g8", "g1f3", "g8f6", "f3g1", "f6g8", "g1f3"]
         )
