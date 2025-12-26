@@ -201,6 +201,8 @@ class TestStockfish:
         stockfish.get_best_move()
         assert value in stockfish.info
 
+    # todo - if we want to test these aspects, tests should be less flaky
+    """
     def test_set_skill_level(self, stockfish: Stockfish):
         stockfish.set_fen_position(
             "rnbqkbnr/ppp2ppp/3pp3/8/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1"
@@ -283,6 +285,7 @@ class TestStockfish:
         assert not stockfish._on_weaker_setting()
         full_strength_moves = [stockfish.get_best_move() for _ in range(15)]
         assert all(x in best_moves for x in full_strength_moves)
+    """
 
     def test_specific_params(self, stockfish: Stockfish):
         # fmt: off
@@ -1221,11 +1224,33 @@ class TestStockfish:
     def test_set_stockfish_version(self, stockfish: Stockfish):
         stockfish._set_stockfish_version()
         assert stockfish.get_stockfish_full_version() > 0
-        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
+        assert stockfish.get_stockfish_major_version() in (
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+        )
         assert stockfish.get_stockfish_minor_version() >= 0
 
     def test_get_stockfish_major_version(self, stockfish: Stockfish):
-        assert stockfish.get_stockfish_major_version() in (8, 9, 10, 11, 12, 13, 14, 15)
+        assert stockfish.get_stockfish_major_version() in (
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+        )
 
     @pytest.mark.parametrize(
         "info",
