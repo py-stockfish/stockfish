@@ -15,6 +15,7 @@ from enum import Enum
 import re
 import datetime
 import warnings
+import platform
 
 
 class Stockfish:
@@ -42,7 +43,7 @@ class Stockfish:
     _PARAM_RESTRICTIONS: dict[str, tuple[type, int | None, int | None]] = {
         "Debug Log File": (str, None, None),
         "Threads": (int, 1, 1024),
-        "Hash": (int, 1, 2048),
+        "Hash": (int, 1, 2 ** (25 if "64" in platform.machine() else 11)),
         "Ponder": (bool, None, None),
         "MultiPV": (int, 1, 500),
         "Skill Level": (int, 0, 20),
@@ -122,7 +123,8 @@ class Stockfish:
         if self.does_current_engine_version_have_wdl_option():
             self._set_option("UCI_ShowWDL", True, False)
 
-        self._prepare_for_new_position(True)
+        self._prepare_for_new_position()
+        self._is_ready()
 
     def set_debug_view(self, activate: bool) -> None:
         self._debug_view = activate
@@ -200,23 +202,33 @@ class Stockfish:
 
         for name, value in new_param_values.items():
             self._set_option(name, value)
-        self.set_fen_position(self.get_fen_position(), False)
+        self.set_fen_position(self.get_fen_position())
         # Getting SF to set the position again, since UCI option(s) have been updated.
 
     def reset_engine_parameters(self) -> None:
         """Resets the Stockfish engine parameters."""
         self.update_engine_parameters(self._DEFAULT_STOCKFISH_PARAMS)
 
-    def _prepare_for_new_position(self, send_ucinewgame_token: bool = True) -> None:
-        if send_ucinewgame_token:
+    def send_ucinewgame_command(self) -> None:
+        """Sends the `ucinewgame` command to the Stockfish engine. This will clear Stockfish's
+        hash table, which is relatively expensive and should generally only be done if the
+        new position will be completely unrelated to the current one (such as a new game).
+        """
+        if self._stockfish.poll() is None:
             self._put("ucinewgame")
-        self._is_ready()
+            self._is_ready()
+
+    def _prepare_for_new_position(self) -> None:
         self.info = ""
 
     def _put(self, command: str) -> None:
+        """Sends a command to the Stockfish engine. Note that this function shouldn't be called if
+        there's any existing output in stdout that's still needed."""
         if not self._stockfish.stdin:
             raise BrokenPipeError()
         if self._stockfish.poll() is None and not self._has_quit_command_been_sent:
+            if command != "isready":
+                self._is_ready()
             if self._debug_view:
                 print(f">>> {command}\n")
             self._stockfish.stdin.write(f"{command}\n")
@@ -263,6 +275,8 @@ class Stockfish:
             raise ValueError(f"{value} is over {name}'s maximum value of {maximum}")
 
     def _is_ready(self) -> None:
+        """Waits if the engine is busy. Note that this function shouldn't be called if
+        there's any existing output in stdout that's still needed."""
         self._put("isready")
         while self._read_line() != "readyok":
             pass
@@ -297,38 +311,38 @@ class Stockfish:
         """Will issue a warning, referring to the function that calls this one."""
         warnings.warn(message, stacklevel=3)
 
-    def set_fen_position(
-        self, fen_position: str, send_ucinewgame_token: bool = True
-    ) -> None:
-        """Sets current board position in Forsyth-Edwards notation (FEN).
+    def set_fen_position(self, fen_position: str) -> None:
+        """
+        Sets the current board position from Forsyth-Edwards notation (FEN).
+
+        **Note to existing users**: the `send_ucinewgame_token: bool = True` param has been removed,
+        and this function will no longer send the `ucinewgame` command to Stockfish.
 
         Args:
             fen_position:
                 FEN string of board position.
 
-            send_ucinewgame_token:
-                Whether to send the `ucinewgame` token to the Stockfish engine.
-                The most prominent effect this will have is clearing Stockfish's transposition table,
-                which should be done if the new position is unrelated to the current position.
+        Returns:
+            `None`
 
         Example:
             >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
         """
-        self._prepare_for_new_position(send_ucinewgame_token)
+        self._prepare_for_new_position()
         self._put(f"position fen {fen_position}")
 
-    def set_position(self, moves: list[str] | None = None) -> None:
-        """Sets current board position.
+    def make_moves_from_start(self, moves: list[str] | None = None) -> None:
+        """Sets the position by making a sequence of moves from the starting position of chess.
 
         Args:
             moves:
                 A list of moves to set this position on the board. Must be in pure algebraic coordinate notation.
 
         Example:
-            >>> stockfish.set_position(['e2e4', 'e7e5'])
+            >>> stockfish.make_moves_from_start(['e2e4', 'e7e5'])
         """
         self.set_fen_position(
-            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", True
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         )
         self.make_moves_from_current_position(moves)
 
@@ -345,11 +359,8 @@ class Stockfish:
         """
         if not moves:
             return
-        self._prepare_for_new_position(False)
-        for move in moves:
-            if not self.is_move_correct(move):
-                raise ValueError(f"Cannot make move: {move}")
-            self._put(f"position fen {self.get_fen_position()} moves {move}")
+        self._prepare_for_new_position()
+        self._put(f"position fen {self.get_fen_position()} moves {' '.join(moves)}")
 
     def get_board_visual(self, perspective_white: bool = True) -> str:
         """Returns a visual representation of the current board position.
@@ -425,10 +436,10 @@ class Stockfish:
         self._put("d")
         while True:
             text = self._read_line()
-            splitted_text = text.split(" ")
-            if splitted_text[0] == "Fen:":
+            split_text = text.split(" ")
+            if split_text[0] == "Fen:":
                 self._discard_remaining_stdout_lines("Checkers")
-                return " ".join(splitted_text[1:])
+                return " ".join(split_text[1:])
 
     def set_skill_level(self, skill_level: int = 20) -> None:
         """Sets the skill level of the stockfish engine.
@@ -599,14 +610,12 @@ class Stockfish:
 
         fen_fields = fen.split()
 
-        if any(
-            (
-                len(fen_fields) != 6,
-                len(fen_fields[0].split("/")) != 8,
-                any(x not in fen_fields[0] for x in "Kk"),
-                any(not fen_fields[x].isdigit() for x in (4, 5)),
-                int(fen_fields[4]) >= int(fen_fields[5]) * 2,
-            )
+        if (
+            len(fen_fields) != 6
+            or len(fen_fields[0].split("/")) != 8
+            or any(x not in fen_fields[0] for x in "Kk")
+            or any(not fen_fields[x].isdigit() for x in (4, 5))
+            or int(fen_fields[4]) >= int(fen_fields[5]) * 2
         ):
             return False
 
@@ -643,7 +652,7 @@ class Stockfish:
         # Using a new temporary SF instance, in case the fen is an illegal position that causes
         # the SF process to crash.
         best_move: str | None = None
-        temp_sf.set_fen_position(fen, False)
+        temp_sf.set_fen_position(fen)
         try:
             temp_sf._put("go depth 10")
             best_move = temp_sf._get_best_move_from_sf_popen_process()
@@ -722,7 +731,7 @@ class Stockfish:
             splitted_text = self._read_line().split(" ")
             if splitted_text[0] == "uciok":
                 return False
-            elif "UCI_ShowWDL" in splitted_text:
+            if "UCI_ShowWDL" in splitted_text:
                 self._discard_remaining_stdout_lines("uciok")
                 return True
 
@@ -789,10 +798,10 @@ class Stockfish:
                     self._read_line()
                     # Consume the remaining line (for some reason `eval` outputs an extra newline)
                 if static_eval == "none":
-                    assert "(in check)" in text
+                    if "(in check)" not in text:
+                        raise RuntimeError()
                     return None
-                else:
-                    return float(static_eval) * compare
+                return float(static_eval) * compare
 
     def get_top_moves(
         self,
@@ -964,7 +973,8 @@ class Stockfish:
                 num_nodes = int(line.split(":")[1])
                 break
             move, num = line.split(":")
-            assert move not in move_possibilities
+            if move in move_possibilities:
+                raise RuntimeError()
             move_possibilities[move] = int(num)
         self._read_line()  # Consumes the remaining newline stockfish outputs.
 
@@ -1036,25 +1046,22 @@ class Stockfish:
         if ending_square_piece is not None:
             if not self._parameters["UCI_Chess960"]:
                 return Stockfish.Capture.DIRECT_CAPTURE
-            else:
-                # Check for Chess960 castling:
-                castling_pieces = [
-                    [Stockfish.Piece.WHITE_KING, Stockfish.Piece.WHITE_ROOK],
-                    [Stockfish.Piece.BLACK_KING, Stockfish.Piece.BLACK_ROOK],
-                ]
-                if [starting_square_piece, ending_square_piece] in castling_pieces:
-                    return Stockfish.Capture.NO_CAPTURE
-                else:
-                    return Stockfish.Capture.DIRECT_CAPTURE
-        elif move_value[2:4] == self.get_fen_position().split()[
+            # Check for Chess960 castling:
+            castling_pieces = [
+                [Stockfish.Piece.WHITE_KING, Stockfish.Piece.WHITE_ROOK],
+                [Stockfish.Piece.BLACK_KING, Stockfish.Piece.BLACK_ROOK],
+            ]
+            if [starting_square_piece, ending_square_piece] in castling_pieces:
+                return Stockfish.Capture.NO_CAPTURE
+            return Stockfish.Capture.DIRECT_CAPTURE
+        if move_value[2:4] == self.get_fen_position().split()[
             3
         ] and starting_square_piece in [
             Stockfish.Piece.WHITE_PAWN,
             Stockfish.Piece.BLACK_PAWN,
         ]:
             return Stockfish.Capture.EN_PASSANT
-        else:
-            return Stockfish.Capture.NO_CAPTURE
+        return Stockfish.Capture.NO_CAPTURE
 
     def get_stockfish_full_version(self) -> float:
         """Returns the full version of the Stockfish engine being used."""
@@ -1141,7 +1148,7 @@ class Stockfish:
         except Exception as e:
             raise Exception(
                 "Unable to parse Stockfish version. You may be using an unsupported version of Stockfish."
-            )
+            ) from e
 
     def _get_stockfish_version_from_build_date(
         self, date_string: str = ""

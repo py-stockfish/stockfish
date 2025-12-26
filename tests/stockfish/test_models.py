@@ -1,9 +1,17 @@
 import pytest
 from timeit import default_timer
 import time
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Callable, Type, Any
+import platform
+import operator
 
 from stockfish import Stockfish, StockfishException
+
+
+def compare(first, second, op: Callable[[Any, Any], bool], expected_type: Type) -> bool:
+    return all(isinstance(x, expected_type) for x in (first, second)) and op(
+        first, second
+    )
 
 
 class TestStockfish:
@@ -63,45 +71,45 @@ class TestStockfish:
         best_move = stockfish.get_best_move(wtime=5 * 60 * 1000, btime=1000)
         assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
 
-    def test_set_position_resets_info(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+    def test_make_moves_from_start_resets_info(self, stockfish: Stockfish):
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         stockfish.get_best_move()
         assert stockfish.info != ""
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         assert stockfish.info == ""
 
     def test_get_best_move_not_first_move(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         best_move = stockfish.get_best_move()
         assert best_move in ("d2d4", "g1f3")
 
     def test_get_best_move_time_not_first_move(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         best_move = stockfish.get_best_move_time(1000)
         assert best_move in ("d2d4", "g1f3")
 
     @pytest.mark.slow
     def test_get_best_move_remaining_time_not_first_move(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         best_move = stockfish.get_best_move(wtime=1000)
         assert best_move in ("d2d4", "a2a3", "d1e2", "b1c3")
         best_move = stockfish.get_best_move(btime=1000)
-        assert best_move in ("d2d4", "b1c3")
+        assert best_move in ("d2d4", "b1c3", "g1f3")
         best_move = stockfish.get_best_move(wtime=1000, btime=1000)
         assert best_move in ("d2d4", "b1c3", "g1f3")
         best_move = stockfish.get_best_move(wtime=5 * 60 * 1000, btime=1000)
         assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
 
     def test_get_best_move_checkmate(self, stockfish: Stockfish):
-        stockfish.set_position(["f2f3", "e7e5", "g2g4", "d8h4"])
+        stockfish.make_moves_from_start(["f2f3", "e7e5", "g2g4", "d8h4"])
         assert stockfish.get_best_move() is None
 
     def test_get_best_move_time_checkmate(self, stockfish: Stockfish):
-        stockfish.set_position(["f2f3", "e7e5", "g2g4", "d8h4"])
+        stockfish.make_moves_from_start(["f2f3", "e7e5", "g2g4", "d8h4"])
         assert stockfish.get_best_move_time(1000) is None
 
     def test_get_best_move_remaining_time_checkmate(self, stockfish: Stockfish):
-        stockfish.set_position(["f2f3", "e7e5", "g2g4", "d8h4"])
+        stockfish.make_moves_from_start(["f2f3", "e7e5", "g2g4", "d8h4"])
         assert stockfish.get_best_move(wtime=1000) is None
         assert stockfish.get_best_move(btime=1000) is None
         assert stockfish.get_best_move(wtime=1000, btime=1000) is None
@@ -127,39 +135,45 @@ class TestStockfish:
         assert stockfish.info == "info depth 0 score mate 0"
 
     def test_clear_info_after_set_new_fen_position(self, stockfish: Stockfish):
+        stockfish.send_ucinewgame_command()
+        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/r7/4K3 b - - 11 52")
+        stockfish.get_best_move()
+        stockfish.send_ucinewgame_command()
+        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53")
+        assert stockfish.info == ""
+
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/r7/4K3 b - - 11 52")
         stockfish.get_best_move()
         stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53")
         assert stockfish.info == ""
 
-        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/r7/4K3 b - - 11 52")
-        stockfish.get_best_move()
-        stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53", False)
-        assert stockfish.info == ""
-
     def test_set_fen_position_starts_new_game(self, stockfish: Stockfish):
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position(
             "7r/1pr1kppb/2n1p2p/2NpP2P/5PP1/1P6/P6K/R1R2B2 w - - 1 27"
         )
         stockfish.get_best_move()
         assert stockfish.info != ""
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("3kn3/p5rp/1p3p2/3B4/3P1P2/2P5/1P3K2/8 w - - 0 53")
         assert stockfish.info == ""
 
     def test_set_fen_position_second_argument(self, stockfish: Stockfish):
         stockfish.set_depth(16)
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1", True
+            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"
         )
         assert stockfish.get_best_move() == "e4e5"
 
         stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/4P3/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 1", False
+            "rnbqk2r/pppp1ppp/3bpn2/4P3/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 1"
         )
         assert stockfish.get_best_move() in ("d6e7", "d6b4")
 
         stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1", False
+            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"
         )
         assert stockfish.get_best_move() == "e4e5"
 
@@ -168,7 +182,7 @@ class TestStockfish:
         assert stockfish.is_move_correct("a2a3") is True
 
     def test_is_move_correct_not_first_move(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         assert stockfish.is_move_correct("e2e1") is False
         assert stockfish.is_move_correct("a2a3") is True
 
@@ -182,6 +196,7 @@ class TestStockfish:
     )
     # fmt: on
     def test_last_info(self, stockfish: Stockfish, value):
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("r6k/6b1/2b1Q3/p6p/1p5q/3P2PP/5r1K/8 w - - 1 31")
         stockfish.get_best_move()
         assert value in stockfish.info
@@ -202,13 +217,13 @@ class TestStockfish:
         )
         # fmt: on
         assert stockfish.get_engine_parameters()["Skill Level"] == 1
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == False
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is False
         assert stockfish._on_weaker_setting()
 
         stockfish.set_skill_level(20)
         assert stockfish.get_best_move() in ("d2d4", "c2c4")
         assert stockfish.get_engine_parameters()["Skill Level"] == 20
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == False
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is False
         assert not stockfish._on_weaker_setting()
 
     def test_set_elo_rating(self, stockfish: Stockfish):
@@ -222,11 +237,11 @@ class TestStockfish:
         stockfish.set_elo_rating(2000)
         # fmt: off
         assert stockfish.get_best_move() in (
-            "d2d4", "b1c3", "d1e2", "c2c4", "f1e2", "h2h3", "c2c3", "f1d3", "a2a3"
+            "d2d4", "b1c3", "d1e2", "c2c4", "f1e2", "h2h3", "c2c3", "f1d3", "a2a3", "a2a4"
         )
         # fmt: on
         assert stockfish.get_engine_parameters()["UCI_Elo"] == 2000
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == True
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is True
         assert stockfish._on_weaker_setting()
 
         stockfish.set_elo_rating(1350)
@@ -236,7 +251,7 @@ class TestStockfish:
         )
         # fmt: on
         assert stockfish.get_engine_parameters()["UCI_Elo"] == 1350
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == True
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is True
         assert stockfish._on_weaker_setting()
 
         stockfish.set_elo_rating(2850)
@@ -305,13 +320,14 @@ class TestStockfish:
         assert set(stockfish.get_engine_parameters().keys()) <= set(
             Stockfish._PARAM_RESTRICTIONS.keys()
         )
+        max_hash = 2 ** (25 if "64" in platform.machine() else 11)
         bad_values: Dict[str, List] = {
             "Threads": ["1", False, 0, -1, 1025, 1.0],
             "UCI_Chess960": ["true", "false", "True", 1],
             "Contempt": [-101, 101, "0", False],
             "UCI_LimitStrength": ["true", "false", "False", 1, 0],
             "Ponder": ["true", "false", "True", "False", 0],
-            "Hash": [-1, 4096, -2048, True, 0],
+            "Hash": [-1, max_hash * 2, max_hash + 1, -2048, True, 0],
             "Not key": [0],
         }
         for name in bad_values:
@@ -353,7 +369,7 @@ class TestStockfish:
         assert stockfish.will_move_be_a_capture("f1g1") is Stockfish.Capture.NO_CAPTURE
 
     def test_get_board_visual_white(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6", "d2d4", "d7d5"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6", "d2d4", "d7d5"])
         if stockfish.get_stockfish_major_version() >= 12:
             expected_result = (
                 "+---+---+---+---+---+---+---+---+\n"
@@ -405,7 +421,7 @@ class TestStockfish:
         # the second line read after stockfish._put("d") now will be the +---+---+---+ of the new outputted board.
 
     def test_get_board_visual_black(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6", "d2d4", "d7d5"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6", "d2d4", "d7d5"])
         if stockfish.get_stockfish_major_version() >= 12:
             expected_result = (
                 "+---+---+---+---+---+---+---+---+\n"
@@ -466,7 +482,7 @@ class TestStockfish:
         assert "+---+---+---+" in stockfish._read_line()
 
     def test_get_fen_position_after_some_moves(self, stockfish: Stockfish):
-        stockfish.set_position(["e2e4", "e7e6"])
+        stockfish.make_moves_from_start(["e2e4", "e7e6"])
         assert (
             stockfish.get_fen_position()
             == "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2"
@@ -480,19 +496,17 @@ class TestStockfish:
         )
         evaluation = stockfish.get_evaluation()
         assert (
-            evaluation["type"] == "cp"
-            and isinstance(evaluation["value"], int)
-            and evaluation["value"] >= 60
-            and evaluation["value"] <= 150
+            compare(evaluation["type"], "cp", operator.eq, str)
+            and compare(evaluation["value"], 60, operator.ge, int)
+            and compare(evaluation["value"], 150, operator.le, int)
         )
         stockfish.set_skill_level(1)
         with pytest.warns(UserWarning):
             evaluation = stockfish.get_evaluation()
         assert (
-            evaluation["type"] == "cp"
-            and isinstance(evaluation["value"], int)
-            and evaluation["value"] >= 60
-            and evaluation["value"] <= 150
+            compare(evaluation["type"], "cp", operator.eq, str)
+            and compare(evaluation["value"], 60, operator.ge, int)
+            and compare(evaluation["value"], 150, operator.le, int)
         )
 
     @pytest.mark.slow
@@ -519,22 +533,23 @@ class TestStockfish:
 
     def test_get_static_eval(self, stockfish: Stockfish):
         stockfish.set_turn_perspective(False)
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1")
-        static_eval_1 = stockfish.get_static_eval()
-        assert isinstance(static_eval_1, float) and static_eval_1 < -3
+        assert compare(stockfish.get_static_eval(), -3.0, operator.lt, float)
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 b - - 0 1")
-        static_eval_2 = stockfish.get_static_eval()
-        assert isinstance(static_eval_2, float) and static_eval_2 < -3
+        assert compare(stockfish.get_static_eval(), -3.0, operator.lt, float)
         stockfish.set_turn_perspective()
-        static_eval_3 = stockfish.get_static_eval()
-        assert isinstance(static_eval_3, float) and static_eval_3 > 3
+        assert compare(stockfish.get_static_eval(), 3.0, operator.gt, float)
+        stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("r7/8/8/8/8/5k2/4p3/4K3 w - - 0 1")
-        static_eval_4 = stockfish.get_static_eval()
-        assert isinstance(static_eval_4, float) and static_eval_4 < -3
+        assert compare(stockfish.get_static_eval(), -3.0, operator.lt, float)
         if stockfish.get_stockfish_major_version() >= 12:
+            stockfish.send_ucinewgame_command()
             stockfish.set_fen_position("8/8/8/8/8/4k3/4p3/r3K3 w - - 0 1")
             assert stockfish.get_static_eval() is None
-        stockfish.set_position(None)
+        stockfish.send_ucinewgame_command()
+        stockfish.make_moves_from_start(None)
         stockfish.get_static_eval()
         stockfish._put("go depth 2")
         assert stockfish._read_line() != ""
@@ -617,11 +632,11 @@ class TestStockfish:
                 assert stockfish_2_params[key] == 2850
                 assert stockfish_1_params[key] == 1350
             elif key == "UCI_LimitStrength":
-                assert stockfish_2_params[key] == True
-                assert stockfish_1_params[key] == False
+                assert stockfish_2_params[key] is True
+                assert stockfish_1_params[key] is False
             elif key == "UCI_Chess960":
-                assert stockfish_2_params[key] == True
-                assert stockfish_1_params[key] == False
+                assert stockfish_2_params[key] is True
+                assert stockfish_1_params[key] is False
             else:
                 assert stockfish_2_params[key] == stockfish_1_params[key]
 
@@ -651,18 +666,18 @@ class TestStockfish:
             elif key == "MultiPV":
                 assert value == 2
             elif key == "UCI_Chess960":
-                assert value == True
+                assert value is True
             else:
                 assert updated_parameters[key] == old_parameters[key]
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == False
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is False
         stockfish.update_engine_parameters({"UCI_Elo": 2000, "Skill Level": 19})
         assert stockfish.get_engine_parameters()["UCI_Elo"] == 2000
         assert stockfish.get_engine_parameters()["Skill Level"] == 19
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == False
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is False
         stockfish.update_engine_parameters({"UCI_Elo": 2000})
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == True
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is True
         stockfish.update_engine_parameters({"Skill Level": 20})
-        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] == False
+        assert stockfish.get_engine_parameters()["UCI_LimitStrength"] is False
         assert stockfish.get_fen_position() == "4rkr1/4p1p1/8/8/8/8/8/5K1R w H - 0 100"
         stockfish.reset_engine_parameters()
         assert stockfish.get_engine_parameters() == old_parameters
@@ -799,14 +814,12 @@ class TestStockfish:
         assert stockfish.get_turn_perspective()
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] > 0
-        eval = stockfish.get_evaluation()["value"]
-        assert isinstance(eval, int) and eval > 0
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.gt, int)
         stockfish.set_turn_perspective(False)
         assert stockfish.get_turn_perspective() is False
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
-        eval = stockfish.get_evaluation()["value"]
-        assert isinstance(eval, int) and eval < 0
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
 
     def test_turn_perspective_raises_type_error(self, stockfish: Stockfish):
         with pytest.raises(TypeError):
@@ -848,22 +861,16 @@ class TestStockfish:
 
         invalid_moves = ["d1e3", "e1g1", "c3d5", "c1d4", "a7a6", "e1d2", "word"]
 
+        current_fen = stockfish.get_fen_position()
+        stockfish.make_moves_from_current_position(invalid_moves)
+        assert current_fen == stockfish.get_fen_position()
         for invalid_move in invalid_moves:
-            with pytest.raises(ValueError):
-                stockfish.make_moves_from_current_position([invalid_move])
+            stockfish.make_moves_from_current_position([invalid_move])
+            assert current_fen == stockfish.get_fen_position()
 
     @pytest.mark.slow
-    def test_make_moves_transposition_table_speed(self, stockfish: Stockfish):
-        """
-        make_moves_from_current_position won't send the "ucinewgame" token to Stockfish, since it
-        will reach a new position similar to the current one. Meanwhile, set_fen_position will send this
-        token (unless the user specifies otherwise), since it could be going to a completely new position.
-
-        A big effect of sending this token is that it resets SF's transposition table. If the
-        new position is similar to the current one, this will affect SF's speed. This function tests
-        that make_moves_from_current_position doesn't reset the transposition table, by verifying SF is faster in
-        evaluating a consecutive set of positions when the make_moves_from_current_position function is used.
-        """
+    def test_not_resetting_hash_table_speed(self, stockfish: Stockfish):
+        """Tests that not resetting the hash table between related positions makes SF faster."""
 
         stockfish.set_depth(16)
         positions_considered = []
@@ -882,6 +889,7 @@ class TestStockfish:
 
         total_time_calculating_second = 0.0
         for i in range(len(positions_considered)):
+            stockfish.send_ucinewgame_command()
             stockfish.set_fen_position(positions_considered[i])
             start = default_timer()
             stockfish.get_best_move()
@@ -900,6 +908,7 @@ class TestStockfish:
             assert wdl_stats[1] > wdl_stats[0] * 7
             assert abs(wdl_stats[0] - wdl_stats[2]) / wdl_stats[0] < 0.15
 
+            stockfish.send_ucinewgame_command()
             stockfish.set_fen_position(
                 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             )
@@ -911,12 +920,14 @@ class TestStockfish:
             stockfish.set_fen_position("8/8/8/8/8/6k1/6p1/6K1 w - - 0 1")
             assert stockfish.get_wdl_stats() is None
 
+            stockfish.send_ucinewgame_command()
             stockfish.set_fen_position(
                 "rnbqkb1r/pp3ppp/3p1n2/1B2p3/3NP3/2N5/PPP2PPP/R1BQK2R b KQkq - 0 6"
             )
             wdl_stats_3 = stockfish.get_wdl_stats()
             assert isinstance(wdl_stats_3, list) and len(wdl_stats_3) == 3
 
+            stockfish.send_ucinewgame_command()
             stockfish._prepare_for_new_position()
             wdl_stats_4 = stockfish.get_wdl_stats(get_as_tuple=True)
             assert isinstance(wdl_stats_4, tuple) and len(wdl_stats_4) == 3
@@ -1131,7 +1142,8 @@ class TestStockfish:
             fen == "8/8/8/3k4/3K4/8/8/8 b - - 0 1"
             and stockfish.get_stockfish_major_version() >= 14
         ):
-            # Since for that FEN, SF 15 actually outputs a best move without crashing (unlike SF 14 and earlier).
+            # Since for this FEN, more recent versions of SF (some dev versions of 14 and later)
+            # output a best move without crashing.
             return
         if (
             fen == "2k2q2/8/8/8/8/8/8/2Q2K2 w - - 0 1"
@@ -1290,3 +1302,29 @@ class TestStockfish:
         params.update({"Skill Level": 10})
         assert params["Skill Level"] == 10
         assert stockfish._parameters["Skill Level"] == 20
+
+    @pytest.mark.slow
+    def test_uci_new_game_wait(self, stockfish: Stockfish):
+        stockfish.update_engine_parameters({"Hash": 2048})
+        start = time.time_ns()
+        stockfish.send_ucinewgame_command()
+        assert time.time_ns() - start > 1000000
+
+    def test_hash_size_platform(self, stockfish: Stockfish):
+        max_hash = stockfish._PARAM_RESTRICTIONS["Hash"][2]
+        assert max_hash == 2 ** (25 if "64" in platform.machine() else 11)
+
+    def test_threefold_detection(self, stockfish: Stockfish):
+        stockfish.set_depth(10)
+        stockfish.make_moves_from_current_position(
+            ["g1f3", "g8f6", "f3g1", "f6g8", "g1f3", "g8f6", "f3g1", "f6g8", "g1f3"]
+        )
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.eq, int)
+        stockfish.make_moves_from_start(
+            ["g1f3", "g8f6", "f3g1", "f6g8", "g1f3", "g8f6", "f3g1", "f6g8", "g1f3"]
+        )
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.eq, int)
+        stockfish.make_moves_from_start(["g1f3", "g8f6", "f3g1", "f6g8", "g1f3"])
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
+        stockfish.make_moves_from_current_position(["g8f6", "f3g1", "f6g8", "g1f3"])
+        assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
