@@ -115,7 +115,7 @@ class Stockfish:
         self.set_num_nodes(num_nodes)
         self.set_turn_perspective(turn_perspective)
 
-        self.info: str = ""
+        self._info: str | None = None
 
         self._parameters: dict = {}
         self.update_engine_parameters(self._DEFAULT_STOCKFISH_PARAMS)
@@ -124,7 +124,6 @@ class Stockfish:
         if self.does_current_engine_version_have_wdl_option():
             self._set_option("UCI_ShowWDL", True, False)
 
-        self._prepare_for_new_position()
         self._is_ready()
 
     def set_debug_view(self, activate: bool) -> None:
@@ -218,9 +217,6 @@ class Stockfish:
         if self._stockfish.poll() is None:
             self._put("ucinewgame")
             self._is_ready()
-
-    def _prepare_for_new_position(self) -> None:
-        self.info = ""
 
     def _put(self, command: str) -> None:
         """Sends a command to the Stockfish engine. Note that this function shouldn't be called if
@@ -329,7 +325,6 @@ class Stockfish:
         Example:
             >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
         """
-        self._prepare_for_new_position()
         self._put(f"position fen {fen_position}")
 
     def make_moves_from_start(self, moves: list[str] | None = None) -> None:
@@ -360,7 +355,6 @@ class Stockfish:
         """
         if not moves:
             return
-        self._prepare_for_new_position()
         self._put(f"position fen {self.get_fen_position()} moves {' '.join(moves)}")
 
     def get_board_visual(self, perspective_white: bool = True) -> str:
@@ -441,6 +435,16 @@ class Stockfish:
             if split_text[0] == "Fen:":
                 self._discard_remaining_stdout_lines("Checkers")
                 return " ".join(split_text[1:])
+
+    def info(self) -> str:
+        """Returns the final 'info' line of the raw Stockfish output from the last time you called
+        `get_best_move`/`get_best_move_time`.
+        """
+        if self._info is None:
+            raise RuntimeError(
+                "You have never called `get_best_move`/`get_best_move_time`!"
+            )
+        return self._info
 
     def set_skill_level(self, skill_level: int = 20) -> None:
         """Sets the skill level of the stockfish engine.
@@ -582,7 +586,7 @@ class Stockfish:
         This function needs existing output to read from the SF popen process."""
 
         lines: list[str] = self._get_sf_go_command_output()
-        self.info = lines[-2]
+        self._info = lines[-2]
         last_line_split = lines[-1].split(" ")
         return None if last_line_split[1] == "(none)" else last_line_split[1]
 

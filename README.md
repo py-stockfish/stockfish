@@ -11,7 +11,7 @@ Wraps the open-source Stockfish chess engine for easy integration into python.
 $ pip install stockfish
 ```
 
-Please note that as this is a third-party library, you'll also need to install the actual Stockfish engine in some way.
+Please note that as this is a third-party library, you'll also need to install the Stockfish engine in some way.
 See various options on their [site](https://stockfishchess.org/download/).
 
 ## API Documentation
@@ -280,6 +280,16 @@ stockfish.does_current_engine_version_have_wdl_option()
 
 ```text
 True
+```
+
+### Get the final `info` line from the last time you called `get_best_move`/`get_best_move_time`
+
+```python
+stockfish.info()
+```
+
+```text
+info depth 15 seldepth 18 multipv 1 score cp 39 nodes 64450 nps 555603 hashfull 21 tbhits 0 time 116 pv e2e4 e7e5 g1f3 g8f6 d2d4 f6e4 d4e5 d7d5 f1d3 b8c6 e1g1 c8e6 b1c3 e4c3 b2c3
 ```
 
 ### Set the engine's skill level (ignoring ELO rating)
