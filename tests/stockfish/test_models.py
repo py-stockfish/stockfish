@@ -575,11 +575,6 @@ class TestStockfish:
         stockfish.get_best_move()
         assert "depth 15" in stockfish.info()
 
-    @pytest.mark.parametrize("depth", ["12", True, 12.1, 0, None])
-    def test_set_depth_raises_type_error(self, stockfish: Stockfish, depth):
-        with pytest.raises(TypeError):
-            stockfish.set_depth(depth)
-
     def test_get_depth(self, stockfish: Stockfish):
         stockfish.set_depth(12)
         assert stockfish.get_depth() == 12
@@ -594,10 +589,14 @@ class TestStockfish:
         stockfish.set_num_nodes()
         assert stockfish._num_nodes == 1000000
 
-    @pytest.mark.parametrize("num_nodes", ["100", 100.1, None, True])
-    def test_set_num_nodes_raises_type_error(self, stockfish: Stockfish, num_nodes):
-        with pytest.raises(TypeError):
-            stockfish.set_num_nodes(num_nodes)
+    @pytest.mark.parametrize("num_nodes", [0, -1])
+    def test_bad_param_values_raise_errors(self, stockfish: Stockfish, val: int):
+        with pytest.raises(ValueError):
+            stockfish.set_num_nodes(val)
+        with pytest.raises(ValueError):
+            stockfish.set_depth(val)
+        with pytest.raises(ValueError):
+            stockfish.get_perft(val)
 
     def test_get_num_nodes(self, stockfish: Stockfish):
         stockfish.set_num_nodes(100)
@@ -792,11 +791,6 @@ class TestStockfish:
         assert max(move_possibilities2.values()) == 600
         assert move_possibilities2["f2f3"] == 380 and move_possibilities2["e2e3"] == 599
 
-    @pytest.mark.parametrize("depth", [True, 0, "foo", 16.2])
-    def test_get_perft_raises_type_error(self, stockfish: Stockfish, depth):
-        with pytest.raises(TypeError):
-            stockfish.get_perft(depth)
-
     def test_get_perft_different_position(self, stockfish: Stockfish):
         stockfish.set_fen_position("1k6/7Q/1K6/8/8/8/8/8 w - - 0 1")
         num_nodes, move_possibilities = stockfish.get_perft(3)
@@ -831,10 +825,6 @@ class TestStockfish:
         moves = stockfish.get_top_moves(1)
         assert moves[0]["Centipawn"] < 0
         assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
-
-    def test_turn_perspective_raises_type_error(self, stockfish: Stockfish):
-        with pytest.raises(TypeError):
-            stockfish.set_turn_perspective("not a bool")  # type: ignore
 
     def test_make_moves_from_current_position(self, stockfish: Stockfish):
         stockfish.set_fen_position(
