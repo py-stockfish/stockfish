@@ -359,6 +359,7 @@ class TestStockfish:
         assert (
             stockfish.will_move_be_a_capture("f1e1") is Stockfish.Capture.DIRECT_CAPTURE
         )
+        assert stockfish.get_perft(1)[0] == 13
         stockfish.update_engine_parameters({"UCI_Chess960": False})
         assert stockfish.get_engine_parameters() == old_parameters
         assert stockfish.get_best_move() == "f1g1"
@@ -366,7 +367,10 @@ class TestStockfish:
         assert stockfish.get_evaluation() == {"type": "mate", "value": 2}
         stockfish.set_turn_perspective()
         assert stockfish.get_evaluation() == {"type": "mate", "value": 2}
-        assert stockfish.will_move_be_a_capture("f1g1") is Stockfish.Capture.NO_CAPTURE
+        with pytest.raises(RuntimeError):
+            stockfish.is_move_correct("f1g1")
+        with pytest.raises(RuntimeError):
+            stockfish.get_perft(1)
 
     def test_get_board_visual_white(self, stockfish: Stockfish):
         stockfish.make_moves_from_start(["e2e4", "e7e6", "d2d4", "d7d5"])

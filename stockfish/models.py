@@ -5,6 +5,7 @@ Copyright (c) 2016-2025 by Ilya Zhelyabuzhsky and contributors.
 Contributors: https://github.com/py-stockfish/stockfish/graphs/contributors
 License: MIT. See LICENSE for more details.
 """
+
 from __future__ import annotations
 import subprocess
 from typing import Any
@@ -681,11 +682,7 @@ class Stockfish:
         Example:
             >>> is_correct = stockfish.is_move_correct("f4f5")
         """
-        old_self_info = self.info
-        self._put(f"go depth 1 searchmoves {move_value}")
-        is_move_correct = self._get_best_move_from_sf_popen_process() is not None
-        self.info = old_self_info
-        return is_move_correct
+        return move_value in self.get_perft(1)[1]
 
     def get_wdl_stats(
         self, get_as_tuple: bool = False
@@ -967,14 +964,16 @@ class Stockfish:
 
         while True:
             line = self._read_line()
-            if line == "":
+            if line == "" or line.startswith("info"):
                 continue
             if "searched" in line:
                 num_nodes = int(line.split(":")[1])
                 break
             move, num = line.split(":")
             if move in move_possibilities:
-                raise RuntimeError()
+                raise RuntimeError(
+                    "If you're playing chess960, make sure to set `UCI_Chess960` to `true`!"
+                )
             move_possibilities[move] = int(num)
         self._read_line()  # Consumes the remaining newline stockfish outputs.
 
