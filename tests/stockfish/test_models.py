@@ -1,14 +1,14 @@
 import pytest
 from timeit import default_timer
 import time
-from typing import List, Optional, Dict, Callable, Type, Any
+from typing import List, Optional, Dict, Callable, Any
 import platform
 import operator
 
 from stockfish import Stockfish, StockfishException
 
 
-def compare(first, second, op: Callable[[Any, Any], bool], expected_type: Type) -> bool:
+def compare(first: Any, second: Any, op: Callable[[Any, Any], bool], expected_type: type) -> bool:
     return all(isinstance(x, expected_type) for x in (first, second)) and op(
         first, second
     )
@@ -28,10 +28,10 @@ class TestStockfish:
 
     def test_constructor_defaults(self):
         sf = Stockfish()
-        assert sf is not None and sf._path == "stockfish"
-        assert sf._parameters == sf._DEFAULT_STOCKFISH_PARAMS
-        assert sf._depth == 15 and sf._num_nodes == 1000000
-        assert sf._turn_perspective is True
+        assert sf is not None and sf._path == "stockfish" # type: ignore
+        assert sf.get_engine_parameters() == sf._DEFAULT_STOCKFISH_PARAMS # type: ignore
+        assert sf.get_depth() == 15 and sf.get_num_nodes() == 1000000
+        assert sf.get_turn_perspective() is True
 
     def test_constructor_options(self):
         sf = Stockfish(
@@ -40,17 +40,17 @@ class TestStockfish:
             turn_perspective=False,
             parameters={"Threads": 2, "UCI_Elo": 1500},
         )
-        assert sf._depth == 20 and sf._num_nodes == 1000
-        assert sf._turn_perspective is False
-        assert sf._parameters["Threads"] == 2 and sf._parameters["UCI_Elo"] == 1500
+        assert sf.get_depth() == 20 and sf.get_num_nodes() == 1000
+        assert sf.get_turn_perspective() is False
+        assert sf.get_engine_parameters()["Threads"] == 2 and sf.get_engine_parameters()["UCI_Elo"] == 1500
 
     @pytest.mark.parametrize(
         "parameters",
         [{"depth": "20"}, {"num_nodes": "100"}, {"turn_perspective": "False"}],
     )
-    def test_constructor_raises_type_errors(self, parameters):
+    def test_constructor_raises_type_errors(self, parameters: dict[str, str]):
         with pytest.raises(TypeError):
-            Stockfish(**parameters)
+            Stockfish(**parameters) # type: ignore
 
     def test_get_best_move_first_move(self, stockfish: Stockfish):
         best_move = stockfish.get_best_move()
@@ -202,7 +202,7 @@ class TestStockfish:
         ]
     )
     # fmt: on
-    def test_last_info(self, stockfish: Stockfish, value):
+    def test_last_info(self, stockfish: Stockfish, value: str):
         stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("r6k/6b1/2b1Q3/p6p/1p5q/3P2PP/5r1K/8 w - - 1 31")
         stockfish.get_best_move()
@@ -296,7 +296,7 @@ class TestStockfish:
 
     def test_specific_params(self, stockfish: Stockfish):
         # fmt: off
-        old_parameters = {
+        old_parameters: dict[str, str | int | bool] = {
             "Debug Log File": "", "Contempt": 0, "Min Split Depth": 0, "Threads": 1,
             "Ponder": False, "Hash": 16, "MultiPV": 1, "Skill Level": 20,
             "Move Overhead": 10, "Minimum Thinking Time": 20, "Slow Mover": 100,
@@ -307,11 +307,11 @@ class TestStockfish:
         stockfish.set_skill_level(1)
         expected_parameters["Skill Level"] = 1
         assert stockfish.get_engine_parameters() == expected_parameters
-        assert stockfish._DEFAULT_STOCKFISH_PARAMS == old_parameters
+        assert stockfish._DEFAULT_STOCKFISH_PARAMS == old_parameters # type: ignore
         stockfish.set_skill_level(20)
         expected_parameters["Skill Level"] = 20
         assert stockfish.get_engine_parameters() == old_parameters
-        assert stockfish._DEFAULT_STOCKFISH_PARAMS == old_parameters
+        assert stockfish._DEFAULT_STOCKFISH_PARAMS == old_parameters # type: ignore
 
         stockfish.update_engine_parameters({"Threads": 4})
         expected_parameters["Threads"] = 4
@@ -325,10 +325,10 @@ class TestStockfish:
 
     def test_update_engine_parameters_wrong_vals(self, stockfish: Stockfish):
         assert set(stockfish.get_engine_parameters().keys()) <= set(
-            Stockfish._PARAM_RESTRICTIONS.keys()
+            Stockfish._PARAM_RESTRICTIONS.keys() # type: ignore
         )
         max_hash = 2 ** (25 if "64" in platform.machine() else 11)
-        bad_values: Dict[str, List] = {
+        bad_values: dict[str, list[str | bool | int | float]] = {
             "Threads": ["1", False, 0, -1, 1025, 1.0],
             "UCI_Chess960": ["true", "false", "True", 1],
             "Contempt": [-101, 101, "0", False],
@@ -340,9 +340,9 @@ class TestStockfish:
         for name in bad_values:
             for val in bad_values[name]:
                 with pytest.raises(ValueError):
-                    stockfish.update_engine_parameters({name: val})
+                    stockfish.update_engine_parameters({name: val}) # type: ignore
                 with pytest.raises(ValueError):
-                    stockfish._set_option(name, val)
+                    stockfish._set_option(name, val) # type: ignore
 
     def test_deprecated_get_parameters(self, stockfish: Stockfish):
         with pytest.raises(ValueError):
@@ -425,9 +425,9 @@ class TestStockfish:
 
         assert stockfish.get_board_visual() == expected_result
 
-        stockfish._put("d")
-        stockfish._read_line()  # skip a line
-        assert "+---+---+---+" in stockfish._read_line()
+        stockfish._put("d") # type: ignore
+        stockfish._read_line()  # type: ignore
+        assert "+---+---+---+" in stockfish._read_line() # type: ignore
         # Tests that the previous call to get_board_visual left no remaining lines to be read. This means
         # the second line read after stockfish._put("d") now will be the +---+---+---+ of the new outputted board.
 
@@ -477,9 +477,9 @@ class TestStockfish:
 
         assert stockfish.get_board_visual(False) == expected_result
 
-        stockfish._put("d")
-        stockfish._read_line()  # skip a line
-        assert "+---+---+---+" in stockfish._read_line()
+        stockfish._put("d") # type: ignore
+        stockfish._read_line() # type: ignore
+        assert "+---+---+---+" in stockfish._read_line() # type: ignore
         # Tests that the previous call to get_board_visual left no remaining lines to be read. This means
         # the second line read after stockfish._put("d") now will be the +---+---+---+ of the new outputted board.
 
@@ -488,9 +488,9 @@ class TestStockfish:
             stockfish.get_fen_position()
             == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         )
-        stockfish._put("d")
-        stockfish._read_line()  # skip a line
-        assert "+---+---+---+" in stockfish._read_line()
+        stockfish._put("d") # type: ignore
+        stockfish._read_line() # type: ignore
+        assert "+---+---+---+" in stockfish._read_line() # type: ignore
 
     def test_get_fen_position_after_some_moves(self, stockfish: Stockfish):
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
@@ -562,32 +562,30 @@ class TestStockfish:
         stockfish.send_ucinewgame_command()
         stockfish.make_moves_from_start(None)
         stockfish.get_static_eval()
-        stockfish._put("go depth 2")
-        assert stockfish._read_line() != ""
+        stockfish._put("go depth 2") # type: ignore
+        assert stockfish._read_line() != "" # type: ignore
 
     def test_set_depth(self, stockfish: Stockfish):
         stockfish.set_depth(12)
-        assert stockfish._depth == 12
+        assert stockfish.get_depth() == 12
         stockfish.get_best_move()
         assert "depth 12" in stockfish.info()
         stockfish.set_depth()
-        assert stockfish._depth == 15
+        assert stockfish.get_depth() == 15
         stockfish.get_best_move()
         assert "depth 15" in stockfish.info()
 
     def test_get_depth(self, stockfish: Stockfish):
         stockfish.set_depth(12)
-        assert stockfish.get_depth() == 12
-        assert stockfish._depth == 12
+        assert stockfish.get_depth() == stockfish._depth == 12 # type: ignore
         stockfish.set_depth(20)
-        assert stockfish.get_depth() == 20
-        assert stockfish._depth == 20
+        assert stockfish.get_depth() == stockfish._depth == 20 # type: ignore
 
-    def test_set_num_nodes(self, stockfish: Stockfish):
+    def test_num_nodes(self, stockfish: Stockfish):
         stockfish.set_num_nodes(100)
-        assert stockfish._num_nodes == 100
+        assert stockfish.get_num_nodes() == 100
         stockfish.set_num_nodes()
-        assert stockfish._num_nodes == 1000000
+        assert stockfish.get_num_nodes() == 1000000
 
     @pytest.mark.parametrize("num_nodes", [0, -1])
     def test_bad_param_values_raise_errors(self, stockfish: Stockfish, val: int):
@@ -597,12 +595,6 @@ class TestStockfish:
             stockfish.set_depth(val)
         with pytest.raises(ValueError):
             stockfish.get_perft(val)
-
-    def test_get_num_nodes(self, stockfish: Stockfish):
-        stockfish.set_num_nodes(100)
-        assert stockfish.get_num_nodes() == 100
-        stockfish.set_num_nodes()
-        assert stockfish.get_num_nodes() == 1000000
 
     def test_get_best_move_wrong_position(self, stockfish: Stockfish):
         stockfish.set_depth(2)
@@ -631,7 +623,7 @@ class TestStockfish:
 
         assert "multipv 2" in stockfish_2.info() and "depth 16" in stockfish_2.info()
         assert "multipv 1" in stockfish.info() and "depth 15" in stockfish.info()
-        assert stockfish_2._depth == 16 and stockfish._depth == 15
+        assert stockfish_2.get_depth() == 16 and stockfish.get_depth() == 15
 
         stockfish_1_params = stockfish.get_engine_parameters()
         stockfish_2_params = stockfish_2.get_engine_parameters()
@@ -697,7 +689,7 @@ class TestStockfish:
 
     def test_get_top_moves(self, stockfish: Stockfish):
         stockfish.set_depth(15)
-        stockfish._set_option("MultiPV", 4)
+        stockfish.update_engine_parameters({"MultiPV": 4})
         stockfish.set_fen_position("1rQ1r1k1/5ppp/8/8/1R6/8/2r2PPP/4R1K1 w - - 0 1")
         assert stockfish.get_top_moves(2) == [
             {"Move": "e1e8", "Centipawn": None, "Mate": 1},
@@ -718,7 +710,7 @@ class TestStockfish:
 
     def test_get_top_moves_mate(self, stockfish: Stockfish):
         stockfish.set_depth(10)
-        stockfish._set_option("MultiPV", 3)
+        stockfish.update_engine_parameters({"MultiPV": 3})
         stockfish.set_fen_position("8/8/8/8/8/6k1/8/3r2K1 w - - 0 1")
         assert stockfish.get_top_moves() == []
         assert stockfish.get_engine_parameters()["MultiPV"] == 3
@@ -750,10 +742,10 @@ class TestStockfish:
     def test_get_top_moves_num_nodes(self, stockfish: Stockfish):
         stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
         moves = stockfish.get_top_moves(2, num_nodes=1000000, verbose=True)
-        assert int(moves[0]["Nodes"]) >= 1000000
+        assert isinstance(moves[0]["Nodes"], str) and int(moves[0]["Nodes"]) >= 1000000
 
     def test_get_top_moves_preserve_globals(self, stockfish: Stockfish):
-        stockfish._set_option("MultiPV", 4)
+        stockfish.update_engine_parameters({"MultiPV": 4})
         stockfish.set_num_nodes(2000000)
         stockfish.set_fen_position("1rQ1r1k1/5ppp/8/8/1R6/8/2r2PPP/4R1K1 w - - 0 1")
         stockfish.get_top_moves(2, num_nodes=100000)
@@ -818,12 +810,12 @@ class TestStockfish:
         stockfish.set_fen_position("8/2q2pk1/4b3/1p6/7P/Q1p3P1/2B2P2/6K1 b - - 3 50")
         assert stockfish.get_turn_perspective()
         moves = stockfish.get_top_moves(1)
-        assert moves[0]["Centipawn"] > 0
+        assert isinstance(moves[0]["Centipawn"], int) and moves[0]["Centipawn"] > 0
         assert compare(stockfish.get_evaluation()["value"], 0, operator.gt, int)
         stockfish.set_turn_perspective(False)
         assert stockfish.get_turn_perspective() is False
         moves = stockfish.get_top_moves(1)
-        assert moves[0]["Centipawn"] < 0
+        assert isinstance(moves[0]["Centipawn"], int) and moves[0]["Centipawn"] < 0
         assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
 
     def test_make_moves_from_current_position(self, stockfish: Stockfish):
