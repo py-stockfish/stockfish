@@ -11,6 +11,9 @@ Wraps the open-source Stockfish chess engine for easy integration into python.
 $ pip install stockfish
 ```
 
+Please note that as this is a third-party library, you'll also need to install the actual Stockfish engine in some way.
+See various options on their [site](https://stockfishchess.org/download/).
+
 ## API Documentation
 
 See [API Documentation](https://py-stockfish.github.io/stockfish/) for more information.
