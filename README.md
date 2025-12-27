@@ -11,18 +11,6 @@ Wraps the open-source Stockfish chess engine for easy integration into python.
 $ pip install stockfish
 ```
 
-#### Ubuntu
-
-```bash
-$ sudo apt install stockfish
-```
-
-#### Mac OS
-
-```bash
-$ brew install stockfish
-```
-
 ## API Documentation
 
 See [API Documentation](https://py-stockfish.github.io/stockfish/) for more information.
