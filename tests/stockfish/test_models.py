@@ -1171,7 +1171,6 @@ class TestStockfish:
     @pytest.mark.slow
     def test_is_fen_valid(self, stockfish: Stockfish):
         old_params = stockfish.get_engine_parameters()
-        old_info = stockfish.info()
         old_depth = stockfish._depth
         old_fen = stockfish.get_fen_position()
         correct_fens: List[Optional[str]] = [
@@ -1218,7 +1217,8 @@ class TestStockfish:
         time.sleep(2.0)
         assert stockfish._stockfish.poll() is None
         assert stockfish.get_engine_parameters() == old_params
-        assert stockfish.info() == old_info
+        with pytest.raises(RuntimeError):
+            stockfish.info()
         assert stockfish._depth == old_depth
         assert stockfish.get_fen_position() == old_fen
 
