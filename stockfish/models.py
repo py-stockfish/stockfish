@@ -1144,7 +1144,7 @@ class Stockfish:
                 self._version["minor"] = int(self._version["text"].split(".")[1])  # type: ignore
             except IndexError:
                 self._version["minor"] = 0
-            self._version["full"] = self._version["major"] + self._version["minor"] / 10
+            self._version["full"] = self._version["major"] + self._version["minor"] / 10  # type: ignore
         except Exception as e:
             raise Exception(
                 "Unable to parse Stockfish version. You may be using an unsupported version of Stockfish."
