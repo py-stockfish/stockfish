@@ -148,7 +148,9 @@ class Stockfish:
                unknowingly getting bugs. It has been replaced with 'get_engine_parameters()'."""
         )
 
-    def update_engine_parameters(self, parameters: dict[str, str | int | bool] | None) -> None:
+    def update_engine_parameters(
+        self, parameters: dict[str, str | int | bool] | None
+    ) -> None:
         """Updates the Stockfish engine parameters.
 
         Args:
@@ -301,8 +303,8 @@ class Stockfish:
 
     def _on_weaker_setting(self) -> bool:
         return (
-            self._parameters["UCI_LimitStrength"] # type: ignore
-            or self._parameters["Skill Level"] < 20 # type: ignore
+            self._parameters["UCI_LimitStrength"]  # type: ignore
+            or self._parameters["Skill Level"] < 20  # type: ignore
         )
 
     def _weaker_setting_warning(self, message: str) -> None:
@@ -842,7 +844,7 @@ class Stockfish:
             )
 
         # remember global values
-        old_multipv: int = self._parameters["MultiPV"] # type: ignore
+        old_multipv: int = self._parameters["MultiPV"]  # type: ignore
         old_num_nodes: int = self._num_nodes
 
         # to get number of top moves, we use Stockfish's MultiPV option (i.e., multiple principal variations).
@@ -1063,27 +1065,27 @@ class Stockfish:
 
     def get_stockfish_full_version(self) -> float:
         """Returns the full version of the Stockfish engine being used."""
-        return self._version["full"] # type: ignore
+        return self._version["full"]  # type: ignore
 
     def get_stockfish_major_version(self) -> int:
         """Returns the major version of the Stockfish engine being used."""
-        return self._version["major"] # type: ignore
+        return self._version["major"]  # type: ignore
 
     def get_stockfish_minor_version(self) -> int:
         """Returns the minor version of the Stockfish engine being used."""
-        return self._version["minor"] # type: ignore
+        return self._version["minor"]  # type: ignore
 
     def get_stockfish_patch_version(self) -> str:
         """Returns the patch version of the Stockfish engine being used."""
-        return self._version["patch"] # type: ignore
+        return self._version["patch"]  # type: ignore
 
     def get_stockfish_sha_version(self) -> str:
         """Returns the build version of the Stockfish engine being used."""
-        return self._version["sha"] # type: ignore
+        return self._version["sha"]  # type: ignore
 
     def is_development_build_of_engine(self) -> bool:
         """Returns whether the version of Stockfish being used is a development build."""
-        return self._version["is_dev_build"] # type: ignore
+        return self._version["is_dev_build"]  # type: ignore
 
     def _set_stockfish_version(self) -> None:
         self._put("uci")
@@ -1108,22 +1110,22 @@ class Stockfish:
             }
 
             # check if version is a development build, eg. dev-20221219-61ea1534
-            if self._version["text"].startswith("dev-"): # type: ignore
+            if self._version["text"].startswith("dev-"):  # type: ignore
                 self._version["is_dev_build"] = True
 
                 # parse patch and sha from dev version text
-                self._version["patch"] = self._version["text"].split("-")[1] # type: ignore
-                self._version["sha"] = self._version["text"].split("-")[2] # type: ignore
+                self._version["patch"] = self._version["text"].split("-")[1]  # type: ignore
+                self._version["sha"] = self._version["text"].split("-")[2]  # type: ignore
 
                 # get major.minor version as text from build date
-                build_date = self._version["text"].split("-")[1] # type: ignore
-                date_string = f"{int(build_date[:4])}-{int(build_date[4:6]):02d}-{int(build_date[6:8]):02d}" # type: ignore
+                build_date = self._version["text"].split("-")[1]  # type: ignore
+                date_string = f"{int(build_date[:4])}-{int(build_date[4:6]):02d}-{int(build_date[6:8]):02d}"  # type: ignore
                 self._version["text"] = self._get_stockfish_version_from_build_date(
                     date_string
                 )
 
             # check if version is a development build, eg. 280322
-            if len(self._version["text"]) == 6: # type: ignore
+            if len(self._version["text"]) == 6:  # type: ignore
                 self._version["is_dev_build"] = True
 
                 # parse version number from DDMMYY
@@ -1131,15 +1133,15 @@ class Stockfish:
 
                 # parse build date from dev version text
                 build_date = self._version["text"]
-                date_string = f"20{build_date[4:6]}-{build_date[2:4]}-{build_date[0:2]}" # type: ignore
+                date_string = f"20{build_date[4:6]}-{build_date[2:4]}-{build_date[0:2]}"  # type: ignore
                 self._version["text"] = self._get_stockfish_version_from_build_date(
                     date_string
                 )
 
             # parse version number for all versions
-            self._version["major"] = int(self._version["text"].split(".")[0]) # type: ignore
+            self._version["major"] = int(self._version["text"].split(".")[0])  # type: ignore
             try:
-                self._version["minor"] = int(self._version["text"].split(".")[1]) # type: ignore
+                self._version["minor"] = int(self._version["text"].split(".")[1])  # type: ignore
             except IndexError:
                 self._version["minor"] = 0
             self._version["full"] = self._version["major"] + self._version["minor"] / 10

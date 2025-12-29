@@ -10,7 +10,9 @@ import operator
 from stockfish import Stockfish, StockfishException
 
 
-def compare(first: Any, second: Any, op: Callable[[Any, Any], bool], expected_type: type) -> bool:
+def compare(
+    first: Any, second: Any, op: Callable[[Any, Any], bool], expected_type: type
+) -> bool:
     return all(isinstance(x, expected_type) for x in (first, second)) and op(
         first, second
     )
@@ -44,7 +46,10 @@ class TestStockfish:
         )
         assert sf.get_depth() == 20 and sf.get_num_nodes() == 1000
         assert sf.get_turn_perspective() is False
-        assert sf.get_engine_parameters()["Threads"] == 2 and sf.get_engine_parameters()["UCI_Elo"] == 1500
+        assert (
+            sf.get_engine_parameters()["Threads"] == 2
+            and sf.get_engine_parameters()["UCI_Elo"] == 1500
+        )
 
     @pytest.mark.parametrize(
         "parameters",
@@ -52,7 +57,7 @@ class TestStockfish:
     )
     def test_constructor_raises_type_errors(self, parameters: dict[str, str]):
         with pytest.raises(TypeError):
-            Stockfish(**parameters) # type: ignore
+            Stockfish(**parameters)  # type: ignore
 
     def test_get_best_move_first_move(self, stockfish: Stockfish):
         best_move = stockfish.get_best_move()
@@ -342,7 +347,7 @@ class TestStockfish:
         for name in bad_values:
             for val in bad_values[name]:
                 with pytest.raises(ValueError):
-                    stockfish.update_engine_parameters({name: val}) # type: ignore
+                    stockfish.update_engine_parameters({name: val})  # type: ignore
                 with pytest.raises(ValueError):
                     stockfish._set_option(name, val)
 
@@ -1257,7 +1262,9 @@ class TestStockfish:
             ("250723", 16.0, "250723", "", True),
         ],
     )
-    def test_parse_stockfish_version(self, stockfish: Stockfish, info: tuple[str, float, str, str, bool]):
+    def test_parse_stockfish_version(
+        self, stockfish: Stockfish, info: tuple[str, float, str, str, bool]
+    ):
         stockfish._parse_stockfish_version(info[0])
         assert stockfish.get_stockfish_full_version() == info[1]
         assert stockfish.get_stockfish_major_version() == int(info[1])
