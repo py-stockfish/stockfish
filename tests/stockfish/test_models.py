@@ -594,7 +594,7 @@ class TestStockfish:
         stockfish.set_num_nodes()
         assert stockfish.get_num_nodes() == 1000000
 
-    @pytest.mark.parametrize("num_nodes", [0, -1])
+    @pytest.mark.parametrize("val", [0, -1])
     def test_bad_param_values_raise_errors(self, stockfish: Stockfish, val: int):
         with pytest.raises(ValueError):
             stockfish.set_num_nodes(val)
