@@ -1,3 +1,5 @@
+# pyright: reportPrivateUsage=false
+
 import pytest
 from timeit import default_timer
 import time
@@ -28,8 +30,8 @@ class TestStockfish:
 
     def test_constructor_defaults(self):
         sf = Stockfish()
-        assert sf is not None and sf._path == "stockfish" # type: ignore
-        assert sf.get_engine_parameters() == sf._DEFAULT_STOCKFISH_PARAMS # type: ignore
+        assert sf is not None and sf._path == "stockfish"
+        assert sf.get_engine_parameters() == sf._DEFAULT_STOCKFISH_PARAMS
         assert sf.get_depth() == 15 and sf.get_num_nodes() == 1000000
         assert sf.get_turn_perspective() is True
 
@@ -307,11 +309,11 @@ class TestStockfish:
         stockfish.set_skill_level(1)
         expected_parameters["Skill Level"] = 1
         assert stockfish.get_engine_parameters() == expected_parameters
-        assert stockfish._DEFAULT_STOCKFISH_PARAMS == old_parameters # type: ignore
+        assert stockfish._DEFAULT_STOCKFISH_PARAMS == old_parameters
         stockfish.set_skill_level(20)
         expected_parameters["Skill Level"] = 20
         assert stockfish.get_engine_parameters() == old_parameters
-        assert stockfish._DEFAULT_STOCKFISH_PARAMS == old_parameters # type: ignore
+        assert stockfish._DEFAULT_STOCKFISH_PARAMS == old_parameters
 
         stockfish.update_engine_parameters({"Threads": 4})
         expected_parameters["Threads"] = 4
@@ -325,7 +327,7 @@ class TestStockfish:
 
     def test_update_engine_parameters_wrong_vals(self, stockfish: Stockfish):
         assert set(stockfish.get_engine_parameters().keys()) <= set(
-            Stockfish._PARAM_RESTRICTIONS.keys() # type: ignore
+            Stockfish._PARAM_RESTRICTIONS.keys()
         )
         max_hash = 2 ** (25 if "64" in platform.machine() else 11)
         bad_values: dict[str, list[str | bool | int | float]] = {
@@ -342,7 +344,7 @@ class TestStockfish:
                 with pytest.raises(ValueError):
                     stockfish.update_engine_parameters({name: val}) # type: ignore
                 with pytest.raises(ValueError):
-                    stockfish._set_option(name, val) # type: ignore
+                    stockfish._set_option(name, val)
 
     def test_deprecated_get_parameters(self, stockfish: Stockfish):
         with pytest.raises(ValueError):
@@ -425,9 +427,9 @@ class TestStockfish:
 
         assert stockfish.get_board_visual() == expected_result
 
-        stockfish._put("d") # type: ignore
-        stockfish._read_line()  # type: ignore
-        assert "+---+---+---+" in stockfish._read_line() # type: ignore
+        stockfish._put("d")
+        stockfish._read_line()
+        assert "+---+---+---+" in stockfish._read_line()
         # Tests that the previous call to get_board_visual left no remaining lines to be read. This means
         # the second line read after stockfish._put("d") now will be the +---+---+---+ of the new outputted board.
 
@@ -477,9 +479,9 @@ class TestStockfish:
 
         assert stockfish.get_board_visual(False) == expected_result
 
-        stockfish._put("d") # type: ignore
-        stockfish._read_line() # type: ignore
-        assert "+---+---+---+" in stockfish._read_line() # type: ignore
+        stockfish._put("d")
+        stockfish._read_line()
+        assert "+---+---+---+" in stockfish._read_line()
         # Tests that the previous call to get_board_visual left no remaining lines to be read. This means
         # the second line read after stockfish._put("d") now will be the +---+---+---+ of the new outputted board.
 
@@ -488,9 +490,9 @@ class TestStockfish:
             stockfish.get_fen_position()
             == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         )
-        stockfish._put("d") # type: ignore
-        stockfish._read_line() # type: ignore
-        assert "+---+---+---+" in stockfish._read_line() # type: ignore
+        stockfish._put("d")
+        stockfish._read_line()
+        assert "+---+---+---+" in stockfish._read_line()
 
     def test_get_fen_position_after_some_moves(self, stockfish: Stockfish):
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
@@ -562,8 +564,8 @@ class TestStockfish:
         stockfish.send_ucinewgame_command()
         stockfish.make_moves_from_start(None)
         stockfish.get_static_eval()
-        stockfish._put("go depth 2") # type: ignore
-        assert stockfish._read_line() != "" # type: ignore
+        stockfish._put("go depth 2")
+        assert stockfish._read_line() != ""
 
     def test_set_depth(self, stockfish: Stockfish):
         stockfish.set_depth(12)
@@ -577,9 +579,9 @@ class TestStockfish:
 
     def test_get_depth(self, stockfish: Stockfish):
         stockfish.set_depth(12)
-        assert stockfish.get_depth() == stockfish._depth == 12 # type: ignore
+        assert stockfish.get_depth() == stockfish._depth == 12
         stockfish.set_depth(20)
-        assert stockfish.get_depth() == stockfish._depth == 20 # type: ignore
+        assert stockfish.get_depth() == stockfish._depth == 20
 
     def test_num_nodes(self, stockfish: Stockfish):
         stockfish.set_num_nodes(100)
@@ -685,7 +687,7 @@ class TestStockfish:
         assert stockfish.get_engine_parameters() == old_parameters
         assert stockfish.get_fen_position() == "4rkr1/4p1p1/8/8/8/8/8/5K1R w K - 0 100"
         with pytest.raises(ValueError):
-            stockfish.update_engine_parameters({"Not an existing key", "value"})  # type: ignore
+            stockfish.update_engine_parameters({"Not an existing key": "value"})
 
     def test_get_top_moves(self, stockfish: Stockfish):
         stockfish.set_depth(15)
@@ -892,7 +894,7 @@ class TestStockfish:
 
     def test_get_wdl_stats(self, stockfish: Stockfish):
         stockfish.set_depth(15)
-        stockfish._set_option("MultiPV", 2) # type: ignore
+        stockfish._set_option("MultiPV", 2)
         if stockfish.does_current_engine_version_have_wdl_option():
             stockfish.get_wdl_stats()  # Testing that this doesn't raise a RuntimeError.
             stockfish.set_fen_position("7k/4R3/4P1pp/7N/8/8/1q5q/3K4 w - - 0 1")
@@ -974,7 +976,7 @@ class TestStockfish:
 
     @pytest.mark.slow
     def test_benchmark_result_with_invalid_type(self, stockfish: Stockfish):
-        params = {
+        params: dict[str, str | int] = {
             "ttSize": 16,
             "threads": 1,
             "limit": 13,

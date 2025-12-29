@@ -17,6 +17,7 @@ import re
 import datetime
 import warnings
 import platform
+from collections.abc import Sequence
 
 
 class Stockfish:
@@ -981,7 +982,7 @@ class Stockfish:
         """Flip the side to move"""
         self._put("flip")
 
-    def _pick(self, line: list[str], value: str = "", index: int = 1) -> str:
+    def _pick(self, line: Sequence[str], value: str = "", index: int = 1) -> str:
         return line[line.index(value) + index]
 
     def get_what_is_on_square(self, square: str) -> Piece | None:
