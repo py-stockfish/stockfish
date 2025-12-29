@@ -330,12 +330,12 @@ class Stockfish:
         """
         self._put(f"position fen {fen_position}")
 
-    def make_moves_from_start(self, moves: list[str] | None = None) -> None:
+    def make_moves_from_start(self, moves: Sequence[str] | None = None) -> None:
         """Sets the position by making a sequence of moves from the starting position of chess.
 
         Args:
             moves:
-                A list of moves to set this position on the board. Must be in pure algebraic coordinate notation.
+                A sequence of moves to set this position on the board. Must be in pure algebraic coordinate notation.
 
         Example:
             >>> stockfish.make_moves_from_start(['e2e4', 'e7e5'])
@@ -345,12 +345,12 @@ class Stockfish:
         )
         self.make_moves_from_current_position(moves)
 
-    def make_moves_from_current_position(self, moves: list[str] | None) -> None:
+    def make_moves_from_current_position(self, moves: Sequence[str] | None) -> None:
         """Sets a new position by playing the moves from the current position.
 
         Args:
             moves:
-              A list of moves to play in the current position, in order to reach a new position.
+              A sequence of moves to play in the current position, in order to reach a new position.
               Must be in pure algebraic coordinate notation.
 
         Example:

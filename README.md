@@ -96,7 +96,7 @@ stockfish.make_moves_from_start()
 
 ### Update position by making a sequence of moves from the current position
 
-Function takes a list of strings as its argument. Each string represents a move, and must have the format of the starting coordinate followed by the ending coordinate. If a move leads to a pawn promoting, then an additional character must be appended at the end (to indicate what piece the pawn promotes into).
+This function takes a `Sequence[str]` as its argument. Each string represents a move, and must have the format of the starting coordinate followed by the ending coordinate. If a move leads to a pawn promoting, then an additional character must be appended at the end (to indicate what piece the pawn promotes into).
 Other types of special moves (e.g., checks, captures, checkmates, en passants) do not need any special notation; the starting coordinate followed by the ending coordinate is all the information that's needed. Note that castling is represented by the starting coordinate of the king followed by the ending coordinate of the king. So "e1g1" would be used for white castling kingside, assuming the white king is still on e1 and castling is legal.
 Example call (assume in the current position, it is White's turn):
 ```python
