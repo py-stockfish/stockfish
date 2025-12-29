@@ -866,7 +866,7 @@ class TestStockfish:
         """Tests that not resetting the hash table between related positions makes SF faster."""
 
         stockfish.set_depth(16)
-        positions_considered = []
+        positions_considered: list[str] = []
         stockfish.set_fen_position(
             "rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2"
         )
@@ -892,7 +892,7 @@ class TestStockfish:
 
     def test_get_wdl_stats(self, stockfish: Stockfish):
         stockfish.set_depth(15)
-        stockfish._set_option("MultiPV", 2)
+        stockfish._set_option("MultiPV", 2) # type: ignore
         if stockfish.does_current_engine_version_have_wdl_option():
             stockfish.get_wdl_stats()  # Testing that this doesn't raise a RuntimeError.
             stockfish.set_fen_position("7k/4R3/4P1pp/7N/8/8/1q5q/3K4 w - - 0 1")
@@ -1125,7 +1125,7 @@ class TestStockfish:
             "3rk1n1/ppp3pp/8/8/8/8/PPP5/1KR1R3 w - - 0 1",
         ],
     )
-    def test_invalid_fen_king_attacked(self, stockfish: Stockfish, fen):
+    def test_invalid_fen_king_attacked(self, stockfish: Stockfish, fen: str):
         # Each of these FENs have correct syntax, but
         # involve a king being attacked while it's the opponent's turn.
         old_del_counter = Stockfish._del_counter
@@ -1201,7 +1201,7 @@ class TestStockfish:
         assert stockfish.get_engine_parameters() == old_params
         with pytest.raises(RuntimeError):
             stockfish.info()
-        assert stockfish._depth == old_depth
+        assert stockfish.get_depth() == old_depth
         assert stockfish.get_fen_position() == old_fen
 
     def test_send_quit_command(self, stockfish: Stockfish):
@@ -1247,15 +1247,15 @@ class TestStockfish:
     @pytest.mark.parametrize(
         "info",
         [
-            ["dev-20221219-61ea1534", 15.1, "20221219", "61ea1534", True],
-            ["280322", 14.1, "280322", "", True],
-            ["15.1", 15.1, "", "", False],
-            ["14", 14.0, "", "", False],
-            ["16", 16.0, "", "", False],
-            ["250723", 16.0, "250723", "", True],
+            ("dev-20221219-61ea1534", 15.1, "20221219", "61ea1534", True),
+            ("280322", 14.1, "280322", "", True),
+            ("15.1", 15.1, "", "", False),
+            ("14", 14.0, "", "", False),
+            ("16", 16.0, "", "", False),
+            ("250723", 16.0, "250723", "", True),
         ],
     )
-    def test_parse_stockfish_version(self, stockfish: Stockfish, info):
+    def test_parse_stockfish_version(self, stockfish: Stockfish, info: tuple[str, float, str, str, bool]):
         stockfish._parse_stockfish_version(info[0])
         assert stockfish.get_stockfish_full_version() == info[1]
         assert stockfish.get_stockfish_major_version() == int(info[1])
