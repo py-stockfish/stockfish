@@ -3,7 +3,7 @@
 import pytest
 from timeit import default_timer
 import time
-from typing import List, Optional, Dict, Callable, Any
+from typing import Callable, Any
 import platform
 import operator
 
@@ -1017,7 +1017,7 @@ class TestStockfish:
             "rnbq1rk1/ppp1ppbp/5np1/3pP3/8/BPN5/P1PP1PPP/R2QKBNR w KQ d6 0 6"
         )
         # fmt: off
-        squares_and_contents: Dict[str, Optional[Stockfish.Piece]] = {
+        squares_and_contents: dict[str, Stockfish.Piece | None] = {
             "a1": Stockfish.Piece.WHITE_ROOK, "a8": Stockfish.Piece.BLACK_ROOK,
             "g8": Stockfish.Piece.BLACK_KING, "e1": Stockfish.Piece.WHITE_KING,
             "h2": Stockfish.Piece.WHITE_PAWN, "f8": Stockfish.Piece.BLACK_ROOK,
@@ -1154,7 +1154,7 @@ class TestStockfish:
         old_params = stockfish.get_engine_parameters()
         old_depth = stockfish._depth
         old_fen = stockfish.get_fen_position()
-        correct_fens: List[Optional[str]] = [
+        correct_fens: list[str | None] = [
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
             "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK1 b kq - 0 8",
             "4k3/8/4K3/8/8/8/8/8 w - - 10 50",
