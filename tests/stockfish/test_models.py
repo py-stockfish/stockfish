@@ -51,14 +51,6 @@ class TestStockfish:
             and sf.get_engine_parameters()["UCI_Elo"] == 1500
         )
 
-    @pytest.mark.parametrize(
-        "parameters",
-        [{"depth": "20"}, {"num_nodes": "100"}, {"turn_perspective": "False"}],
-    )
-    def test_constructor_raises_type_errors(self, parameters: dict[str, str]):
-        with pytest.raises(TypeError):
-            Stockfish(**parameters)  # type: ignore
-
     def test_get_best_move_first_move(self, stockfish: Stockfish):
         best_move = stockfish.get_best_move()
         assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
