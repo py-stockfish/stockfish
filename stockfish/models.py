@@ -1,7 +1,7 @@
 """
 This module implements the Stockfish class.
 
-Copyright (c) 2016-2025 by Ilya Zhelyabuzhsky and contributors.
+Copyright (c) 2016-2026 by Ilya Zhelyabuzhsky and contributors.
 Contributors: https://github.com/py-stockfish/stockfish/graphs/contributors
 License: MIT. See LICENSE for more details.
 """
@@ -20,13 +20,118 @@ import platform
 from collections.abc import Sequence
 
 
+@dataclass
+class StockfishVersion:
+    text: str
+    full: float = 0
+    major: int = 0
+    minor: int = 0
+    patch: str = ""
+    sha: str = ""
+    is_dev_build: bool = False
+
+
+@dataclass
+class StockfishParameters:
+    debug_log_file: str
+    threads: int
+    hash: int
+    ponder: bool
+    multipv: int
+    skill_level: int
+    move_overhead: int
+    slow_mover: int
+    uci_chess960: bool
+    uci_limit_strength: bool
+    uci_elo: int
+    contempt: int
+    min_split_depth: int
+    minimum_thinking_time: int
+    uci_show_wdl: bool | None = None
+
+    def to_dict(self) -> dict[str, str | int | bool]:
+        mappings: dict[str, str | int | bool | None] = {
+            "Debug Log File": self.debug_log_file,
+            "Threads": self.threads,
+            "Hash": self.hash,
+            "Ponder": self.ponder,
+            "MultiPV": self.multipv,
+            "Skill Level": self.skill_level,
+            "Move Overhead": self.move_overhead,
+            "Slow Mover": self.slow_mover,
+            "UCI_Chess960": self.uci_chess960,
+            "UCI_LimitStrength": self.uci_limit_strength,
+            "UCI_Elo": self.uci_elo,
+            "Contempt": self.contempt,
+            "Min Split Depth": self.min_split_depth,
+            "Minimum Thinking Time": self.minimum_thinking_time,
+            "UCI_ShowWDL": self.uci_show_wdl,
+        }
+        return {k: v for k, v in mappings.items() if v is not None}
+
+    def update(self, params: dict[str, str | int | bool]) -> None:
+        mappings: dict[str, str] = {
+            "Debug Log File": "debug_log_file",
+            "Hash": "hash",
+            "MultiPV": "multipv",
+            "Skill Level": "skill_level",
+            "UCI_LimitStrength": "uci_limit_strength",
+            "Threads": "threads",
+            "Ponder": "ponder",
+            "Move Overhead": "move_overhead",
+            "Slow Mover": "slow_mover",
+            "UCI_Chess960": "uci_chess960",
+            "UCI_Elo": "uci_elo",
+            "Contempt": "contempt",
+            "Min Split Depth": "min_split_depth",
+            "Minimum Thinking Time": "minimum_thinking_time",
+            "UCI_ShowWDL": "uci_show_wdl",
+        }
+
+        for dict_key, value in params.items():
+            field_name = mappings.get(dict_key)
+            if field_name is not None:
+                setattr(self, field_name, value)
+
+
+@dataclass
+class MoveEvaluation:
+    move: str
+    centipawn: int | None
+    mate: int | None
+    time: str | None = None
+    nodes: str | None = None
+    multipv_line: str | None = None
+    nodes_per_second: str | None = None
+    selective_depth: str | None = None
+    wdl: str | None = None
+
+    def to_dict(self) -> dict[str, str | int | None]:
+        mappings: dict[str, str | int | None] = {
+            "Move": self.move,
+            "Centipawn": self.centipawn,
+            "Mate": self.mate,
+            "Time": self.time,
+            "Nodes": self.nodes,
+            "MultiPVLine": self.multipv_line,
+            "NodesPerSecond": self.nodes_per_second,
+            "SelectiveDepth": self.selective_depth,
+            "WDL": self.wdl,
+        }
+        return {
+            k: v
+            for k, v in mappings.items()
+            if v is not None or k in ("Centipawn", "Mate")
+        }
+
+
 class Stockfish:
     """Integrates the [Stockfish chess engine](https://stockfishchess.org/) with Python."""
 
-    _del_counter = 0
     # Used in test_models: will count how many times the del function is called.
+    _del_counter: int = 0
 
-    _RELEASES = {
+    _RELEASES: dict[str, str] = {
         "16.0": "2023-06-30",
         "15.1": "2022-12-04",
         "15.0": "2022-04-18",
@@ -64,6 +169,23 @@ class Stockfish:
         source code: https://github.com/official-stockfish/Stockfish/blob/65ece7d985291cc787d6c804a33f1dd82b75736d/src/ucioption.cpp#L58-L82
     """
 
+    _DEFAULT_STOCKFISH_PARAMS: StockfishParameters = StockfishParameters(
+        debug_log_file="",
+        contempt=0,
+        min_split_depth=0,
+        threads=1,
+        ponder=False,
+        hash=16,
+        multipv=1,
+        skill_level=20,
+        move_overhead=10,
+        minimum_thinking_time=20,
+        slow_mover=100,
+        uci_chess960=False,
+        uci_limit_strength=False,
+        uci_elo=1350,
+    )
+
     def __init__(
         self,
         path: str = "stockfish",
@@ -79,22 +201,6 @@ class Stockfish:
         >>> from stockfish import Stockfish
         >>> stockfish = Stockfish()
         """
-        self._DEFAULT_STOCKFISH_PARAMS: dict[str, str | int | bool] = {
-            "Debug Log File": "",
-            "Contempt": 0,
-            "Min Split Depth": 0,
-            "Threads": 1,
-            "Ponder": False,
-            "Hash": 16,
-            "MultiPV": 1,
-            "Skill Level": 20,
-            "Move Overhead": 10,
-            "Minimum Thinking Time": 20,
-            "Slow Mover": 100,
-            "UCI_Chess960": False,
-            "UCI_LimitStrength": False,
-            "UCI_Elo": 1350,
-        }
         self._debug_view: bool = debug_view
 
         self._path: str = path
@@ -118,8 +224,10 @@ class Stockfish:
 
         self._info: str | None = None
 
-        self._parameters: dict[str, str | int | bool] = {}
-        self.update_engine_parameters(self._DEFAULT_STOCKFISH_PARAMS)
+        self._parameters: StockfishParameters = copy.deepcopy(
+            Stockfish._DEFAULT_STOCKFISH_PARAMS
+        )
+        self.update_engine_parameters(Stockfish._DEFAULT_STOCKFISH_PARAMS.to_dict())
         self.update_engine_parameters(parameters)
 
         if self.does_current_engine_version_have_wdl_option():
@@ -136,7 +244,7 @@ class Stockfish:
         Returns:
             A deep copy of the dictionary storing the current engine parameters.
         """
-        return copy.deepcopy(self._parameters)
+        return self._parameters.to_dict()
 
     def get_parameters(self):
         """Returns the current engine parameters being used. *Deprecated, see `get_engine_parameters()` instead*."""
@@ -167,7 +275,10 @@ class Stockfish:
         new_param_values = copy.deepcopy(parameters)
 
         for key in new_param_values:
-            if len(self._parameters) > 0 and key not in self._parameters:
+            if (
+                len(self._parameters.to_dict()) > 0
+                and key not in self._parameters.to_dict()
+            ):
                 raise ValueError(f"'{key}' is not a key that exists.")
             if key in (
                 "Ponder",
@@ -199,7 +310,7 @@ class Stockfish:
                 hash_value = new_param_values["Hash"]
                 del new_param_values["Hash"]
             else:
-                hash_value = self._parameters["Hash"]
+                hash_value = self._parameters.hash
             new_param_values["Threads"] = threads_value
             new_param_values["Hash"] = hash_value
 
@@ -210,7 +321,7 @@ class Stockfish:
 
     def reset_engine_parameters(self) -> None:
         """Resets the Stockfish engine parameters."""
-        self.update_engine_parameters(self._DEFAULT_STOCKFISH_PARAMS)
+        self.update_engine_parameters(Stockfish._DEFAULT_STOCKFISH_PARAMS.to_dict())
 
     def send_ucinewgame_command(self) -> None:
         """Sends the `ucinewgame` command to the Stockfish engine. This will clear Stockfish's
@@ -302,10 +413,7 @@ class Stockfish:
         self._put(f"go perft {depth}")
 
     def _on_weaker_setting(self) -> bool:
-        return (
-            self._parameters["UCI_LimitStrength"]  # type: ignore
-            or self._parameters["Skill Level"] < 20  # type: ignore
-        )
+        return self._parameters.uci_limit_strength or self._parameters.skill_level < 20
 
     def _weaker_setting_warning(self, message: str) -> None:
         """Will issue a warning, referring to the function that calls this one."""
@@ -846,12 +954,12 @@ class Stockfish:
             )
 
         # remember global values
-        old_multipv: int = self._parameters["MultiPV"]  # type: ignore
+        old_multipv: int = self._parameters.multipv
         old_num_nodes: int = self._num_nodes
 
         # to get number of top moves, we use Stockfish's MultiPV option (i.e., multiple principal variations).
         # set MultiPV to num_top_moves requested
-        if num_top_moves != self._parameters["MultiPV"]:
+        if num_top_moves != self._parameters.multipv:
             self._set_option("MultiPV", num_top_moves)
 
         # start engine. will go until reaches self._depth or self._num_nodes
@@ -897,32 +1005,31 @@ class Stockfish:
             if (num_nodes > 0) and (int(self._pick(line, "nodes")) < self._num_nodes):
                 break
 
-            move_evaluation: dict[str, str | int | None] = {
-                # get move
-                "Move": self._pick(line, "pv"),
+            move_evaluation = MoveEvaluation(
+                move=self._pick(line, "pv"),
                 # get cp if available
-                "Centipawn": (
+                centipawn=(
                     int(self._pick(line, "cp")) * perspective if "cp" in line else None
                 ),
                 # get mate if available
-                "Mate": (
+                mate=(
                     int(self._pick(line, "mate")) * perspective
                     if "mate" in line
                     else None
                 ),
-            }
+            )
 
             # add more info if verbose
             if verbose:
-                move_evaluation["Time"] = self._pick(line, "time")
-                move_evaluation["Nodes"] = self._pick(line, "nodes")
-                move_evaluation["MultiPVLine"] = self._pick(line, "multipv")
-                move_evaluation["NodesPerSecond"] = self._pick(line, "nps")
-                move_evaluation["SelectiveDepth"] = self._pick(line, "seldepth")
+                move_evaluation.time = self._pick(line, "time")
+                move_evaluation.nodes = self._pick(line, "nodes")
+                move_evaluation.multipv_line = self._pick(line, "multipv")
+                move_evaluation.nodes_per_second = self._pick(line, "nps")
+                move_evaluation.selective_depth = self._pick(line, "seldepth")
 
                 # add wdl if available
                 if self.does_current_engine_version_have_wdl_option():
-                    move_evaluation["WDL"] = " ".join(
+                    move_evaluation.wdl = " ".join(
                         [
                             self._pick(line, "wdl", 1),
                             self._pick(line, "wdl", 2),
@@ -931,10 +1038,10 @@ class Stockfish:
                     )
 
             # add move to list of top moves
-            top_moves.insert(0, move_evaluation)
+            top_moves.insert(0, move_evaluation.to_dict())
 
         # reset MultiPV to global value
-        if old_multipv != self._parameters["MultiPV"]:
+        if old_multipv != self._parameters.multipv:
             self._set_option("MultiPV", old_multipv)
 
         # reset self._num_nodes to global value
@@ -1046,7 +1153,7 @@ class Stockfish:
             move_value[2:4]
         )
         if ending_square_piece is not None:
-            if not self._parameters["UCI_Chess960"]:
+            if not self._parameters.uci_chess960:
                 return Stockfish.Capture.DIRECT_CAPTURE
             # Check for Chess960 castling:
             castling_pieces = [
@@ -1067,27 +1174,27 @@ class Stockfish:
 
     def get_stockfish_full_version(self) -> float:
         """Returns the full version of the Stockfish engine being used."""
-        return self._version["full"]  # type: ignore
+        return self._version.full
 
     def get_stockfish_major_version(self) -> int:
         """Returns the major version of the Stockfish engine being used."""
-        return self._version["major"]  # type: ignore
+        return self._version.major
 
     def get_stockfish_minor_version(self) -> int:
         """Returns the minor version of the Stockfish engine being used."""
-        return self._version["minor"]  # type: ignore
+        return self._version.minor
 
     def get_stockfish_patch_version(self) -> str:
         """Returns the patch version of the Stockfish engine being used."""
-        return self._version["patch"]  # type: ignore
+        return self._version.patch
 
     def get_stockfish_sha_version(self) -> str:
         """Returns the build version of the Stockfish engine being used."""
-        return self._version["sha"]  # type: ignore
+        return self._version.sha
 
     def is_development_build_of_engine(self) -> bool:
         """Returns whether the version of Stockfish being used is a development build."""
-        return self._version["is_dev_build"]  # type: ignore
+        return self._version.is_dev_build
 
     def _set_stockfish_version(self) -> None:
         self._put("uci")
@@ -1101,60 +1208,50 @@ class Stockfish:
 
     def _parse_stockfish_version(self, version_text: str = "") -> None:
         try:
-            self._version: dict[str, str | int | float | bool | None] = {
-                "full": 0,
-                "major": 0,
-                "minor": 0,
-                "patch": "",
-                "sha": "",
-                "is_dev_build": False,
-                "text": version_text,
-            }
+            self._version = StockfishVersion(text=version_text)
 
             # check if version is a development build, eg. dev-20221219-61ea1534
-            if self._version["text"].startswith("dev-"):  # type: ignore
-                self._version["is_dev_build"] = True
+            if self._version.text.startswith("dev-"):
+                self._version.is_dev_build = True
 
                 # parse patch and sha from dev version text
-                self._version["patch"] = self._version["text"].split("-")[1]  # type: ignore
-                self._version["sha"] = self._version["text"].split("-")[2]  # type: ignore
+                self._version.patch = self._version.text.split("-")[1]
+                self._version.sha = self._version.text.split("-")[2]
 
                 # get major.minor version as text from build date
-                build_date = self._version["text"].split("-")[1]  # type: ignore
-                date_string = f"{int(build_date[:4])}-{int(build_date[4:6]):02d}-{int(build_date[6:8]):02d}"  # type: ignore
-                self._version["text"] = self._get_stockfish_version_from_build_date(
+                build_date = self._version.text.split("-")[1]
+                date_string = f"{int(build_date[:4])}-{int(build_date[4:6]):02d}-{int(build_date[6:8]):02d}"
+                self._version.text = self._get_stockfish_version_from_build_date(
                     date_string
                 )
 
             # check if version is a development build, eg. 280322
-            if len(self._version["text"]) == 6:  # type: ignore
-                self._version["is_dev_build"] = True
+            if len(self._version.text) == 6:
+                self._version.is_dev_build = True
 
                 # parse version number from DDMMYY
-                self._version["patch"] = self._version["text"]
+                self._version.patch = self._version.text
 
                 # parse build date from dev version text
-                build_date = self._version["text"]
-                date_string = f"20{build_date[4:6]}-{build_date[2:4]}-{build_date[0:2]}"  # type: ignore
-                self._version["text"] = self._get_stockfish_version_from_build_date(
+                build_date = self._version.text
+                date_string = f"20{build_date[4:6]}-{build_date[2:4]}-{build_date[0:2]}"
+                self._version.text = self._get_stockfish_version_from_build_date(
                     date_string
                 )
 
             # parse version number for all versions
-            self._version["major"] = int(self._version["text"].split(".")[0])  # type: ignore
+            self._version.major = int(self._version.text.split(".")[0])
             try:
-                self._version["minor"] = int(self._version["text"].split(".")[1])  # type: ignore
+                self._version.minor = int(self._version.text.split(".")[1])
             except IndexError:
-                self._version["minor"] = 0
-            self._version["full"] = self._version["major"] + self._version["minor"] / 10  # type: ignore
+                self._version.minor = 0
+            self._version.full = self._version.major + self._version.minor / 10
         except Exception as e:
             raise Exception(
                 "Unable to parse Stockfish version. You may be using an unsupported version of Stockfish."
             ) from e
 
-    def _get_stockfish_version_from_build_date(
-        self, date_string: str = ""
-    ) -> str | None:
+    def _get_stockfish_version_from_build_date(self, date_string: str = "") -> str:
         # Convert date string to datetime object
         date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d")
 
@@ -1252,7 +1349,7 @@ class Stockfish:
             The final line of Stockfish's output from running the bench. I.e., the line
             starting with "Nodes/second".
         """
-        if type(params) != self.BenchmarkParameters:
+        if not isinstance(params, self.BenchmarkParameters):
             params = self.BenchmarkParameters()
 
         self._put(

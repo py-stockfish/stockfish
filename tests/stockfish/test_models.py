@@ -33,7 +33,9 @@ class TestStockfish:
     def test_constructor_defaults(self):
         sf = Stockfish()
         assert sf is not None and sf._path == "stockfish"
-        assert sf.get_engine_parameters() == sf._DEFAULT_STOCKFISH_PARAMS
+        assert (
+            sf.get_engine_parameters() == Stockfish._DEFAULT_STOCKFISH_PARAMS.to_dict()
+        )
         assert sf.get_depth() == 15 and sf.get_num_nodes() == 1000000
         assert sf.get_turn_perspective() is True
 
@@ -309,11 +311,11 @@ class TestStockfish:
         stockfish.set_skill_level(1)
         expected_parameters["Skill Level"] = 1
         assert stockfish.get_engine_parameters() == expected_parameters
-        assert stockfish._DEFAULT_STOCKFISH_PARAMS == old_parameters
+        assert old_parameters == Stockfish._DEFAULT_STOCKFISH_PARAMS.to_dict()
         stockfish.set_skill_level(20)
         expected_parameters["Skill Level"] = 20
         assert stockfish.get_engine_parameters() == old_parameters
-        assert stockfish._DEFAULT_STOCKFISH_PARAMS == old_parameters
+        assert old_parameters == Stockfish._DEFAULT_STOCKFISH_PARAMS.to_dict()
 
         stockfish.update_engine_parameters({"Threads": 4})
         expected_parameters["Threads"] = 4
@@ -1306,7 +1308,7 @@ class TestStockfish:
         params = stockfish.get_engine_parameters()
         params.update({"Skill Level": 10})
         assert params["Skill Level"] == 10
-        assert stockfish._parameters["Skill Level"] == 20
+        assert stockfish._parameters.skill_level == 20
 
     @pytest.mark.slow
     def test_uci_new_game_wait(self, stockfish: Stockfish):
