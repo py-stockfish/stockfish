@@ -55,6 +55,7 @@ class TestStockfish:
         best_move = stockfish.get_best_move()
         assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
 
+    @pytest.mark.slow
     def test_get_best_move_time_first_move(self, stockfish: Stockfish):
         best_move = stockfish.get_best_move_time(1000)
         assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
@@ -83,7 +84,8 @@ class TestStockfish:
         stockfish.get_evaluation()
         stockfish.get_perft(1)
         stockfish.get_top_moves(1)
-        stockfish.get_wdl_stats()
+        if stockfish.does_current_engine_version_have_wdl_option():
+            stockfish.get_wdl_stats()
         with pytest.raises(RuntimeError):
             stockfish.info()
         stockfish.get_best_move_time(1)
@@ -94,6 +96,7 @@ class TestStockfish:
         best_move = stockfish.get_best_move()
         assert best_move in ("d2d4", "g1f3")
 
+    @pytest.mark.slow
     def test_get_best_move_time_not_first_move(self, stockfish: Stockfish):
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
         best_move = stockfish.get_best_move_time(1000)
@@ -934,6 +937,15 @@ class TestStockfish:
         else:
             with pytest.raises(RuntimeError):
                 stockfish.get_wdl_stats()
+
+    @pytest.mark.slow
+    def test_get_wdl_stats_movetime(self, stockfish: Stockfish):
+        if not stockfish.does_current_engine_version_have_wdl_option():
+            return
+        start = time.time()
+        wdl_stats = stockfish.get_wdl_stats(get_as_tuple=True, time=1000)
+        assert 0.5 < time.time() - start < 1.5
+        assert wdl_stats and wdl_stats[1] > wdl_stats[0] > wdl_stats[2]
 
     def test_does_current_engine_version_have_wdl_option(self, stockfish: Stockfish):
         if stockfish.get_stockfish_major_version() <= 11:
