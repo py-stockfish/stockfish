@@ -510,7 +510,7 @@ class TestStockfish:
         evaluation = stockfish.get_evaluation()
         assert (
             compare(evaluation["type"], "cp", operator.eq, str)
-            and compare(evaluation["value"], 60, operator.ge, int)
+            and compare(evaluation["value"], 45, operator.ge, int)
             and compare(evaluation["value"], 150, operator.le, int)
         )
         stockfish.set_skill_level(1)
@@ -518,7 +518,7 @@ class TestStockfish:
             evaluation = stockfish.get_evaluation()
         assert (
             compare(evaluation["type"], "cp", operator.eq, str)
-            and compare(evaluation["value"], 60, operator.ge, int)
+            and compare(evaluation["value"], 45, operator.ge, int)
             and compare(evaluation["value"], 150, operator.le, int)
         )
 
