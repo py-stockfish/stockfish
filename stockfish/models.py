@@ -542,7 +542,7 @@ class Stockfish:
         self, wtime: int | None = None, btime: int | None = None
     ) -> str | None:
         """Returns the best move in the current position on the board.
-        `wtime` and `btime` arguments influence the search only if provided.
+        If both `wtime` and `btime` aren't provided, the current depth is used for the search.
 
         Args:
             wtime:
@@ -686,13 +686,16 @@ class Stockfish:
         return move_value in self.get_perft(1)[1]
 
     def get_wdl_stats(
-        self, get_as_tuple: bool = False
+        self, get_as_tuple: bool = False, time: int | None = None
     ) -> list[int] | tuple[int, int, int] | None:
         """Returns Stockfish's win/draw/loss stats for the side to move.
 
         Args:
             get_as_tuple:
                 Option to return the wdl stats as a tuple instead of a list. Default is `False`.
+            time:
+                Time for Stockfish to search (milliseconds). If provided, will be used instead of the
+                current depth.
 
         Returns:
             A list or tuple of three integers, unless the game is over (in which case
@@ -709,18 +712,17 @@ class Stockfish:
                 + """ get_wdl_stats will still return full strength Stockfish's wdl stats of the position."""
             )
 
-        self._go()
+        if time is None:
+            self._go()
+        else:
+            self._go_time(time)
         lines = self._get_sf_go_command_output()
         if lines[-1].startswith("bestmove (none)"):
             return None
         split_line = [line.split(" ") for line in lines if " multipv 1 " in line][-1]
         wdl_index = split_line.index("wdl")
-
         wdl_stats = [int(split_line[i]) for i in range(wdl_index + 1, wdl_index + 4)]
-
-        if get_as_tuple:
-            return (wdl_stats[0], wdl_stats[1], wdl_stats[2])
-        return wdl_stats
+        return (wdl_stats[0], wdl_stats[1], wdl_stats[2]) if get_as_tuple else wdl_stats
 
     def does_current_engine_version_have_wdl_option(self) -> bool:
         """Returns whether the user's version of Stockfish has the option to display WDL stats."""
