@@ -265,7 +265,10 @@ Before calling this function, it is recommended that you first check if your ver
 use the "does_current_engine_version_have_wdl_option()" function below.
 
 ```python
-stockfish.get_wdl_stats() # include the argument get_as_tuple=True if you'd like to have a tuple returned instead of a list.
+stockfish.get_wdl_stats()
+# Optional args:
+    # `get_as_tuple`: if you'd like to have a tuple returned instead of a list.
+    # `time`: if you'd like to constrain the search by a duration rather than the current depth.
 ```
 
 ```text
