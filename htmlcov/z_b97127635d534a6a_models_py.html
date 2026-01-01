@@ -55,8 +55,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">558 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">547<span class="text"> run</span></button>
+            <span class="text">556 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">545<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">11<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">17<span class="text"> partial</span></button>
@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="index.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.13.0">coverage.py v7.13.0</a>,
-            created at 2026-01-01 23:29 +0000
+            created at 2026-01-01 23:43 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -1433,20 +1433,18 @@
     <p class="pln"><span class="n"><a id="t1349" href="#t1349">1349</a></span><span class="t"><span class="str">            The final line of Stockfish's output from running the bench. I.e., the line</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1350" href="#t1350">1350</a></span><span class="t"><span class="str">            starting with "Nodes/second".</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1351" href="#t1351">1351</a></span><span class="t"><span class="str">        """</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1352" href="#t1352">1352</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">params</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">BenchmarkParameters</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1353" href="#t1353">1353</a></span><span class="t">            <span class="nam">params</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">BenchmarkParameters</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1354" href="#t1354">1354</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1355" href="#t1355">1355</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">_put</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t1356" href="#t1356">1356</a></span><span class="t">            <span class="fst">f"</span><span class="fst">bench </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">ttSize</span><span class="op">}</span><span class="fst"> </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">threads</span><span class="op">}</span><span class="fst"> </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">limit</span><span class="op">}</span><span class="fst"> </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">fenFile</span><span class="op">}</span><span class="fst"> </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">limitType</span><span class="op">}</span><span class="fst"> </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">evalType</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t1357" href="#t1357">1357</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1358" href="#t1358">1358</a></span><span class="t">        <span class="key">while</span> <span class="key">True</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1359" href="#t1359">1359</a></span><span class="t">            <span class="nam">text</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_read_line</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1360" href="#t1360">1360</a></span><span class="t">            <span class="key">if</span> <span class="nam">text</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="str">" "</span><span class="op">)</span><span class="op">[</span><span class="num">0</span><span class="op">]</span> <span class="op">==</span> <span class="str">"Nodes/second"</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1361" href="#t1361">1361</a></span><span class="t">                <span class="key">return</span> <span class="nam">text</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1362" href="#t1362">1362</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1363" href="#t1363">1363</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1364" href="#t1364">1364</a></span><span class="t"><span class="key">class</span> <span class="nam">StockfishException</span><span class="op">(</span><span class="nam">Exception</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1365" href="#t1365">1365</a></span><span class="t">    <span class="key">pass</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1352" href="#t1352">1352</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1353" href="#t1353">1353</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">_put</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t1354" href="#t1354">1354</a></span><span class="t">            <span class="fst">f"</span><span class="fst">bench </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">ttSize</span><span class="op">}</span><span class="fst"> </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">threads</span><span class="op">}</span><span class="fst"> </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">limit</span><span class="op">}</span><span class="fst"> </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">fenFile</span><span class="op">}</span><span class="fst"> </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">limitType</span><span class="op">}</span><span class="fst"> </span><span class="op">{</span><span class="nam">params</span><span class="op">.</span><span class="nam">evalType</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t1355" href="#t1355">1355</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1356" href="#t1356">1356</a></span><span class="t">        <span class="key">while</span> <span class="key">True</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1357" href="#t1357">1357</a></span><span class="t">            <span class="nam">text</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_read_line</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1358" href="#t1358">1358</a></span><span class="t">            <span class="key">if</span> <span class="nam">text</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="str">" "</span><span class="op">)</span><span class="op">[</span><span class="num">0</span><span class="op">]</span> <span class="op">==</span> <span class="str">"Nodes/second"</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1359" href="#t1359">1359</a></span><span class="t">                <span class="key">return</span> <span class="nam">text</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1360" href="#t1360">1360</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1361" href="#t1361">1361</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1362" href="#t1362">1362</a></span><span class="t"><span class="key">class</span> <span class="nam">StockfishException</span><span class="op">(</span><span class="nam">Exception</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1363" href="#t1363">1363</a></span><span class="t">    <span class="key">pass</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -1456,7 +1454,7 @@
             <a class="nav" href="index.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.13.0">coverage.py v7.13.0</a>,
-            created at 2026-01-01 23:29 +0000
+            created at 2026-01-01 23:43 +0000
         </p>
     </div>
 </footer>
