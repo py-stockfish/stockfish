@@ -1349,8 +1349,6 @@ class Stockfish:
             The final line of Stockfish's output from running the bench. I.e., the line
             starting with "Nodes/second".
         """
-        if not isinstance(params, self.BenchmarkParameters):
-            params = self.BenchmarkParameters()
 
         self._put(
             f"bench {params.ttSize} {params.threads} {params.limit} {params.fenFile} {params.limitType} {params.evalType}"
