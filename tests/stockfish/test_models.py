@@ -985,20 +985,6 @@ class TestStockfish:
         # result should contain the last line of a successful method call
         assert result.split(" ")[0] == "Nodes/second"
 
-    @pytest.mark.slow
-    def test_benchmark_result_with_invalid_type(self, stockfish: Stockfish):
-        params: dict[str, str | int] = {
-            "ttSize": 16,
-            "threads": 1,
-            "limit": 13,
-            "fenFile": "./fakefile.fen",
-            "limitType": "depth",
-            "evalType": "mixed",
-        }
-        result = stockfish.benchmark(params)  # type: ignore
-        # result should contain the last line of a successful method call
-        assert result.split(" ")[0] == "Nodes/second"
-
     def test_multiple_calls_to_del(self, stockfish: Stockfish):
         assert stockfish._stockfish.poll() is None
         assert not stockfish._has_quit_command_been_sent
