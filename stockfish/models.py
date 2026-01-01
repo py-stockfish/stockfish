@@ -273,12 +273,10 @@ class Stockfish:
             return
 
         new_param_values = copy.deepcopy(parameters)
+        current_params_as_dict = self._parameters.to_dict()
 
         for key in new_param_values:
-            if (
-                len(self._parameters.to_dict()) > 0
-                and key not in self._parameters.to_dict()
-            ):
+            if key not in current_params_as_dict:
                 raise ValueError(f"'{key}' is not a key that exists.")
             if key in (
                 "Ponder",
