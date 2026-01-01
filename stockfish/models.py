@@ -361,7 +361,10 @@ class Stockfish:
             pass
 
     def _set_option(
-        self, name: str, value: Any, update_parameters_attribute: bool = True
+        self,
+        name: str,
+        value: str | int | bool,
+        update_parameters_attribute: bool = True,
     ) -> None:
         self._validate_param_val(name, value)
         str_rep_value = str(value)
