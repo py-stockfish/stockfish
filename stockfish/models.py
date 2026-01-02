@@ -91,6 +91,11 @@ class StockfishParameters:
         for dict_key, value in params.items():
             field_name = mappings.get(dict_key)
             if field_name is not None:
+                if (
+                    type(getattr(self, field_name)) != type(value)
+                    and field_name != "uci_show_wdl"
+                ):
+                    raise ValueError("wrong type")
                 setattr(self, field_name, value)
 
 
