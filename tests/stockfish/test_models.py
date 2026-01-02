@@ -860,11 +860,71 @@ class TestStockfish:
         invalid_moves = ["d1e3", "e1g1", "c3d5", "c1d4", "a7a6", "e1d2", "word"]
 
         current_fen = stockfish.get_fen_position()
-        stockfish.make_moves_from_current_position(invalid_moves)
+        with pytest.raises(ValueError):
+            stockfish.make_moves_from_current_position(invalid_moves)
         assert current_fen == stockfish.get_fen_position()
         for invalid_move in invalid_moves:
+            # todo - currently we don't detect and raise a ValueError here
             stockfish.make_moves_from_current_position([invalid_move])
             assert current_fen == stockfish.get_fen_position()
+
+    @pytest.mark.parametrize(
+        "fen, moves",
+        [
+            (
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                ["e2e4", "e8e6"],
+            ),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1", ["e2e4"]),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1", ["g8f6 g8f6"]),
+            (
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+                ["g8f6", "g1f3", "f7f5"],
+            ),
+            # todo - would be nice if we could also detect that something like this should raise an error too:
+            # ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1", ["g8f6", "b8c6"])
+        ],
+    )
+    def test_make_moves_raises_error(
+        self, stockfish: Stockfish, fen: str, moves: list[str]
+    ):
+        stockfish.set_fen_position(fen)
+        with pytest.raises(ValueError):
+            stockfish.make_moves_from_current_position(moves)
+
+    @pytest.mark.parametrize(
+        "fen, expected",
+        [
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 1),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 1", 1),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 2 2", 2),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 2", 2),
+        ],
+    )
+    def test_fullmove_count(self, stockfish: Stockfish, fen: str, expected: int):
+        stockfish.set_fen_position(fen)
+        assert expected == stockfish._full_move_count()
+
+    @pytest.mark.parametrize(
+        "fen, moves_length, expected_increase",
+        [
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 0, 0),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 1", 1, 0),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 1", 2, 1),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 1", 3, 1),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 1 1", 4, 2),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 2 2", 0, 0),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 2", 1, 1),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 2", 2, 1),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 2", 3, 2),
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 2", 4, 2),
+        ],
+    )
+    def test_expected_fullmove_increase(
+        self, stockfish: Stockfish, fen: str, moves_length: int, expected_increase: int
+    ):
+        stockfish.set_fen_position(fen)
+        assert expected_increase == stockfish._expected_full_move_increase(moves_length)
 
     @pytest.mark.slow
     def test_not_resetting_hash_table_speed(self, stockfish: Stockfish):
