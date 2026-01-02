@@ -23,7 +23,7 @@ from collections.abc import Sequence
 @dataclass
 class StockfishVersion:
     text: str
-    full: float = 0
+    major_minor: str = ""
     major: int = 0
     minor: int = 0
     patch: str = ""
@@ -1172,9 +1172,9 @@ class Stockfish:
             return Stockfish.Capture.EN_PASSANT
         return Stockfish.Capture.NO_CAPTURE
 
-    def get_stockfish_full_version(self) -> float:
-        """Returns the full version of the Stockfish engine being used."""
-        return self._version.full
+    def get_stockfish_major_minor_version(self) -> str:
+        """Returns a string of the format {major_version}.{minor_version} for the Stockfish engine being used."""
+        return self._version.major_minor
 
     def get_stockfish_major_version(self) -> int:
         """Returns the major version of the Stockfish engine being used."""
@@ -1245,7 +1245,7 @@ class Stockfish:
                 self._version.minor = int(self._version.text.split(".")[1])
             except IndexError:
                 self._version.minor = 0
-            self._version.full = self._version.major + self._version.minor / 10
+            self._version.major_minor = f"{self._version.major}.{self._version.minor}"
         except Exception as e:
             raise Exception(
                 "Unable to parse Stockfish version. You may be using an unsupported version of Stockfish."

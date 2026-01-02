@@ -1214,7 +1214,7 @@ class TestStockfish:
 
     def test_set_stockfish_version(self, stockfish: Stockfish):
         stockfish._set_stockfish_version()
-        assert stockfish.get_stockfish_full_version() > 0
+        assert stockfish.get_stockfish_major_minor_version() != ""
         assert stockfish.get_stockfish_major_version() in (
             8,
             9,
@@ -1258,7 +1258,7 @@ class TestStockfish:
         self, stockfish: Stockfish, info: tuple[str, float, str, str, bool]
     ):
         stockfish._parse_stockfish_version(info[0])
-        assert stockfish.get_stockfish_full_version() == info[1]
+        assert stockfish.get_stockfish_major_minor_version() == str(info[1])
         assert stockfish.get_stockfish_major_version() == int(info[1])
         assert stockfish.get_stockfish_minor_version() == round(
             10 * (info[1] - int(info[1]))
