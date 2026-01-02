@@ -483,7 +483,21 @@ class Stockfish:
         """
         if not moves:
             return
+        if any(x for x in moves if " " in x):
+            raise ValueError("Moves should be separate strings")
+        curr_fullmove_count = self._full_move_count()
+        expected_increase = self._expected_full_move_increase(len(moves))
         self._put(f"position fen {self.get_fen_position()} moves {' '.join(moves)}")
+        if self._full_move_count() != curr_fullmove_count + expected_increase:
+            raise ValueError("Incorrect move sequence sent to Stockfish")
+
+    def _expected_full_move_increase(self, num_moves: int) -> int:
+        return int(num_moves / 2) + (
+            1 if num_moves % 2 != 0 and " b " in self.get_fen_position() else 0
+        )
+
+    def _full_move_count(self) -> int:
+        return int(self.get_fen_position().split(" ")[-1])
 
     def get_board_visual(self, perspective_white: bool = True) -> str:
         """Returns a visual representation of the current board position.
