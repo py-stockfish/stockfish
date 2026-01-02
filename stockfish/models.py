@@ -319,7 +319,9 @@ class Stockfish:
 
         for name, value in new_param_values.items():
             if name == "Hash" and going_to_set_threads:
-                raise RuntimeError("Unexpected error - should be setting hash after threads")
+                raise RuntimeError(
+                    "Unexpected error - should be setting hash after threads"
+                )
             if name == "Threads":
                 going_to_set_threads = False
             self._set_option(name, value)
