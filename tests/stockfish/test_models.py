@@ -1322,3 +1322,13 @@ class TestStockfish:
         assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
         stockfish.make_moves_from_current_position(["g8f6", "f3g1", "f6g8", "g1f3"])
         assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
+
+    @pytest.mark.parametrize(
+        "char",
+        ["\n", "\r", "\r\n"],
+    )
+    def test_newline_chars(self, stockfish: Stockfish, char: str):
+        with pytest.raises(ValueError):
+            stockfish.set_fen_position(
+                f"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1{char}"
+            )
