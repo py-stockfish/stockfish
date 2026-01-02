@@ -1215,34 +1215,14 @@ class TestStockfish:
 
     def test_set_stockfish_version(self, stockfish: Stockfish):
         stockfish._set_stockfish_version()
-        assert stockfish.get_stockfish_full_version() > 0
-        assert stockfish.get_stockfish_major_version() in (
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-        )
+        assert stockfish.get_stockfish_major_minor_version() != ""
+        major_version = stockfish.get_stockfish_major_version()
+        assert isinstance(major_version, int) and 8 <= major_version <= 17
         assert stockfish.get_stockfish_minor_version() >= 0
 
     def test_get_stockfish_major_version(self, stockfish: Stockfish):
-        assert stockfish.get_stockfish_major_version() in (
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-        )
+        major_version = stockfish.get_stockfish_major_version()
+        assert isinstance(major_version, int) and 8 <= major_version <= 17
 
     @pytest.mark.parametrize(
         "info",
@@ -1253,13 +1233,20 @@ class TestStockfish:
             ("14", 14.0, "", "", False),
             ("16", 16.0, "", "", False),
             ("250723", 16.0, "250723", "", True),
+            ("dev-20231214-7885fa5b", 16.0, "20231214", "7885fa5b", True),
+            ("16.1", 16.1, "", "", False),
+            ("dev-20240501-be142337", 16.1, "20240501", "be142337", True),
+            ("17.0", 17.0, "", "", False),
+            ("dev-20241208-e8d2ba19", 17.0, "20241208", "e8d2ba19", True),
+            ("17.1", 17.1, "", "", False),
+            ("dev-20251005-b09339a4", 17.1, "20251005", "b09339a4", True),
         ],
     )
     def test_parse_stockfish_version(
         self, stockfish: Stockfish, info: tuple[str, float, str, str, bool]
     ):
         stockfish._parse_stockfish_version(info[0])
-        assert stockfish.get_stockfish_full_version() == info[1]
+        assert stockfish.get_stockfish_major_minor_version() == str(info[1])
         assert stockfish.get_stockfish_major_version() == int(info[1])
         assert stockfish.get_stockfish_minor_version() == round(
             10 * (info[1] - int(info[1]))
@@ -1322,3 +1309,13 @@ class TestStockfish:
         assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
         stockfish.make_moves_from_current_position(["g8f6", "f3g1", "f6g8", "g1f3"])
         assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
+
+    @pytest.mark.parametrize(
+        "char",
+        ["\n", "\r", "\r\n"],
+    )
+    def test_newline_chars(self, stockfish: Stockfish, char: str):
+        with pytest.raises(ValueError):
+            stockfish.set_fen_position(
+                f"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1{char}"
+            )
