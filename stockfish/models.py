@@ -343,6 +343,8 @@ class Stockfish:
         there's any existing output in stdout that's still needed."""
         if not self._stockfish.stdin:
             raise BrokenPipeError()
+        if any(x in command for x in ("\n", "\r")):
+            raise ValueError("You've sent multiple lines in as an argument!")
         if self._stockfish.poll() is None and not self._has_quit_command_been_sent:
             if command != "isready":
                 self._is_ready()
