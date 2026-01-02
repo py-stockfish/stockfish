@@ -105,10 +105,10 @@ class MoveEvaluation:
     centipawn: int | None
     mate: int | None
     time: str | None = None
-    nodes: str | None = None
-    multipv_line: str | None = None
-    nodes_per_second: str | None = None
-    selective_depth: str | None = None
+    nodes: int | None = None
+    multipv_line: int | None = None
+    nodes_per_second: int | None = None
+    selective_depth: int | None = None
     wdl: str | None = None
 
     def to_dict(self) -> dict[str, str | int | None]:
@@ -1053,10 +1053,10 @@ class Stockfish:
             # add more info if verbose
             if verbose:
                 move_evaluation.time = self._pick(line, "time")
-                move_evaluation.nodes = self._pick(line, "nodes")
-                move_evaluation.multipv_line = self._pick(line, "multipv")
-                move_evaluation.nodes_per_second = self._pick(line, "nps")
-                move_evaluation.selective_depth = self._pick(line, "seldepth")
+                move_evaluation.nodes = int(self._pick(line, "nodes"))
+                move_evaluation.multipv_line = int(self._pick(line, "multipv"))
+                move_evaluation.nodes_per_second = int(self._pick(line, "nps"))
+                move_evaluation.selective_depth = int(self._pick(line, "seldepth"))
 
                 # add wdl if available
                 if self.does_current_engine_version_have_wdl_option():
