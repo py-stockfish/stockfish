@@ -332,13 +332,14 @@ class TestStockfish:
             Stockfish._PARAM_RESTRICTIONS.keys()
         )
         max_hash = 2 ** (25 if "64" in platform.machine() else 11)
-        bad_values: dict[str, list[str | bool | int | float]] = {
+        bad_values: dict[str, list[str | bool | int | float | None]] = {
             "Threads": ["1", False, 0, -1, 1025, 1.0],
             "UCI_Chess960": ["true", "false", "True", 1],
             "Contempt": [-101, 101, "0", False],
             "UCI_LimitStrength": ["true", "false", "False", 1, 0],
             "Ponder": ["true", "false", "True", "False", 0],
             "Hash": [-1, max_hash * 2, max_hash + 1, -2048, True, 0],
+            "UCI_ShowWDL": [None, 1, "True"],
             "Not key": [0],
         }
         for name in bad_values:
@@ -346,7 +347,7 @@ class TestStockfish:
                 with pytest.raises(ValueError):
                     stockfish.update_engine_parameters({name: val})  # type: ignore
                 with pytest.raises(ValueError):
-                    stockfish._set_option(name, val)
+                    stockfish._set_option(name, val)  # type: ignore
 
     def test_deprecated_get_parameters(self, stockfish: Stockfish):
         with pytest.raises(ValueError):

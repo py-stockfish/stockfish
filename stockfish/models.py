@@ -91,6 +91,11 @@ class StockfishParameters:
         for dict_key, value in params.items():
             field_name = mappings.get(dict_key)
             if field_name is not None:
+                if (
+                    type(getattr(self, field_name)) != type(value)
+                    and field_name != "uci_show_wdl"
+                ):
+                    raise ValueError("wrong type")
                 setattr(self, field_name, value)
 
 
@@ -273,12 +278,10 @@ class Stockfish:
             return
 
         new_param_values = copy.deepcopy(parameters)
+        current_params_as_dict = self._parameters.to_dict()
 
         for key in new_param_values:
-            if (
-                len(self._parameters.to_dict()) > 0
-                and key not in self._parameters.to_dict()
-            ):
+            if key not in current_params_as_dict:
                 raise ValueError(f"'{key}' is not a key that exists.")
             if key in (
                 "Ponder",
@@ -363,7 +366,10 @@ class Stockfish:
             pass
 
     def _set_option(
-        self, name: str, value: Any, update_parameters_attribute: bool = True
+        self,
+        name: str,
+        value: str | int | bool,
+        update_parameters_attribute: bool = True,
     ) -> None:
         self._validate_param_val(name, value)
         str_rep_value = str(value)
