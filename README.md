@@ -202,15 +202,15 @@ Optional parameter `verbose` (default `False`) specifies whether to include the 
 ```py
 stockfish.get_top_moves(1, verbose=True)
 # [{
-#   "Move":"d6e7",
-#   "Centipawn":-408,
-#   "Mate":"None",
-#   "Nodes":"2767506",
-#   "NodesPerSecond":"526442",
-#   "Time":"5257",
-#   "SelectiveDepth":"31",
-#   "MultiPVLine":"1",
-#   "WDL":"0 0 1000"
+#   "Move": "d6e7",
+#   "Centipawn": -408,
+#   "Mate": None,
+#   "Nodes": 2767506,
+#   "NodesPerSecond": 526442,
+#   "Time": 5257,
+#   "SelectiveDepth": 31,
+#   "MultiPVLine": 1,
+#   "WDL": "0 0 1000"
 # }]
 ```
 
