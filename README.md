@@ -37,7 +37,7 @@ from stockfish import Stockfish
 stockfish = Stockfish(path="/Users/zhelyabuzhsky/Work/stockfish/stockfish-9-64")
 ```
 
-There are some default engine settings used by this wrapper. For increasing Stockfish's strength and speed, the "Threads" and "Hash" parameters can be modified.
+There are some default engine settings used by this wrapper. For increasing Stockfish's strength and speed, the "Threads" and "Hash" parameters can be modified (note that the latter shouldn't be set before the former).
 
 ```python
 {
