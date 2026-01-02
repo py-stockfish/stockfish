@@ -304,7 +304,7 @@ class Stockfish:
             elif "UCI_Elo" in new_param_values:
                 new_param_values.update({"UCI_LimitStrength": True})
 
-        if "Threads" in new_param_values:
+        if going_to_set_threads := ("Threads" in new_param_values):
             # Recommended to set the hash param after threads.
             threads_value = new_param_values["Threads"]
             del new_param_values["Threads"]
@@ -318,6 +318,10 @@ class Stockfish:
             new_param_values["Hash"] = hash_value
 
         for name, value in new_param_values.items():
+            if name == "Hash" and going_to_set_threads:
+                raise RuntimeError("Unexpected error - should be setting hash after threads")
+            if name == "Threads":
+                going_to_set_threads = False
             self._set_option(name, value)
         self.set_fen_position(self.get_fen_position())
         # Getting SF to set the position again, since UCI option(s) have been updated.
