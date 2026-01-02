@@ -90,13 +90,14 @@ class StockfishParameters:
 
         for dict_key, value in params.items():
             field_name = mappings.get(dict_key)
-            if field_name is not None:
-                if (
-                    type(getattr(self, field_name)) != type(value)
-                    and field_name != "uci_show_wdl"
-                ):
-                    raise ValueError("wrong type")
-                setattr(self, field_name, value)
+            if field_name is None:
+                continue
+            if (
+                type(getattr(self, field_name)) is not type(value)
+                and field_name != "uci_show_wdl"
+            ):
+                raise ValueError("wrong type")
+            setattr(self, field_name, value)
 
 
 @dataclass
@@ -104,7 +105,7 @@ class MoveEvaluation:
     move: str
     centipawn: int | None
     mate: int | None
-    time: str | None = None
+    time: int | None = None
     nodes: int | None = None
     multipv_line: int | None = None
     nodes_per_second: int | None = None
@@ -1052,7 +1053,7 @@ class Stockfish:
 
             # add more info if verbose
             if verbose:
-                move_evaluation.time = self._pick(line, "time")
+                move_evaluation.time = int(self._pick(line, "time"))
                 move_evaluation.nodes = int(self._pick(line, "nodes"))
                 move_evaluation.multipv_line = int(self._pick(line, "multipv"))
                 move_evaluation.nodes_per_second = int(self._pick(line, "nps"))
