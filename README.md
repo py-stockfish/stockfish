@@ -607,11 +607,11 @@ path: str = "stockfish",
 Then in the project's root directory, you can run:
 
 ```bash
-$ python setup.py test
+$ pytest
 ```
 To skip some of the slower tests, run:
 ```bash
-$ python setup.py skip_slow_tests
+$ pytest -m "not slow"
 ```
 
 ## Security

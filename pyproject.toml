@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stockfish"
+version = "4.0.5"
+description = "Wraps the open-source Stockfish chess engine for easy integration into python."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Ilya Zhelyabuzhsky", email = "zhelyabuzhsky@icloud.com" }]
+keywords = ["chess", "stockfish"]
+classifiers = [
+    "Programming Language :: Python",
+    "Natural Language :: English",
+    "Operating System :: Unix",
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Games/Entertainment :: Board Games",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+dev = ["pytest", "pytest-cov", "pre-commit"]
+
+[project.urls]
+Homepage = "https://github.com/py-stockfish/stockfish"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["stockfish*"]
+
+[tool.pytest.ini_options]
+addopts = "-ra -q --cov-report term-missing --cov-branch --cov-report xml --cov-report term --cov=stockfish -vv --strict-markers -rfE"
+markers = ["slow"]
+testpaths = ["tests/stockfish/test_models.py"]
+
+[tool.coverage.run]
+relative_files = true
+omit = ["tests/*", "stockfish/__init__.py"]
