@@ -8,10 +8,14 @@ ci:
 
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
-- repo: https://github.com/psf/black
-  rev: 1b028cc9d99c2c2e82f9b727742539173a92a373
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: 5ba58aca0bd5bc7c0e1c0fc45af2e88d6a2bde83 # v0.14.10
   hooks:
-  - id: black
+  # Run the linter.
+  - id: ruff-check
+  # Run the formatter.
+  - id: ruff-format
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: 85ef03e3b70ce63828535b85cc222e5ee8c06b7e
