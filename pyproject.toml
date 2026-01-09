@@ -14,6 +14,7 @@ classifiers = [
     "Programming Language :: Python",
     "Natural Language :: English",
     "Operating System :: Unix",
+    "License :: OSI Approved :: MIT License",
     "Development Status :: 5 - Production/Stable",
     "Topic :: Games/Entertainment :: Board Games",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -28,8 +29,7 @@ requires-python = ">=3.10"
 dependencies = []
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-cov"]
-dev = ["pytest", "pytest-cov", "pre-commit"]
+dev = ["pytest", "pytest-cov", "pre-commit", "ruff", "mypy"]
 
 [project.urls]
 Homepage = "https://github.com/py-stockfish/stockfish"
