@@ -8,7 +8,7 @@ Wraps the open-source Stockfish chess engine for easy integration into python.
 ## Install
 
 ```bash
-$ pip install stockfish
+pip install stockfish
 ```
 
 Please note that as this is a third-party library, you'll also need to install the Stockfish engine in some way.
@@ -20,10 +20,9 @@ See [API Documentation](https://py-stockfish.github.io/stockfish/) for more info
 
 ## Technical details and setup
 
-* The codebase is compatible with Python 3.10+
-* Run `pip install -r requirements.txt` to get all necessary dependencies.
-* Pytest is used to run the unit tests in `/tests`
-* For linting use `pre-commit` by running `pre-commit install` once and the pre-commit hooks will be executed automatically
+- The codebase is compatible with Python 3.10+
+- Pytest is used to run the unit tests in `/tests`
+- For linting use `pre-commit` by running `pre-commit install` once and the pre-commit hooks will be executed automatically
 
 ## Features and usage examples
 
@@ -89,7 +88,9 @@ The `__del__()` method of the Stockfish class will call send_quit_command(), but
 ```python
 stockfish.make_moves_from_start(["e2e4", "e7e6"])
 ```
+
 If you'd just like to set up the starting position without making any moves from it, just call this function without sending an argument:
+
 ```python
 stockfish.make_moves_from_start()
 ```
@@ -99,6 +100,7 @@ stockfish.make_moves_from_start()
 This function takes a `Sequence[str]` as its argument. Each string represents a move, and must have the format of the starting coordinate followed by the ending coordinate. If a move leads to a pawn promoting, then an additional character must be appended at the end (to indicate what piece the pawn promotes into).
 Other types of special moves (e.g., checks, captures, checkmates, en passants) do not need any special notation; the starting coordinate followed by the ending coordinate is all the information that's needed. Note that castling is represented by the starting coordinate of the king followed by the ending coordinate of the king. So "e1g1" would be used for white castling kingside, assuming the white king is still on e1 and castling is legal.
 Example call (assume in the current position, it is White's turn):
+
 ```python
 stockfish.make_moves_from_current_position(["g4d7", "a8b8", "f1d1", "b2b1q"]) # Moves the white piece on g4 to d7, then the black piece on a8 to b8, then the white piece on f1 to d1, and finally pushes the black b2-pawn to b1, promoting it into a queen.
 ```
@@ -235,6 +237,7 @@ stockfish.get_perft(3)
 ### Flip
 
 Flip the side to move.
+
 ```python
 stockfish.get_fen_position()
 # rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
@@ -273,6 +276,7 @@ stockfish.get_wdl_stats()
 ```
 
 Optional arguments:
+
 - `get_as_tuple`: if you'd like to have a tuple returned instead of a list.
 - `time`: if you'd like to constrain the search by a duration rather than the current depth.
 
@@ -309,6 +313,7 @@ stockfish.set_elo_rating(1350)
 ```
 
 ### Put the engine back to full strength (if you've previously lowered the ELO or skill level)
+
 ```python
 stockfish.resume_full_strength()
 ```
@@ -419,11 +424,13 @@ stockfish.get_board_visual(False)
 ### Get the current position's evaluation in centipawns or mate in x
 
 Stockfish searches to the specified depth and evaluates the current position:
+
 ```python
 stockfish.get_evaluation()
 ```
 
 Instead of using the depth, you can also specify the time the engine should take to evaluate:
+
 ```python
 stockfish.get_evaluation(searchtime=2000) # searchtime in milliseconds
 ```
@@ -514,7 +521,9 @@ False
 ```
 
 ### Send the "ucinewgame" command to the Stockfish engine process.
+
 This command will clear Stockfish's hash table, which is relatively expensive and should generally only be done if the new position will be completely unrelated to the current one (such as a new game).
+
 ```python
 stockfish.send_ucinewgame_command()
 ```
@@ -579,6 +588,19 @@ stockfish.set_debug_view(True)
 
 ## Contributing
 
+### Clone repository and install dependencies
+
+```bash
+# Clone repository
+git clone https://github.com/py-stockfish/stockfish.git
+cd stockfish
+
+# Install dev dependencies
+pip install -r requirements.txt
+```
+
+### Make changes
+
 Most contributions will involve making updates to `stockfish/models.py`. To test your changes, download a version of stockfish and paste the executable in the `stockfish` folder. Then, create a file in the `stockfish` folder called `main.py`. Both the executable and `main.py` will be ignored by git.
 In `main.py`, start with something like the following:
 
@@ -592,10 +614,11 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
 Then when navigating to the `stockfish` folder in the terminal, you can run this `main.py` file simply with `python main.py`.
 Once you're satisfied with your changes to `models.py`, see the section below for how to run the project's entire test suite.
 
-## Testing
+### Testing
 
 For your stockfish executable (the same one mentioned in the previous section), paste it also in the project's root directory. Then in `models.py`,
 temporarily modify this line so that the `path`'s default value is changed from "stockfish" to the name of your stockfish executable:
@@ -607,11 +630,13 @@ path: str = "stockfish",
 Then in the project's root directory, you can run:
 
 ```bash
-$ python setup.py test
+pytest
 ```
+
 To skip some of the slower tests, run:
+
 ```bash
-$ python setup.py skip_slow_tests
+pytest -m "not slow"
 ```
 
 ## Security
@@ -624,7 +649,7 @@ If you discover any security related issues, please report it via the [Private v
 > This is just a brief summary. For more information, please look [here](https://github.com/zhelyabuzhsky/stockfish/issues/130).
 
 Due to the [unfortunate death](https://github.com/zhelyabuzhsky/stockfish/pull/112#issuecomment-1367800036) of [Ilya Zhelyabuzhsky](https://github.com/zhelyabuzhsky), the original [repo](https://github.com/zhelyabuzhsky/stockfish) is no longer maintained. For this reason, this fork was created, which continues the project and is currently maintained by [johndoknjas](https://github.com/johndoknjas) and [kieferro](https://github.com/kieferro).
-The official PyPi releases for the [Stockfish package](https://pypi.org/project/stockfish/) will also be created from this repo in the future.
+The official PyPi releases for the [Stockfish package](https://pypi.org/project/stockfish/) are also created from this repo.
 
 Please submit all bug reports and PRs to this repo instead of the old one.
 
