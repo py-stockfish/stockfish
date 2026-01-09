@@ -21,7 +21,6 @@ See [API Documentation](https://py-stockfish.github.io/stockfish/) for more info
 ## Technical details and setup
 
 - The codebase is compatible with Python 3.10+
-- Run `pip install -r requirements.txt` to get all necessary dependencies.
 - Pytest is used to run the unit tests in `/tests`
 - For linting use `pre-commit` by running `pre-commit install` once and the pre-commit hooks will be executed automatically
 
@@ -650,7 +649,7 @@ If you discover any security related issues, please report it via the [Private v
 > This is just a brief summary. For more information, please look [here](https://github.com/zhelyabuzhsky/stockfish/issues/130).
 
 Due to the [unfortunate death](https://github.com/zhelyabuzhsky/stockfish/pull/112#issuecomment-1367800036) of [Ilya Zhelyabuzhsky](https://github.com/zhelyabuzhsky), the original [repo](https://github.com/zhelyabuzhsky/stockfish) is no longer maintained. For this reason, this fork was created, which continues the project and is currently maintained by [johndoknjas](https://github.com/johndoknjas) and [kieferro](https://github.com/kieferro).
-The official PyPi releases for the [Stockfish package](https://pypi.org/project/stockfish/) will also be created from this repo in the future.
+The official PyPi releases for the [Stockfish package](https://pypi.org/project/stockfish/) are also created from this repo.
 
 Please submit all bug reports and PRs to this repo instead of the old one.
 
