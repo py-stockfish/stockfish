@@ -8,6 +8,7 @@ version = "4.0.5"
 description = "Wraps the open-source Stockfish chess engine for easy integration into python."
 readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Ilya Zhelyabuzhsky", email = "zhelyabuzhsky@icloud.com" }]
 keywords = ["chess", "stockfish"]
 classifiers = [

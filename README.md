@@ -1,7 +1,7 @@
 # Stockfish
 
 > [!NOTE]
-> This section refers to the technical application. If you are looking for information regarding the status of this project and the original repo, please look [below](https://github.com/py-stockfish/stockfish/tree/master#status-of-the-project).
+> This section refers to the technical application. If you are looking for information regarding the status of this project and the original repo, please look [here](https://github.com/py-stockfish/stockfish/tree/master#status-of-the-project).
 
 Wraps the open-source Stockfish chess engine for easy integration into python.
 
