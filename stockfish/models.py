@@ -26,6 +26,7 @@ from .types import (
     StockfishVersion,
 )
 
+
 class Stockfish:
     """Integrates the [Stockfish chess engine](https://stockfishchess.org) with Python."""
 

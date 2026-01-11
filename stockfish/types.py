@@ -88,9 +88,10 @@ class MoveEvaluation:
     mate: int | None
     time: int | None = None
     nodes: int | None = None
-    multipv_line: int | None = None
+    multipv_number: int | None = None
     nodes_per_second: int | None = None
     selective_depth: int | None = None
+    pv_moves: str | None = None
     wdl: str | None = None
 
     def to_dict(self) -> dict[str, str | int | None]:
@@ -100,9 +101,10 @@ class MoveEvaluation:
             "Mate": self.mate,
             "Time": self.time,
             "Nodes": self.nodes,
-            "MultiPVLine": self.multipv_line,
+            "MultiPVNumber": self.multipv_number,
             "NodesPerSecond": self.nodes_per_second,
             "SelectiveDepth": self.selective_depth,
+            "PVMoves": self.pv_moves,
             "WDL": self.wdl,
         }
         return {
