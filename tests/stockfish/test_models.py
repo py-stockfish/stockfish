@@ -729,7 +729,8 @@ class TestStockfish:
         ]
         moves = stockfish.get_top_moves(2, verbose=True)
         assert all(
-            k in moves[0]
+            k in moves[x]
+            for x in range(2)
             for k in (
                 "Move",
                 "Centipawn",
@@ -742,6 +743,8 @@ class TestStockfish:
                 "Time",
             )
         )
+        assert moves[0]["MultiPVNumber"] == 1 and moves[0]["PVMoves"] == "e1e8"
+        assert moves[1]["MultiPVNumber"] == 2 and moves[1]["PVMoves"] == "c8e8 b8e8 e1e8"
         if stockfish.does_current_engine_version_have_wdl_option():
             assert "WDL" in moves[0]
 
