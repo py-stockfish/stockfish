@@ -26,7 +26,6 @@ from .types import (
     StockfishVersion,
 )
 
-
 class Stockfish:
     """Integrates the [Stockfish chess engine](https://stockfishchess.org) with Python."""
 
@@ -855,7 +854,7 @@ class Stockfish:
 
             verbose:
               Option to include the full info from the engine in the returned dictionary,
-              including seldepth, multipv, time, nodes, nps, and wdl if available.
+              including seldepth, multipv, time, nodes, nps, wdl (if available), and pv.
               Default is `False`.
 
             num_nodes:
@@ -868,7 +867,7 @@ class Stockfish:
             If there are no moves in the position, an empty list is returned.
 
             If `verbose` is `True`, the dictionary will also include the following keys: `SelectiveDepth`, `Time`,
-            `Nodes`, `NodesPerSecond`, `MultiPVLine`, and `WDL` (if available).
+            `Nodes`, `NodesPerSecond`, `MultiPVNumber`, `PVMoves`, and `WDL` (if available).
 
         Example:
             >>> moves = stockfish.get_top_moves(2, num_nodes=1000000, verbose=True)
@@ -951,18 +950,15 @@ class Stockfish:
             if verbose:
                 move_evaluation.time = int(self._pick(line, "time"))
                 move_evaluation.nodes = int(self._pick(line, "nodes"))
-                move_evaluation.multipv_line = int(self._pick(line, "multipv"))
+                move_evaluation.multipv_number = int(self._pick(line, "multipv"))
                 move_evaluation.nodes_per_second = int(self._pick(line, "nps"))
                 move_evaluation.selective_depth = int(self._pick(line, "seldepth"))
+                move_evaluation.pv_moves = " ".join(self._pick_range(line, "pv"))
 
                 # add wdl if available
                 if self.does_current_engine_version_have_wdl_option():
                     move_evaluation.wdl = " ".join(
-                        [
-                            self._pick(line, "wdl", 1),
-                            self._pick(line, "wdl", 2),
-                            self._pick(line, "wdl", 3),
-                        ][::perspective]
+                        [self._pick(line, "wdl", x) for x in (1, 2, 3)][::perspective]
                     )
 
             # add move to list of top moves
@@ -1021,8 +1017,14 @@ class Stockfish:
         """Flip the side to move"""
         self._put("flip")
 
-    def _pick(self, line: Sequence[str], value: str = "", index: int = 1) -> str:
-        return line[line.index(value) + index]
+    def _pick(self, line: Sequence[str], value: str, offset: int = 1) -> str:
+        return self._pick_range(line, value, offset, 1)[0]
+
+    def _pick_range(
+        self, line: Sequence[str], value: str, offset: int = 1, count: int | None = None
+    ) -> Sequence[str]:
+        start = line.index(value) + offset
+        return line[start:] if count is None else line[start : start + count]
 
     def get_what_is_on_square(self, square: str) -> Piece | None:
         """Returns what is on the specified square.
