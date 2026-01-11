@@ -199,20 +199,21 @@ stockfish.get_top_moves(3)
 # ]
 ```
 
-Optional parameter `verbose` (default `False`) specifies whether to include the full info from the engine in the returned dictionary, including SelectiveDepth, Nodes, NodesPerSecond, Time, MultiPVLine, and WDL if available.
+Optional parameter `verbose` (default `False`) specifies whether to include the full info from the engine in the returned dictionary, including SelectiveDepth, Nodes, NodesPerSecond, Time, MultiPVNumber, PVMoves, and WDL if available.
 
 ```py
 stockfish.get_top_moves(1, verbose=True)
 # [{
-#   "Move": "d6e7",
-#   "Centipawn": -408,
+#   "Move": "e2e4",
+#   "Centipawn": 39,
 #   "Mate": None,
-#   "Nodes": 2767506,
-#   "NodesPerSecond": 526442,
-#   "Time": 5257,
-#   "SelectiveDepth": 31,
-#   "MultiPVLine": 1,
-#   "WDL": "0 0 1000"
+#   "Nodes": 64450,
+#   "NodesPerSecond": 608018,
+#   "Time": 106,
+#   "SelectiveDepth": 18,
+#   "MultiPVNumber": 1,
+#   "PVMoves": "e2e4 e7e5 g1f3 g8f6 d2d4 f6e4 d4e5 d7d5 f1d3 b8c6 e1g1 c8e6 b1c3 e4c3 b2c3"
+#   "WDL": "103 890 7"
 # }]
 ```
 
