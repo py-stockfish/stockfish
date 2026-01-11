@@ -1065,11 +1065,7 @@ class Stockfish:
                 # add wdl if available
                 if self.does_current_engine_version_have_wdl_option():
                     move_evaluation.wdl = " ".join(
-                        [
-                            self._pick(line, "wdl", 1),
-                            self._pick(line, "wdl", 2),
-                            self._pick(line, "wdl", 3),
-                        ][::perspective]
+                        [self._pick(line, "wdl", x) for x in (1, 2, 3)][::perspective]
                     )
 
             # add move to list of top moves
