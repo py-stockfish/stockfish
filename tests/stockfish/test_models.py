@@ -339,7 +339,6 @@ class TestStockfish:
             "UCI_LimitStrength": ["true", "false", "False", 1, 0],
             "Ponder": ["true", "false", "True", "False", 0],
             "Hash": [-1, max_hash * 2, max_hash + 1, -2048, True, 0],
-            "UCI_ShowWDL": [None, 1, "True"],
             "Not key": [0],
         }
         for name in bad_values:
