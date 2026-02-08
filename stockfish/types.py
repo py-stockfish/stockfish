@@ -70,7 +70,7 @@ class StockfishParameters:
             field_name = mappings.get(dict_key)
             if field_name is None:
                 continue
-            if (type(getattr(self, field_name)) is not type(value)):
+            if type(getattr(self, field_name)) is not type(value):
                 raise ValueError("wrong type")
             setattr(self, field_name, value)
 
