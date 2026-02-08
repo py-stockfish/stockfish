@@ -390,38 +390,34 @@ class Stockfish:
         return int(self.get_fen_position().split(" ")[-1])
 
     def get_board_visual(self, perspective_white: bool = True) -> str:
-        """Returns a visual representation of the current board position.
+        """Returns a visual representation of the chessboard in the current position.
 
-        Args:
-            perspective_white:
-                A boolean that indicates whether the board should be displayed from the
-                perspective of white. `True` indicates White's perspective.
+        `perspective_white`
+            A boolean that indicates whether the board should be displayed from the
+            perspective of white. `True` indicates White's perspective.
 
-        Returns:
-            str:
-                A visual representation of the chessboard in the current position.
+        Example return value:
 
-                For example:
-                ```
-                +---+---+---+---+---+---+---+---+
-                | r | n | b | q | k | b | n | r | 8
-                +---+---+---+---+---+---+---+---+
-                | p | p | p | p | p | p | p | p | 7
-                +---+---+---+---+---+---+---+---+
-                |   |   |   |   |   |   |   |   | 6
-                +---+---+---+---+---+---+---+---+
-                |   |   |   |   |   |   |   |   | 5
-                +---+---+---+---+---+---+---+---+
-                |   |   |   |   |   |   |   |   | 4
-                +---+---+---+---+---+---+---+---+
-                |   |   |   |   |   |   |   |   | 3
-                +---+---+---+---+---+---+---+---+
-                | P | P | P | P | P | P | P | P | 2
-                +---+---+---+---+---+---+---+---+
-                | R | N | B | Q | K | B | N | R | 1
-                +---+---+---+---+---+---+---+---+
-                a   b   c   d   e   f   g   h
-                ```
+            ```
+            +---+---+---+---+---+---+---+---+
+            | r | n | b | q | k | b | n | r | 8
+            +---+---+---+---+---+---+---+---+
+            | p | p | p | p | p | p | p | p | 7
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   |   | 6
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   |   | 5
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   |   | 4
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   |   | 3
+            +---+---+---+---+---+---+---+---+
+            | P | P | P | P | P | P | P | P | 2
+            +---+---+---+---+---+---+---+---+
+            | R | N | B | Q | K | B | N | R | 1
+            +---+---+---+---+---+---+---+---+
+            a   b   c   d   e   f   g   h
+            ```
         """
         self._put("d")
         board_rep_lines: list[str] = []
@@ -573,9 +569,11 @@ class Stockfish:
 
         If both `wtime` and `btime` aren't provided, the current depth is used for the search.
 
-        `wtime`: Time for white player in milliseconds.
+        `wtime`
+            Time for white player in milliseconds.
 
-        `btime`: Time for black player in milliseconds.
+        `btime`
+            Time for black player in milliseconds.
 
         Example:
             >>> move = stockfish.get_best_move(wtime=1000, btime=1000)
@@ -687,7 +685,8 @@ class Stockfish:
     def is_move_correct(self, move_value: str) -> bool:
         """Returns if the passed in move is legal.
 
-        `move_value`: new move value in pure algebraic coordinate notation.
+        `move_value`
+            New move value in pure algebraic coordinate notation.
 
         Example:
             >>> is_correct = stockfish.is_move_correct("f4f5")
@@ -697,18 +696,13 @@ class Stockfish:
     def get_wdl_stats(
         self, get_as_tuple: bool = False, time: int | None = None
     ) -> list[int] | tuple[int, int, int] | None:
-        """Returns Stockfish's win/draw/loss stats for the side to move.
+        """Returns Stockfish's win/draw/loss stats for the side to move; given as a list or tuple of three integers,
+        unless the game is over (in which case `None` is returned).
 
-        Args:
-            get_as_tuple:
-                Option to return the wdl stats as a tuple instead of a list. Default is `False`.
-            time:
-                Time for Stockfish to search (milliseconds). If provided, will be used instead of the
-                current depth.
-
-        Returns:
-            A list or tuple of three integers, unless the game is over (in which case
-            `None` is returned).
+        `get_as_tuple`
+            Option to return the wdl stats as a tuple instead of a list. Default is `False`.
+        `time`
+            Time for Stockfish to search (milliseconds). If provided, will be used instead of the current depth.
         """
 
         if not self.does_current_engine_version_have_wdl_option():
@@ -745,19 +739,18 @@ class Stockfish:
                 return True
 
     def get_evaluation(self, searchtime: int | None = None) -> dict[str, str | int]:
-        """Performs a search to evaluate the current position.
+        """
+        Performs a search to evaluate the current position, and returns a dictionary of two
+        key-value pairs: `{str: str, str: int}`.
 
-        Args:
-            searchtime:
-              Time for Stockfish to evaluate (milliseconds). If left as `None`, the currently configured
-              search depth will be used (call `get_depth()` to see it).
-
-        Returns:
-            A dictionary of two key-value pairs: {str: str, str: int}
             - The first key is "type", and its value will be either "cp" or "mate".
               This describes the type of evaluation (centipawns or mate in x).
             - The second key is "value", and its value will be some int (representing either
               centipawns or mate in x, depending on the aforementioned "type").
+
+        `searchtime`
+            The time for Stockfish to evaluate (milliseconds). If left as `None`, the currently configured
+            search depth will be used (call `get_depth()` to see it).
         """
 
         if self._on_weaker_setting():
@@ -782,12 +775,11 @@ class Stockfish:
         return {"type": eval_type, "value": int(val) * compare}
 
     def get_static_eval(self) -> float | None:
-        """Sends the 'eval' command to stockfish to get the static evaluation. The current position is
-           'directly' evaluated -- i.e., no search is involved.
+        """
+        Sends the 'eval' command to stockfish to get the static evaluation. The current position is
+        'directly' evaluated -- i.e., no search is involved.
 
-        Returns:
-            A float representing the static eval, unless one side is in check or
-            checkmated, in which case None is returned.
+        Returns a float representing the static eval, unless one side is in check or checkmated, in which case None is returned.
         """
 
         # Stockfish gives the static eval from white's perspective:
@@ -818,33 +810,30 @@ class Stockfish:
         verbose: bool = False,
         num_nodes: int = 0,
     ) -> list[dict[str, str | int | None]]:
-        """Returns info on the top moves in the position.
+        """
+        Returns a list of dictionaries representing the top moves in the position. Each dictionary contains keys for
+        `Move`, `Centipawn`, and `Mate`. The corresponding value for either the `Centipawn` or `Mate` key will be `None`.
+        If there are no moves in the position, an empty list is returned.
 
-        Args:
-            num_top_moves:
-              The number of moves for which to return information, assuming there
-              are at least that many legal moves.
-              Default is 5.
+        If `verbose` is `True`, the dictionary will also include the following keys: `SelectiveDepth`, `Time`,
+        `Nodes`, `NodesPerSecond`, `MultiPVNumber`, `PVMoves`, and `WDL` (if available).
 
-            verbose:
-              Option to include the full info from the engine in the returned dictionary,
-              including seldepth, multipv, time, nodes, nps, wdl (if available), and pv.
-              Default is `False`.
+        `num_top_moves`
+            The number of moves for which to return information, assuming there
+            are at least that many legal moves.
+            Default is 5.
 
-            num_nodes:
-              Option to search until a certain number of nodes have been searched, instead of depth.
-              Default is 0.
+        `verbose`
+            Option to include the full info from the engine in the returned dictionary,
+            including seldepth, multipv, time, nodes, nps, wdl (if available), and pv.
+            Default is `False`.
 
-        Returns:
-            A list of dictionaries, where each dictionary contains keys for `Move`, `Centipawn`, and `Mate`.
-            The corresponding value for either the `Centipawn` or `Mate` key will be `None`.
-            If there are no moves in the position, an empty list is returned.
+        `num_nodes`
+            Option to search until a certain number of nodes have been searched, instead of depth.
+            Default is 0.
 
-            If `verbose` is `True`, the dictionary will also include the following keys: `SelectiveDepth`, `Time`,
-            `Nodes`, `NodesPerSecond`, `MultiPVNumber`, `PVMoves`, and `WDL` (if available).
-
-        Example:
-            >>> moves = stockfish.get_top_moves(2, num_nodes=1000000, verbose=True)
+        Example call:
+        >>> moves = stockfish.get_top_moves(2, num_nodes=1000000, verbose=True)
         """
         if num_top_moves <= 0:
             raise ValueError("num_top_moves is not a positive number.")
