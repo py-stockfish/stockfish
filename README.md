@@ -173,7 +173,7 @@ e2e4
 Returns True if the passed in move is legal in the current position.
 
 ```python
-stockfish.is_move_correct('a2a3')
+stockfish.is_move_legal('a2a3')
 ```
 
 ```text

@@ -684,13 +684,13 @@ class Stockfish:
             # The __del__ function should generally be called implicitly by python when this
             # temp_sf object goes out of scope, but calling it explicitly guarantees this will happen.
 
-    def is_move_correct(self, move_value: str) -> bool:
+    def is_move_legal(self, move_value: str) -> bool:
         """Returns if the passed in move is legal.
 
         `move_value`: new move value in pure algebraic coordinate notation.
 
         Example:
-            >>> is_correct = stockfish.is_move_correct("f4f5")
+            >>> is_correct = stockfish.is_move_legal("f4f5")
         """
         return move_value in self.get_perft(1)[1]
 
@@ -1048,7 +1048,7 @@ class Stockfish:
         Example:
             >>> capture = stockfish.will_move_be_a_capture("e2e4")
         """
-        if not self.is_move_correct(move_value):
+        if not self.is_move_legal(move_value):
             raise ValueError("The proposed move is not valid in the current position.")
         starting_square_piece: Stockfish.Piece | None = self.get_what_is_on_square(
             move_value[:2]
