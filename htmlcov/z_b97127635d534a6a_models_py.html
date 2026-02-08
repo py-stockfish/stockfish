@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="z_b97127635d534a6a_types_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.13.1">coverage.py v7.13.1</a>,
-            created at 2026-02-08 18:19 +0000
+            created at 2026-02-08 20:11 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -768,13 +768,13 @@
     <p class="pln"><span class="n"><a id="t684" href="#t684">684</a></span><span class="t">            <span class="com"># The __del__ function should generally be called implicitly by python when this</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t685" href="#t685">685</a></span><span class="t">            <span class="com"># temp_sf object goes out of scope, but calling it explicitly guarantees this will happen.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t686" href="#t686">686</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t687" href="#t687">687</a></span><span class="t">    <span class="key">def</span> <span class="nam">is_move_correct</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">move_value</span><span class="op">:</span> <span class="nam">str</span><span class="op">)</span> <span class="op">-></span> <span class="nam">bool</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t687" href="#t687">687</a></span><span class="t">    <span class="key">def</span> <span class="nam">is_move_legal</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">move_value</span><span class="op">:</span> <span class="nam">str</span><span class="op">)</span> <span class="op">-></span> <span class="nam">bool</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t688" href="#t688">688</a></span><span class="t">        <span class="str">"""Returns if the passed in move is legal.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t689" href="#t689">689</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t690" href="#t690">690</a></span><span class="t"><span class="str">        `move_value`: new move value in pure algebraic coordinate notation.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t691" href="#t691">691</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t692" href="#t692">692</a></span><span class="t"><span class="str">        Example:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t693" href="#t693">693</a></span><span class="t"><span class="str">            >>> is_correct = stockfish.is_move_correct("f4f5")</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t693" href="#t693">693</a></span><span class="t"><span class="str">            >>> is_correct = stockfish.is_move_legal("f4f5")</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t694" href="#t694">694</a></span><span class="t"><span class="str">        """</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t695" href="#t695">695</a></span><span class="t">        <span class="key">return</span> <span class="nam">move_value</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">get_perft</span><span class="op">(</span><span class="num">1</span><span class="op">)</span><span class="op">[</span><span class="num">1</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t696" href="#t696">696</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -1132,7 +1132,7 @@
     <p class="pln"><span class="n"><a id="t1048" href="#t1048">1048</a></span><span class="t"><span class="str">        Example:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1049" href="#t1049">1049</a></span><span class="t"><span class="str">            >>> capture = stockfish.will_move_be_a_capture("e2e4")</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1050" href="#t1050">1050</a></span><span class="t"><span class="str">        """</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1051" href="#t1051">1051</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">self</span><span class="op">.</span><span class="nam">is_move_correct</span><span class="op">(</span><span class="nam">move_value</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t1051" href="#t1051">1051</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">self</span><span class="op">.</span><span class="nam">is_move_legal</span><span class="op">(</span><span class="nam">move_value</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t1052" href="#t1052">1052</a></span><span class="t">            <span class="key">raise</span> <span class="nam">ValueError</span><span class="op">(</span><span class="str">"The proposed move is not valid in the current position."</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t1053" href="#t1053">1053</a></span><span class="t">        <span class="nam">starting_square_piece</span><span class="op">:</span> <span class="nam">Stockfish</span><span class="op">.</span><span class="nam">Piece</span> <span class="op">|</span> <span class="key">None</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">get_what_is_on_square</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t1054" href="#t1054">1054</a></span><span class="t">            <span class="nam">move_value</span><span class="op">[</span><span class="op">:</span><span class="num">2</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
@@ -1354,7 +1354,7 @@
             <a class="nav" href="z_b97127635d534a6a_types_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.13.1">coverage.py v7.13.1</a>,
-            created at 2026-02-08 18:19 +0000
+            created at 2026-02-08 20:11 +0000
         </p>
     </div>
 </footer>
