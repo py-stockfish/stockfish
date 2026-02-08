@@ -533,8 +533,8 @@ class Stockfish:
     def set_num_nodes(self, num_nodes: int = 1000000) -> None:
         """Sets the number of nodes for Stockfish to explore during its search.
 
-        Args:
-            num_nodes: Number of nodes for Stockfish to search.
+        `num_nodes`
+            Number of nodes for Stockfish to search.
 
         Example:
             >>> stockfish.set_num_nodes(1000000)
@@ -550,12 +550,11 @@ class Stockfish:
     def set_turn_perspective(self, turn_perspective: bool = True) -> None:
         """Sets the turn perspective of centipawn and WDL evaluations.
 
-        Args:
-            turn_perspective:
-              Represents whether the perspective of evaluation should be turn-based
-              (i.e., positive if it favours whose turn it is, which is what Stockfish does by default).
-              This function's default value for the `turn_perspective` parameter is `True`;
-              if `False`, subsequent evaluations will be from White's perspective.
+        `turn_perspective`
+            Represents whether the perspective of evaluation should be turn-based
+            (i.e., positive if it favours whose turn it is, which is what Stockfish does by default).
+            This function's default value for the `turn_perspective` parameter is `True`;
+            if `False`, subsequent evaluations will be from White's perspective.
 
         Example:
             >>> stockfish.set_turn_perspective(False)
