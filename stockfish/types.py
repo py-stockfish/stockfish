@@ -28,7 +28,6 @@ class StockfishParameters:
     contempt: int
     min_split_depth: int
     minimum_thinking_time: int
-    uci_show_wdl: bool | None = None
 
     def to_dict(self) -> dict[str, str | int | bool]:
         mappings: dict[str, str | int | bool | None] = {
@@ -46,7 +45,6 @@ class StockfishParameters:
             "Contempt": self.contempt,
             "Min Split Depth": self.min_split_depth,
             "Minimum Thinking Time": self.minimum_thinking_time,
-            "UCI_ShowWDL": self.uci_show_wdl,
         }
         return {k: v for k, v in mappings.items() if v is not None}
 
@@ -66,17 +64,13 @@ class StockfishParameters:
             "Contempt": "contempt",
             "Min Split Depth": "min_split_depth",
             "Minimum Thinking Time": "minimum_thinking_time",
-            "UCI_ShowWDL": "uci_show_wdl",
         }
 
         for dict_key, value in params.items():
             field_name = mappings.get(dict_key)
             if field_name is None:
                 continue
-            if (
-                type(getattr(self, field_name)) is not type(value)
-                and field_name != "uci_show_wdl"
-            ):
+            if type(getattr(self, field_name)) is not type(value):
                 raise ValueError("wrong type")
             setattr(self, field_name, value)
 
