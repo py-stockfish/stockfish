@@ -570,7 +570,7 @@ class Stockfish:
         self, wtime: int | None = None, btime: int | None = None
     ) -> str | None:
         """Returns a string of the best move in pure algebraic coordinate notation, or None if it's a mate now.
-        
+
         If both `wtime` and `btime` aren't provided, the current depth is used for the search.
 
         `wtime`: Time for white player in milliseconds.
