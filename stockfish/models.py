@@ -144,11 +144,7 @@ class Stockfish:
         self._debug_view = activate
 
     def get_engine_parameters(self) -> dict[str, str | int | bool]:
-        """Returns the current engine parameters being used.
-
-        Returns:
-            A deep copy of the dictionary storing the current engine parameters.
-        """
+        """Returns a deep copy of the dictionary storing the current engine parameters."""
         return self._parameters.to_dict()
 
     def get_parameters(self):
@@ -344,9 +340,6 @@ class Stockfish:
             fen_position:
                 FEN string of board position.
 
-        Returns:
-            `None`
-
         Example:
             >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
         """
@@ -405,29 +398,30 @@ class Stockfish:
                 perspective of white. `True` indicates White's perspective.
 
         Returns:
-            A visual representation of the chessboard in the current position.
+            str:
+                A visual representation of the chessboard in the current position.
 
-            For example:
-            ```
-            +---+---+---+---+---+---+---+---+
-            | r | n | b | q | k | b | n | r | 8
-            +---+---+---+---+---+---+---+---+
-            | p | p | p | p | p | p | p | p | 7
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 6
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 5
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 4
-            +---+---+---+---+---+---+---+---+
-            |   |   |   |   |   |   |   |   | 3
-            +---+---+---+---+---+---+---+---+
-            | P | P | P | P | P | P | P | P | 2
-            +---+---+---+---+---+---+---+---+
-            | R | N | B | Q | K | B | N | R | 1
-            +---+---+---+---+---+---+---+---+
-              a   b   c   d   e   f   g   h
-            ```
+                For example:
+                ```
+                +---+---+---+---+---+---+---+---+
+                | r | n | b | q | k | b | n | r | 8
+                +---+---+---+---+---+---+---+---+
+                | p | p | p | p | p | p | p | p | 7
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 6
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 5
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 4
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 3
+                +---+---+---+---+---+---+---+---+
+                | P | P | P | P | P | P | P | P | 2
+                +---+---+---+---+---+---+---+---+
+                | R | N | B | Q | K | B | N | R | 1
+                +---+---+---+---+---+---+---+---+
+                a   b   c   d   e   f   g   h
+                ```
         """
         self._put("d")
         board_rep_lines: list[str] = []
@@ -461,11 +455,9 @@ class Stockfish:
         return board_rep
 
     def get_fen_position(self) -> str:
-        """Returns the current board position in Forsyth-Edwards notation (FEN).
-
-        Returns:
-            A string of the current board position in Forsyth-Edwards notation (FEN).
-            For example: `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
+        """
+        Returns a string of the current board position in Forsyth-Edwards notation (FEN).
+        For example: `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
         """
         self._put("d")
         while True:
@@ -577,17 +569,13 @@ class Stockfish:
     def get_best_move(
         self, wtime: int | None = None, btime: int | None = None
     ) -> str | None:
-        """Returns the best move in the current position on the board.
+        """Returns a string of the best move in pure algebraic coordinate notation, or None if it's a mate now.
+        
         If both `wtime` and `btime` aren't provided, the current depth is used for the search.
 
-        Args:
-            wtime:
-                Time for white player in milliseconds.
-            btime:
-                Time for black player in milliseconds.
+        `wtime`: Time for white player in milliseconds.
 
-        Returns:
-            A string of the best move in pure algebraic coordinate notation, or `None` if it's a mate now.
+        `btime`: Time for black player in milliseconds.
 
         Example:
             >>> move = stockfish.get_best_move(wtime=1000, btime=1000)
@@ -599,14 +587,7 @@ class Stockfish:
         return self._get_best_move_from_sf_popen_process()
 
     def get_best_move_time(self, time: int = 1000) -> str | None:
-        """Returns the best move in the current position after a determined time.
-
-        Args:
-            time:
-                Time for Stockfish to determine the best move (milliseconds).
-
-        Returns:
-            A string of a move in pure algebraic coordinate notation, or `None` if it's a mate now.
+        """Returns a string of the best move in the current position after a determined search time (milliseconds).
 
         Example:
             >>> move = stockfish.get_best_move_time(1000)
@@ -676,10 +657,7 @@ class Stockfish:
         return True
 
     def is_fen_valid(self, fen: str) -> bool:
-        """Checks if the FEN string is valid.
-
-        Returns:
-            `True` if valid, `False` otherwise.
+        """Returns whether the FEN string is (likely) valid.
 
         Example:
             >>> is_valid = stockfish.is_fen_valid("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -707,14 +685,9 @@ class Stockfish:
             # temp_sf object goes out of scope, but calling it explicitly guarantees this will happen.
 
     def is_move_correct(self, move_value: str) -> bool:
-        """Checks if the passed in move is legal.
+        """Returns if the passed in move is legal.
 
-        Args:
-            move_value:
-              New move value in pure algebraic coordinate notation.
-
-        Returns:
-            `True` if the new move is legal, otherwise `False`.
+        `move_value`: new move value in pure algebraic coordinate notation.
 
         Example:
             >>> is_correct = stockfish.is_move_correct("f4f5")
