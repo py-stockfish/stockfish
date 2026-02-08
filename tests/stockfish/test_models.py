@@ -135,15 +135,15 @@ class TestStockfish:
         stockfish.set_fen_position(
             "7r/1pr1kppb/2n1p2p/2NpP2P/5PP1/1P6/P6K/R1R2B2 w - - 1 27"
         )
-        assert stockfish.is_move_correct("f4f5") is True
-        assert stockfish.is_move_correct("a1c1") is False
+        assert stockfish.is_move_legal("f4f5") is True
+        assert stockfish.is_move_legal("a1c1") is False
 
     def test_castling(self, stockfish: Stockfish):
-        assert stockfish.is_move_correct("e1g1") is False
+        assert stockfish.is_move_legal("e1g1") is False
         stockfish.set_fen_position(
             "rnbqkbnr/ppp3pp/3ppp2/8/4P3/5N2/PPPPBPPP/RNBQK2R w KQkq - 0 4"
         )
-        assert stockfish.is_move_correct("e1g1") is True
+        assert stockfish.is_move_legal("e1g1") is True
 
     def test_set_fen_position_mate(self, stockfish: Stockfish):
         stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53")
@@ -188,14 +188,14 @@ class TestStockfish:
         )
         assert stockfish.get_best_move() == "e4e5"
 
-    def test_is_move_correct_first_move(self, stockfish: Stockfish):
-        assert stockfish.is_move_correct("e2e1") is False
-        assert stockfish.is_move_correct("a2a3") is True
+    def test_is_move_legal_first_move(self, stockfish: Stockfish):
+        assert stockfish.is_move_legal("e2e1") is False
+        assert stockfish.is_move_legal("a2a3") is True
 
-    def test_is_move_correct_not_first_move(self, stockfish: Stockfish):
+    def test_is_move_legal_not_first_move(self, stockfish: Stockfish):
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
-        assert stockfish.is_move_correct("e2e1") is False
-        assert stockfish.is_move_correct("a2a3") is True
+        assert stockfish.is_move_legal("e2e1") is False
+        assert stockfish.is_move_legal("a2a3") is True
 
     # fmt: off
     @pytest.mark.parametrize(
@@ -379,7 +379,7 @@ class TestStockfish:
         stockfish.set_turn_perspective()
         assert stockfish.get_evaluation() == {"type": "mate", "value": 2}
         with pytest.raises(RuntimeError):
-            stockfish.is_move_correct("f1g1")
+            stockfish.is_move_legal("f1g1")
         with pytest.raises(RuntimeError):
             stockfish.get_perft(1)
 
