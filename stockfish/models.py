@@ -163,11 +163,10 @@ class Stockfish:
         """Updates the Stockfish engine parameters.
 
         `parameters`
-            Contains (key, value) pairs which will be used to update
-            the Stockfish engine's current parameters.
+        - Contains (key, value) pairs which will be used to update the Stockfish engine's current parameters.
 
         Example:
-            >>> stockfish.update_engine_parameters({'Threads': 2})
+        >>> stockfish.update_engine_parameters({'Threads': 2})
         """
         if not parameters:
             return
