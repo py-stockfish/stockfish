@@ -12,6 +12,7 @@
 /.idea/
 /.eggs/
 /stockfish.egg-info/
+/stockfish/.idea
 /build/
 /dist/
 /venv/
@@ -21,3 +22,4 @@ coverage.xml
 .coverage*
 docs/
 .vscode/
+.spyproject/
