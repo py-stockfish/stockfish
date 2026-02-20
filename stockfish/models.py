@@ -1,8 +1,7 @@
 """
 This module implements the Stockfish class.
 
-Copyright (c) 2016-2026 by Ilya Zhelyabuzhsky and contributors.
-Contributors: https://github.com/py-stockfish/stockfish/graphs/contributors
+Copyright (c) 2016-2026 by Ilya Zhelyabuzhsky and contributors (https://github.com/py-stockfish/stockfish/graphs/contributors).
 License: MIT. See LICENSE for more details.
 """
 
