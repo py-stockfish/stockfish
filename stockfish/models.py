@@ -397,14 +397,14 @@ class Stockfish:
     def get_board_visual(self, perspective_white: bool = True) -> str:
         """Returns a visual representation of the chessboard in the current position.
 
-        `perspective_white`
+        Args:
 
-        - A boolean that indicates whether the board should be displayed from the perspective of white.
-        `True` indicates White's perspective.
+            perspective_white:
 
-        Example return value:
+                Whether the board should be displayed from White's perspective. If False, the board is shown from Black's perspective.
 
-            ```
+        Example return value::
+
             +---+---+---+---+---+---+---+---+
             | r | n | b | q | k | b | n | r | 8
             +---+---+---+---+---+---+---+---+
@@ -423,9 +423,7 @@ class Stockfish:
             | R | N | B | Q | K | B | N | R | 1
             +---+---+---+---+---+---+---+---+
               a   b   c   d   e   f   g   h
-            ```
         """
-        # todo - board string badly formatted in PyCharm docstring
         self._put("d")
         board_rep_lines: list[str] = []
         count_lines: int = 0
@@ -448,14 +446,12 @@ class Stockfish:
         board_str = self._read_line()
         if "a   b   c" in board_str:
             # Engine being used is recent enough to have coordinates, so add them:
-            if perspective_white:
-                board_rep_lines.append(f"  {board_str}")
-            else:
-                board_rep_lines.append(f"  {board_str[::-1]}")
+            board_rep_lines.append(
+                f"  {board_str if perspective_white else board_str[::-1]}"
+            )
         self._discard_remaining_stdout_lines("Checkers")
         # "Checkers" is in the last line outputted by Stockfish for the "d" command.
-        board_rep = "\n".join(board_rep_lines) + "\n"
-        return board_rep
+        return "\n".join(board_rep_lines) + "\n"
 
     def get_fen_position(self) -> str:
         """
@@ -727,13 +723,18 @@ class Stockfish:
         unless the game is over (in which case `None` is returned).
 
         `get_as_tuple`
+
         - Option to return the wdl stats as a tuple instead of a list. Default is `False`.
 
         `time`
-        - Time for Stockfish to search (milliseconds). If provided, will be used instead of the current depth.
-        """
 
-        # todo - add example to docstring
+        - Time for Stockfish to search (milliseconds). If provided, will be used instead of the current depth.
+
+        Example:
+
+        >>> stockfish.get_wdl_stats()
+        [63, 930, 7]
+        """
 
         if not self.does_current_engine_version_have_wdl_option():
             raise RuntimeError(
