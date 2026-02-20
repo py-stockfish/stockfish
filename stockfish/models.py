@@ -723,13 +723,18 @@ class Stockfish:
         unless the game is over (in which case `None` is returned).
 
         `get_as_tuple`
+
         - Option to return the wdl stats as a tuple instead of a list. Default is `False`.
 
         `time`
-        - Time for Stockfish to search (milliseconds). If provided, will be used instead of the current depth.
-        """
 
-        # todo - add example to docstring
+        - Time for Stockfish to search (milliseconds). If provided, will be used instead of the current depth.
+
+        Example:
+
+        >>> stockfish.get_wdl_stats()
+        [63, 930, 7]
+        """
 
         if not self.does_current_engine_version_have_wdl_option():
             raise RuntimeError(
