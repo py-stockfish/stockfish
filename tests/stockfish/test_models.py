@@ -73,14 +73,16 @@ class TestStockfish:
         best_move = stockfish.get_best_move(wtime=5 * 60 * 1000, btime=1000)
         assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
 
-    def test_make_moves_from_start_does_not_reset_different_info(
+    def test_different_infos(
         self, stockfish: Stockfish
     ):
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
         stockfish.get_best_move()
-        old_best_move_info = stockfish.info(stockfish.get_best_move)
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
-        assert stockfish.info(stockfish.get_best_move) == old_best_move_info
+        stockfish.update_engine_parameters({'MultiPV': 2})
+        stockfish.get_best_move_time(1)
+        assert 'multipv 1' in stockfish.info(stockfish.get_best_move)
+        assert 'multipv 2' in stockfish.info(stockfish.get_best_move_time)
         with pytest.raises(ValueError):
             stockfish.info(stockfish.make_moves_from_start)
 
