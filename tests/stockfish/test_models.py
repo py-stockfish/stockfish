@@ -79,10 +79,10 @@ class TestStockfish:
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
         stockfish.get_best_move()
         old_best_move_info = stockfish.info(stockfish.get_best_move)
-        old_make_moves_info = stockfish.info(stockfish.make_moves_from_start)
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
         assert stockfish.info(stockfish.get_best_move) == old_best_move_info
-        assert stockfish.info(stockfish.make_moves_from_start) != old_make_moves_info
+        with pytest.raises(ValueError):
+            stockfish.info(stockfish.make_moves_from_start)
 
     def test_info_raises_error_by_default(self, stockfish: Stockfish):
         with pytest.raises(ValueError):
