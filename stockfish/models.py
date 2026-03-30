@@ -468,8 +468,8 @@ class Stockfish:
                 return " ".join(split_text[1:])
 
     def info(self, function: Func) -> str:
-        """Returns the final 'info' line of the raw Stockfish output from the last time you called the
-        specified function.
+        """Returns the final 'info' line of the raw Stockfish output from the last time you called
+        the specified function.
         """
         try:
             return self._info[function.__name__]
