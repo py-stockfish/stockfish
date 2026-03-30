@@ -291,10 +291,15 @@ stockfish.does_current_engine_version_have_wdl_option()
 True
 ```
 
-### Get the final `info` line from the last time you called `get_best_move`/`get_best_move_time`
+### Get the final `info` line from the last time you called one of the following functions:
+
+- `get_best_move`
+- `get_best_move_time`
+
+Pass the function itself to `info`. For example:
 
 ```python
-stockfish.info()
+stockfish.info(stockfish.get_best_move)
 ```
 
 ```text

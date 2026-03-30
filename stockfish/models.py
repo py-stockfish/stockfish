@@ -16,7 +16,7 @@ import re
 import datetime
 import warnings
 import platform
-from collections.abc import Sequence
+from collections.abc import Sequence, Callable
 
 from .types import (
     MoveEvaluation,
@@ -24,6 +24,8 @@ from .types import (
     StockfishException,
     StockfishVersion,
 )
+
+Func = Callable[..., Any]
 
 
 class Stockfish:
@@ -127,7 +129,7 @@ class Stockfish:
         self.set_num_nodes(num_nodes)
         self.set_turn_perspective(turn_perspective)
 
-        self._info: str | None = None
+        self._info: dict[str, str] = {}
 
         self._parameters: StockfishParameters = copy.deepcopy(
             Stockfish._DEFAULT_STOCKFISH_PARAMS
@@ -465,15 +467,14 @@ class Stockfish:
                 self._discard_remaining_stdout_lines("Checkers")
                 return " ".join(split_text[1:])
 
-    def info(self) -> str:
-        """Returns the final 'info' line of the raw Stockfish output from the last time you called
-        `get_best_move`/`get_best_move_time`.
+    def info(self, function: Func) -> str:
+        """Returns the final 'info' line of the raw Stockfish output from the last time you called the
+        specified function.
         """
-        if self._info is None:
-            raise RuntimeError(
-                "You have never called `get_best_move`/`get_best_move_time`!"
-            )
-        return self._info
+        try:
+            return self._info[function.__name__]
+        except KeyError:
+            raise ValueError(f"No `info` line recorded for {function.__name__}!")
 
     def set_skill_level(self, skill_level: int = 20) -> None:
         """Sets the skill level of the stockfish engine.
@@ -596,7 +597,7 @@ class Stockfish:
             self._go_remaining_time(wtime, btime)
         else:
             self._go()
-        return self._get_best_move_from_sf_popen_process()
+        return self._get_best_move_from_sf_popen_process(self.get_best_move)
 
     def get_best_move_time(self, time: int = 1000) -> str | None:
         """Returns a string of the best move in the current position after a determined search time (milliseconds).
@@ -607,14 +608,20 @@ class Stockfish:
         'e2e4'
         """
         self._go_time(time)
-        return self._get_best_move_from_sf_popen_process()
+        return self._get_best_move_from_sf_popen_process(self.get_best_move_time)
 
-    def _get_best_move_from_sf_popen_process(self) -> str | None:
+    def _store_info(self, info_line: str, function: Func | None) -> None:
+        if function:
+            self._info[function.__name__] = info_line
+
+    def _get_best_move_from_sf_popen_process(
+        self, store_info_for: Func | None
+    ) -> str | None:
         """Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process."""
 
         lines: list[str] = self._get_sf_go_command_output()
-        self._info = lines[-2]
+        self._store_info(lines[-2], store_info_for)
         last_line_split = lines[-1].split(" ")
         return None if last_line_split[1] == "(none)" else last_line_split[1]
 
@@ -688,7 +695,7 @@ class Stockfish:
         temp_sf.set_fen_position(fen)
         try:
             temp_sf._put("go depth 10")
-            best_move = temp_sf._get_best_move_from_sf_popen_process()
+            best_move = temp_sf._get_best_move_from_sf_popen_process(None)
         except StockfishException:
             # If a StockfishException is thrown, then it happened in read_line() since the SF process crashed.
             # This is likely due to the position being illegal, so set the var to false:
