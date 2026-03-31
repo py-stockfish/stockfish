@@ -630,12 +630,10 @@ class Stockfish:
         """Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process."""
 
-        lines: list[str] = self._get_sf_go_command_output()
-        self._store_info(lines[-2], store_info_for)
-        last_line_split = lines[-1].split(" ")
+        last_line_split = self._get_sf_go_command_output(store_info_for)[-1].split(" ")
         return None if last_line_split[1] == "(none)" else last_line_split[1]
 
-    def _get_sf_go_command_output(self) -> list[str]:
+    def _get_sf_go_command_output(self, store_info_for: Func | None) -> list[str]:
         """
         Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process.
@@ -647,6 +645,7 @@ class Stockfish:
             lines.append(self._read_line())
             if lines[-1].startswith("bestmove"):
                 # The "bestmove" line is the last line of the output.
+                self._store_info(lines[-2], store_info_for)
                 return lines
 
     @staticmethod
@@ -766,7 +765,7 @@ class Stockfish:
             self._go()
         else:
             self._go_time(time)
-        lines = self._get_sf_go_command_output()
+        lines = self._get_sf_go_command_output(self.get_wdl_stats)
         if lines[-1].startswith("bestmove (none)"):
             return None
         split_line = [line.split(" ") for line in lines if " multipv 1 " in line][-1]
@@ -820,7 +819,7 @@ class Stockfish:
             self._go()
         else:
             self._go_time(searchtime)
-        lines = self._get_sf_go_command_output()
+        lines = self._get_sf_go_command_output(self.get_evaluation)
         split_line = [line.split(" ") for line in lines if line.startswith("info")][-1]
         score_index = split_line.index("score")
         eval_type, val = split_line[score_index + 1], split_line[score_index + 2]
@@ -873,7 +872,7 @@ class Stockfish:
         `num_top_moves`
 
         - The number of moves for which to return information, assuming there are at least that many legal moves.
-          Default is 5.
+          Default is 5. Note that this will temporarily replace the engine's current multipv value.
 
         `verbose`
 
@@ -914,7 +913,7 @@ class Stockfish:
             self._go_nodes()
 
         lines: list[list[str]] = [
-            line.split(" ") for line in self._get_sf_go_command_output()
+            line.split(" ") for line in self._get_sf_go_command_output(self.get_top_moves)
         ]
 
         # Stockfish is now done evaluating the position,

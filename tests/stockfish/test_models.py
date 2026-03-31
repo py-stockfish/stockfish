@@ -76,15 +76,28 @@ class TestStockfish:
     def test_different_infos(
         self, stockfish: Stockfish
     ):
-        stockfish.make_moves_from_start(["e2e4", "e7e6"])
+        stockfish.set_depth(8)
+        stockfish.get_board_visual()
+        stockfish.flip()
         stockfish.get_best_move()
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
         stockfish.update_engine_parameters({'MultiPV': 2})
         stockfish.get_best_move_time(1)
+        stockfish.update_engine_parameters({'MultiPV': 3})
+        stockfish.get_evaluation(1)
+        stockfish.update_engine_parameters({'MultiPV': 4})
+        stockfish.get_evaluation(1)
+        stockfish.update_engine_parameters({'MultiPV': 5})
+        stockfish.get_top_moves(2)
+        stockfish.get_wdl_stats(time = 1)
         assert 'multipv 1' in stockfish.info(stockfish.get_best_move)
         assert 'multipv 2' in stockfish.info(stockfish.get_best_move_time)
-        with pytest.raises(ValueError):
-            stockfish.info(stockfish.make_moves_from_start)
+        assert 'multipv 4' in stockfish.info(stockfish.get_evaluation)
+        assert 'multipv 2' in stockfish.info(stockfish.get_top_moves)
+        assert 'multipv 5' in stockfish.info(stockfish.get_wdl_stats)
+        for f in (stockfish.set_depth, stockfish.get_board_visual, stockfish.flip, stockfish.make_moves_from_start):
+            with pytest.raises(ValueError):
+                stockfish.info(f)
 
     def test_info_raises_error_by_default(self, stockfish: Stockfish):
         with pytest.raises(ValueError):
