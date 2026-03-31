@@ -93,12 +93,13 @@ class TestStockfish:
         assert "multipv 4" in stockfish.info(stockfish.get_evaluation)
         assert "multipv 2" in stockfish.info(stockfish.get_top_moves)
         assert "multipv 5" in stockfish.info(stockfish.get_wdl_stats)
-        for f in (
+        no_info_funcs: tuple[Callable[..., Any], ...] = (
             stockfish.set_depth,
             stockfish.get_board_visual,
             stockfish.flip,
             stockfish.make_moves_from_start,
-        ):
+        )
+        for f in no_info_funcs:
             with pytest.raises(ValueError):
                 stockfish.info(f)
 
