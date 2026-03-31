@@ -470,6 +470,16 @@ class Stockfish:
     def info(self, function: Func) -> str:
         """Returns the final 'info' line of the raw Stockfish output from the last time you called
         the specified function.
+
+        `function`
+
+        - The Stockfish wrapper method for which to return the final 'info' line recorded during its
+          most recent call.
+
+        Example:
+
+        >>> stockfish.info(stockfish.get_best_move)
+        'info depth 16 seldepth 12 multipv 1 score mate 6 nodes 15172 nps 1167076 hashfull 2 tbhits 0 time 13 pv e4e7 g8h8 g2h3 h8g8 h3h4 g8h8 h4h5 h8g8 h5g6 g8h8 e7h7'
         """
         try:
             return self._info[function.__name__]
