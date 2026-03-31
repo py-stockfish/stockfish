@@ -16,7 +16,7 @@ import re
 import datetime
 import warnings
 import platform
-from collections.abc import Sequence
+from collections.abc import Sequence, Callable
 
 from .types import (
     MoveEvaluation,
@@ -24,6 +24,8 @@ from .types import (
     StockfishException,
     StockfishVersion,
 )
+
+Func = Callable[..., Any]
 
 
 class Stockfish:
@@ -127,7 +129,7 @@ class Stockfish:
         self.set_num_nodes(num_nodes)
         self.set_turn_perspective(turn_perspective)
 
-        self._info: str | None = None
+        self._info: dict[str, str] = {}
 
         self._parameters: StockfishParameters = copy.deepcopy(
             Stockfish._DEFAULT_STOCKFISH_PARAMS
@@ -465,15 +467,24 @@ class Stockfish:
                 self._discard_remaining_stdout_lines("Checkers")
                 return " ".join(split_text[1:])
 
-    def info(self) -> str:
+    def info(self, function: Func) -> str:
         """Returns the final 'info' line of the raw Stockfish output from the last time you called
-        `get_best_move`/`get_best_move_time`.
+        the specified function.
+
+        `function`
+
+        - The Stockfish wrapper method for which to return the final 'info' line recorded during its
+          most recent call.
+
+        Example:
+
+        >>> stockfish.info(stockfish.get_best_move)
+        'info depth 16 seldepth 12 multipv 1 score mate 6 nodes 15172 nps 1167076 hashfull 2 tbhits 0 time 13 pv e4e7 g8h8 g2h3 h8g8 h3h4 g8h8 h4h5 h8g8 h5g6 g8h8 e7h7'
         """
-        if self._info is None:
-            raise RuntimeError(
-                "You have never called `get_best_move`/`get_best_move_time`!"
-            )
-        return self._info
+        try:
+            return self._info[function.__name__]
+        except KeyError:
+            raise ValueError(f"No `info` line recorded for {function.__name__}!")
 
     def set_skill_level(self, skill_level: int = 20) -> None:
         """Sets the skill level of the stockfish engine.
@@ -596,7 +607,7 @@ class Stockfish:
             self._go_remaining_time(wtime, btime)
         else:
             self._go()
-        return self._get_best_move_from_sf_popen_process()
+        return self._get_best_move_from_sf_popen_process(self.get_best_move)
 
     def get_best_move_time(self, time: int = 1000) -> str | None:
         """Returns a string of the best move in the current position after a determined search time (milliseconds).
@@ -607,18 +618,22 @@ class Stockfish:
         'e2e4'
         """
         self._go_time(time)
-        return self._get_best_move_from_sf_popen_process()
+        return self._get_best_move_from_sf_popen_process(self.get_best_move_time)
 
-    def _get_best_move_from_sf_popen_process(self) -> str | None:
+    def _store_info(self, info_line: str, function: Func | None) -> None:
+        if function:
+            self._info[function.__name__] = info_line
+
+    def _get_best_move_from_sf_popen_process(
+        self, store_info_for: Func | None
+    ) -> str | None:
         """Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process."""
 
-        lines: list[str] = self._get_sf_go_command_output()
-        self._info = lines[-2]
-        last_line_split = lines[-1].split(" ")
+        last_line_split = self._get_sf_go_command_output(store_info_for)[-1].split(" ")
         return None if last_line_split[1] == "(none)" else last_line_split[1]
 
-    def _get_sf_go_command_output(self) -> list[str]:
+    def _get_sf_go_command_output(self, store_info_for: Func | None) -> list[str]:
         """
         Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process.
@@ -630,6 +645,7 @@ class Stockfish:
             lines.append(self._read_line())
             if lines[-1].startswith("bestmove"):
                 # The "bestmove" line is the last line of the output.
+                self._store_info(lines[-2], store_info_for)
                 return lines
 
     @staticmethod
@@ -688,7 +704,7 @@ class Stockfish:
         temp_sf.set_fen_position(fen)
         try:
             temp_sf._put("go depth 10")
-            best_move = temp_sf._get_best_move_from_sf_popen_process()
+            best_move = temp_sf._get_best_move_from_sf_popen_process(None)
         except StockfishException:
             # If a StockfishException is thrown, then it happened in read_line() since the SF process crashed.
             # This is likely due to the position being illegal, so set the var to false:
@@ -749,7 +765,7 @@ class Stockfish:
             self._go()
         else:
             self._go_time(time)
-        lines = self._get_sf_go_command_output()
+        lines = self._get_sf_go_command_output(self.get_wdl_stats)
         if lines[-1].startswith("bestmove (none)"):
             return None
         split_line = [line.split(" ") for line in lines if " multipv 1 " in line][-1]
@@ -803,7 +819,7 @@ class Stockfish:
             self._go()
         else:
             self._go_time(searchtime)
-        lines = self._get_sf_go_command_output()
+        lines = self._get_sf_go_command_output(self.get_evaluation)
         split_line = [line.split(" ") for line in lines if line.startswith("info")][-1]
         score_index = split_line.index("score")
         eval_type, val = split_line[score_index + 1], split_line[score_index + 2]
@@ -856,7 +872,7 @@ class Stockfish:
         `num_top_moves`
 
         - The number of moves for which to return information, assuming there are at least that many legal moves.
-          Default is 5.
+          Default is 5. Note that this will temporarily replace the engine's current multipv value.
 
         `verbose`
 
@@ -897,7 +913,8 @@ class Stockfish:
             self._go_nodes()
 
         lines: list[list[str]] = [
-            line.split(" ") for line in self._get_sf_go_command_output()
+            line.split(" ")
+            for line in self._get_sf_go_command_output(self.get_top_moves)
         ]
 
         # Stockfish is now done evaluating the position,
