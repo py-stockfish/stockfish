@@ -73,29 +73,32 @@ class TestStockfish:
         best_move = stockfish.get_best_move(wtime=5 * 60 * 1000, btime=1000)
         assert best_move in ("e2e3", "e2e4", "g1f3", "b1c3", "d2d4")
 
-    def test_different_infos(
-        self, stockfish: Stockfish
-    ):
+    def test_different_infos(self, stockfish: Stockfish):
         stockfish.set_depth(8)
         stockfish.get_board_visual()
         stockfish.flip()
         stockfish.get_best_move()
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
-        stockfish.update_engine_parameters({'MultiPV': 2})
+        stockfish.update_engine_parameters({"MultiPV": 2})
         stockfish.get_best_move_time(1)
-        stockfish.update_engine_parameters({'MultiPV': 3})
+        stockfish.update_engine_parameters({"MultiPV": 3})
         stockfish.get_evaluation(1)
-        stockfish.update_engine_parameters({'MultiPV': 4})
+        stockfish.update_engine_parameters({"MultiPV": 4})
         stockfish.get_evaluation(1)
-        stockfish.update_engine_parameters({'MultiPV': 5})
+        stockfish.update_engine_parameters({"MultiPV": 5})
         stockfish.get_top_moves(2)
-        stockfish.get_wdl_stats(time = 1)
-        assert 'multipv 1' in stockfish.info(stockfish.get_best_move)
-        assert 'multipv 2' in stockfish.info(stockfish.get_best_move_time)
-        assert 'multipv 4' in stockfish.info(stockfish.get_evaluation)
-        assert 'multipv 2' in stockfish.info(stockfish.get_top_moves)
-        assert 'multipv 5' in stockfish.info(stockfish.get_wdl_stats)
-        for f in (stockfish.set_depth, stockfish.get_board_visual, stockfish.flip, stockfish.make_moves_from_start):
+        stockfish.get_wdl_stats(time=1)
+        assert "multipv 1" in stockfish.info(stockfish.get_best_move)
+        assert "multipv 2" in stockfish.info(stockfish.get_best_move_time)
+        assert "multipv 4" in stockfish.info(stockfish.get_evaluation)
+        assert "multipv 2" in stockfish.info(stockfish.get_top_moves)
+        assert "multipv 5" in stockfish.info(stockfish.get_wdl_stats)
+        for f in (
+            stockfish.set_depth,
+            stockfish.get_board_visual,
+            stockfish.flip,
+            stockfish.make_moves_from_start,
+        ):
             with pytest.raises(ValueError):
                 stockfish.info(f)
 

@@ -913,7 +913,8 @@ class Stockfish:
             self._go_nodes()
 
         lines: list[list[str]] = [
-            line.split(" ") for line in self._get_sf_go_command_output(self.get_top_moves)
+            line.split(" ")
+            for line in self._get_sf_go_command_output(self.get_top_moves)
         ]
 
         # Stockfish is now done evaluating the position,
