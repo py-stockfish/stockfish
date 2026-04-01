@@ -467,11 +467,11 @@ class Stockfish:
                 self._discard_remaining_stdout_lines("Checkers")
                 return " ".join(split_text[1:])
 
-    def info(self, function: Func) -> str:
+    def info(self, func: Func) -> str:
         """Returns the final 'info' line of the raw Stockfish output from the last time you called
         the specified function.
 
-        `function`
+        `func`
 
         - The Stockfish wrapper method for which to return the final 'info' line recorded during its
           most recent call.
@@ -482,9 +482,9 @@ class Stockfish:
         'info depth 16 seldepth 12 multipv 1 score mate 6 nodes 15172 nps 1167076 hashfull 2 tbhits 0 time 13 pv e4e7 g8h8 g2h3 h8g8 h3h4 g8h8 h4h5 h8g8 h5g6 g8h8 e7h7'
         """
         try:
-            return self._info[function.__name__]
+            return self._info[func.__name__]
         except KeyError:
-            raise ValueError(f"No `info` line recorded for {function.__name__}!")
+            raise ValueError(f"No `info` line recorded for {func.__name__}!")
 
     def set_skill_level(self, skill_level: int = 20) -> None:
         """Sets the skill level of the stockfish engine.
