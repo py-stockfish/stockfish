@@ -620,10 +620,6 @@ class Stockfish:
         self._go_time(time)
         return self._get_best_move_from_sf_popen_process(self.get_best_move_time)
 
-    def _store_info(self, info_line: str, function: Func | None) -> None:
-        if function:
-            self._info[function.__name__] = info_line
-
     def _get_best_move_from_sf_popen_process(
         self, store_info_for: Func | None
     ) -> str | None:
@@ -645,7 +641,8 @@ class Stockfish:
             lines.append(self._read_line())
             if lines[-1].startswith("bestmove"):
                 # The "bestmove" line is the last line of the output.
-                self._store_info(lines[-2], store_info_for)
+                if store_info_for:
+                    self._info[store_info_for.__name__] = lines[-2]
                 return lines
 
     @staticmethod
