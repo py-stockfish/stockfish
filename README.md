@@ -605,13 +605,13 @@ cd stockfish
 pip install -r requirements.txt
 ```
 
-### Make changes
+### Contributing and running your changes locally
 
 Most contributions will involve making updates to `stockfish/models.py`. To test your changes, download a version of stockfish and paste the executable in the `stockfish` folder. Then, create a file in the `stockfish` folder called `main.py`. Both the executable and `main.py` will be ignored by git.
 In `main.py`, start with something like the following:
 
 ```python
-from models import Stockfish
+from .models import Stockfish
 
 def main():
     sf = Stockfish(path = "name of your stockfish executable")
@@ -621,7 +621,7 @@ if __name__ == "__main__":
     main()
 ```
 
-Then when navigating to the `stockfish` folder in the terminal, you can run this `main.py` file simply with `python main.py`.
+Then in the root directory of the project, run `python -m stockfish.main` in the terminal.
 Once you're satisfied with your changes to `models.py`, see the section below for how to run the project's entire test suite.
 
 ### Testing
