@@ -379,12 +379,15 @@ class Stockfish:
         """
         if not moves:
             return
-        if any(x for x in moves if " " in x):
-            raise ValueError("Moves should be separate strings")
+        if any(x for x in moves if x != "".join(x.split())):
+            raise ValueError(
+                "Each move should be a string, and should not contain any whitespace"
+            )
         curr_fullmove_count = self._full_move_count()
         expected_increase = self._expected_full_move_increase(len(moves))
         self._put(f"position fen {self.get_fen_position()} moves {' '.join(moves)}")
         if self._full_move_count() != curr_fullmove_count + expected_increase:
+            # todo - reset position to previous one, and then mention in error msg.
             raise ValueError("Incorrect move sequence sent to Stockfish")
 
     def _expected_full_move_increase(self, num_moves: int) -> int:
@@ -471,7 +474,7 @@ class Stockfish:
         """*Discontinued, replaced by the more powerful `raw_stockfish_output`*."""
 
         raise NotImplementedError(
-    """
+            """
     This function has been discontinued, replaced by `raw_stockfish_output`.
     The latter stores all the raw output, and from multiple functions. To replicate the output that `info` used to give
     (i.e., the last 'info' line in the raw Stockfish output from the last time `get_best_move`/`get_best_move_time`
@@ -488,7 +491,7 @@ class Stockfish:
 
         Example:
 
-        >>> stockfish.get_top_moves(3)
+        >>> stockfish.get_top_moves(3) # to keep this example short, assume depth is set to only 3
         >>> stockfish.info(stockfish.get_top_moves)
         [
             'info string Available processors: 0-9',
