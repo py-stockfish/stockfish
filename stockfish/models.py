@@ -492,7 +492,7 @@ class Stockfish:
         Example:
 
         >>> stockfish.get_top_moves(3) # to keep this example short, assume depth is set to only 3
-        >>> stockfish.info(stockfish.get_top_moves)
+        >>> stockfish.raw_stockfish_output(stockfish.get_top_moves)
         [
             'info string Available processors: 0-9',
             'info string Using 1 thread',
