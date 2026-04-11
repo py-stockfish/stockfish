@@ -651,15 +651,15 @@ class Stockfish:
         return self._get_best_move_from_sf_popen_process(self.get_best_move_time)
 
     def _get_best_move_from_sf_popen_process(
-        self, store_info_for: Func | None
+        self, store_raw_output_for: Func | None
     ) -> str | None:
         """Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process."""
 
-        last_line_split = self._get_sf_go_command_output(store_info_for)[-1].split(" ")
+        last_line_split = self._get_sf_go_command_output(store_raw_output_for)[-1].split(" ")
         return None if last_line_split[1] == "(none)" else last_line_split[1]
 
-    def _get_sf_go_command_output(self, store_info_for: Func | None) -> list[str]:
+    def _get_sf_go_command_output(self, store_raw_output_for: Func | None) -> list[str]:
         """
         Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process.
@@ -671,8 +671,8 @@ class Stockfish:
             lines.append(self._read_line())
             if lines[-1].startswith("bestmove"):
                 # The "bestmove" line is the last line of the output.
-                if store_info_for:
-                    self._raw_stockfish_output[store_info_for.__name__] = copy.copy(
+                if store_raw_output_for:
+                    self._raw_stockfish_output[store_raw_output_for.__name__] = copy.copy(
                         lines
                     )
                 return lines
