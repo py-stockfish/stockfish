@@ -110,12 +110,13 @@ class TestStockfish:
                 all(c not in line for c in ("\n", "\r", "\r\n")) for line in output
             )
 
-        for f in (
+        no_output_functions: tuple[Callable[..., Any], ...] = (
             stockfish.set_depth,
             stockfish.get_board_visual,
             stockfish.flip,
             stockfish.make_moves_from_start,
-        ):
+        )
+        for f in no_output_functions:
             with pytest.raises(ValueError):
                 stockfish.raw_stockfish_output(f)
 
