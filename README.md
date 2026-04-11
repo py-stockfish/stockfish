@@ -291,19 +291,43 @@ stockfish.does_current_engine_version_have_wdl_option()
 True
 ```
 
-### Get the final `info` line from the last time you called one of the following functions:
+### Get the raw stockfish output from the last time you called a given function.
 
+Returns a list of strings, representing the raw stockfish output (separated by each newline).
+The newlines themselves are removed from each string.
+
+Currently implemented for the following:
 - `get_best_move`
 - `get_best_move_time`
+- `get_top_moves`
+- `get_wdl_stats`
+- `get_evaluation`
 
-Pass the function itself to `info`. For example:
+Pass the function itself to `raw_stockfish_output`. For example:
 
 ```python
-stockfish.info(stockfish.get_best_move)
+stockfish.get_top_moves(3) # to keep this example short, assume depth is set to only 3
+stockfish.raw_stockfish_output(stockfish.get_top_moves)
 ```
 
 ```text
-info depth 15 seldepth 18 multipv 1 score cp 39 nodes 64450 nps 555603 hashfull 21 tbhits 0 time 116 pv e2e4 e7e5 g1f3 g8f6 d2d4 f6e4 d4e5 d7d5 f1d3 b8c6 e1g1 c8e6 b1c3 e4c3 b2c3
+[
+    'info string Available processors: 0-9',
+    'info string Using 1 thread',
+    'info string NNUE evaluation using nn-c288c895ea92.nnue (125MiB, (102384, 1024, 15, 32, 1))',
+    'info string NNUE evaluation using nn-37f18f62d772.nnue (6MiB, (22528, 128, 15, 32, 1))',
+    'info string Network replica 1: Local memory. Shared memory not supported by the OS. Local allocation fallback.',
+    'info depth 1 seldepth 2 multipv 1 score mate 1 wdl 1000 0 0 nodes 93 nps 93000 hashfull 0 tbhits 0 time 1 pv e7g7',
+    'info depth 1 seldepth 3 multipv 2 score mate 1 wdl 1000 0 0 nodes 93 nps 93000 hashfull 0 tbhits 0 time 1 pv e7f8',
+    'info depth 1 seldepth 3 multipv 3 score mate 1 wdl 1000 0 0 nodes 93 nps 93000 hashfull 0 tbhits 0 time 1 pv e7d8',
+    'info depth 2 seldepth 2 multipv 1 score mate 1 wdl 1000 0 0 nodes 177 nps 177000 hashfull 0 tbhits 0 time 1 pv e7g7',
+    'info depth 2 seldepth 2 multipv 2 score mate 1 wdl 1000 0 0 nodes 177 nps 177000 hashfull 0 tbhits 0 time 1 pv e7f8',
+    'info depth 2 seldepth 2 multipv 3 score mate 1 wdl 1000 0 0 nodes 177 nps 177000 hashfull 0 tbhits 0 time 1 pv e7d8',
+    'info depth 3 seldepth 2 multipv 1 score mate 1 wdl 1000 0 0 nodes 261 nps 261000 hashfull 0 tbhits 0 time 1 pv e7g7',
+    'info depth 3 seldepth 2 multipv 2 score mate 1 wdl 1000 0 0 nodes 261 nps 261000 hashfull 0 tbhits 0 time 1 pv e7f8',
+    'info depth 3 seldepth 2 multipv 3 score mate 1 wdl 1000 0 0 nodes 261 nps 261000 hashfull 0 tbhits 0 time 1 pv e7d8',
+    'bestmove e7g7'
+]
 ```
 
 ### Set the engine's skill level (ignoring ELO rating)
@@ -605,13 +629,13 @@ cd stockfish
 pip install -r requirements.txt
 ```
 
-### Make changes
+### Contributing and running your changes locally
 
 Most contributions will involve making updates to `stockfish/models.py`. To test your changes, download a version of stockfish and paste the executable in the `stockfish` folder. Then, create a file in the `stockfish` folder called `main.py`. Both the executable and `main.py` will be ignored by git.
 In `main.py`, start with something like the following:
 
 ```python
-from models import Stockfish
+from .models import Stockfish
 
 def main():
     sf = Stockfish(path = "name of your stockfish executable")
@@ -621,7 +645,7 @@ if __name__ == "__main__":
     main()
 ```
 
-Then when navigating to the `stockfish` folder in the terminal, you can run this `main.py` file simply with `python main.py`.
+Then in the root directory of the project, run `python -m stockfish.main` in the terminal.
 Once you're satisfied with your changes to `models.py`, see the section below for how to run the project's entire test suite.
 
 ### Testing

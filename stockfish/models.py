@@ -129,7 +129,7 @@ class Stockfish:
         self.set_num_nodes(num_nodes)
         self.set_turn_perspective(turn_perspective)
 
-        self._info: dict[str, str] = {}
+        self._raw_stockfish_output: dict[str, list[str]] = {}
 
         self._parameters: StockfishParameters = copy.deepcopy(
             Stockfish._DEFAULT_STOCKFISH_PARAMS
@@ -150,13 +150,13 @@ class Stockfish:
         parameters."""
         return self._parameters.to_dict()
 
-    def get_parameters(self):
-        """Returns the current engine parameters being used. *Deprecated, see `get_engine_parameters()` instead*."""
+    def get_parameters(self) -> None:
+        """Returns the current engine parameters being used. *Discontinued, see `get_engine_parameters()` instead*."""
 
-        raise ValueError(
+        raise NotImplementedError(
             """The values for 'Ponder', 'UCI_Chess960', and 'UCI_LimitStrength' have been updated from
                strings to bools in a new release of the python stockfish package. As a result, this
-               'get_parameters()' function has been deprecated, in an effort to avoid existing users
+               'get_parameters()' function has been discontinued, in an effort to avoid existing users
                unknowingly getting bugs. It has been replaced with 'get_engine_parameters()'."""
         )
 
@@ -379,12 +379,15 @@ class Stockfish:
         """
         if not moves:
             return
-        if any(x for x in moves if " " in x):
-            raise ValueError("Moves should be separate strings")
+        if any(x for x in moves if x != "".join(x.split())):
+            raise ValueError(
+                "Each move should be a string, and should not contain any whitespace"
+            )
         curr_fullmove_count = self._full_move_count()
         expected_increase = self._expected_full_move_increase(len(moves))
         self._put(f"position fen {self.get_fen_position()} moves {' '.join(moves)}")
         if self._full_move_count() != curr_fullmove_count + expected_increase:
+            # todo - reset position to previous one, and then mention in error msg.
             raise ValueError("Incorrect move sequence sent to Stockfish")
 
     def _expected_full_move_increase(self, num_moves: int) -> int:
@@ -467,24 +470,51 @@ class Stockfish:
                 self._discard_remaining_stdout_lines("Checkers")
                 return " ".join(split_text[1:])
 
-    def info(self, function: Func) -> str:
-        """Returns the final 'info' line of the raw Stockfish output from the last time you called
-        the specified function.
+    def info(self) -> None:
+        """*Discontinued, replaced by the more powerful `raw_stockfish_output`*."""
 
-        `function`
+        raise NotImplementedError(
+            """
+    This function has been discontinued, replaced by `raw_stockfish_output`.
+    The latter stores all the raw output, and from multiple functions. To replicate the output that `info` used to give
+    (i.e., the last 'info' line in the raw Stockfish output from the last time `get_best_move`/`get_best_move_time`
+    was called), do:
+    `stockfish.raw_stockfish_output(stockfish.get_best_move)[-2]` or
+    `stockfish.raw_stockfish_output(stockfish.get_best_move_time)[-2]`
+    """
+        )
 
-        - The Stockfish wrapper method for which to return the final 'info' line recorded during its
-          most recent call.
+    def raw_stockfish_output(self, func: Func) -> list[str]:
+        """
+        Returns a list of strings, representing the raw Stockfish output (separated by each newline) from the
+        last time you called the specified function `func`. Note that the newlines themselves are removed.
 
         Example:
 
-        >>> stockfish.info(stockfish.get_best_move)
-        'info depth 16 seldepth 12 multipv 1 score mate 6 nodes 15172 nps 1167076 hashfull 2 tbhits 0 time 13 pv e4e7 g8h8 g2h3 h8g8 h3h4 g8h8 h4h5 h8g8 h5g6 g8h8 e7h7'
+        >>> stockfish.get_top_moves(3) # to keep this example short, assume depth is set to only 3
+        >>> stockfish.raw_stockfish_output(stockfish.get_top_moves)
+        [
+            'info string Available processors: 0-9',
+            'info string Using 1 thread',
+            'info string NNUE evaluation using nn-c288c895ea92.nnue (125MiB, (102384, 1024, 15, 32, 1))',
+            'info string NNUE evaluation using nn-37f18f62d772.nnue (6MiB, (22528, 128, 15, 32, 1))',
+            'info string Network replica 1: Local memory. Shared memory not supported by the OS. Local allocation fallback.',
+            'info depth 1 seldepth 2 multipv 1 score mate 1 wdl 1000 0 0 nodes 93 nps 93000 hashfull 0 tbhits 0 time 1 pv e7g7',
+            'info depth 1 seldepth 3 multipv 2 score mate 1 wdl 1000 0 0 nodes 93 nps 93000 hashfull 0 tbhits 0 time 1 pv e7f8',
+            'info depth 1 seldepth 3 multipv 3 score mate 1 wdl 1000 0 0 nodes 93 nps 93000 hashfull 0 tbhits 0 time 1 pv e7d8',
+            'info depth 2 seldepth 2 multipv 1 score mate 1 wdl 1000 0 0 nodes 177 nps 177000 hashfull 0 tbhits 0 time 1 pv e7g7',
+            'info depth 2 seldepth 2 multipv 2 score mate 1 wdl 1000 0 0 nodes 177 nps 177000 hashfull 0 tbhits 0 time 1 pv e7f8',
+            'info depth 2 seldepth 2 multipv 3 score mate 1 wdl 1000 0 0 nodes 177 nps 177000 hashfull 0 tbhits 0 time 1 pv e7d8',
+            'info depth 3 seldepth 2 multipv 1 score mate 1 wdl 1000 0 0 nodes 261 nps 261000 hashfull 0 tbhits 0 time 1 pv e7g7',
+            'info depth 3 seldepth 2 multipv 2 score mate 1 wdl 1000 0 0 nodes 261 nps 261000 hashfull 0 tbhits 0 time 1 pv e7f8',
+            'info depth 3 seldepth 2 multipv 3 score mate 1 wdl 1000 0 0 nodes 261 nps 261000 hashfull 0 tbhits 0 time 1 pv e7d8',
+            'bestmove e7g7'
+        ]
         """
         try:
-            return self._info[function.__name__]
+            return copy.copy(self._raw_stockfish_output[func.__name__])
         except KeyError:
-            raise ValueError(f"No `info` line recorded for {function.__name__}!")
+            raise ValueError(f"No output recorded for {func.__name__}!")
 
     def set_skill_level(self, skill_level: int = 20) -> None:
         """Sets the skill level of the stockfish engine.
@@ -620,20 +650,18 @@ class Stockfish:
         self._go_time(time)
         return self._get_best_move_from_sf_popen_process(self.get_best_move_time)
 
-    def _store_info(self, info_line: str, function: Func | None) -> None:
-        if function:
-            self._info[function.__name__] = info_line
-
     def _get_best_move_from_sf_popen_process(
-        self, store_info_for: Func | None
+        self, store_raw_output_for: Func | None
     ) -> str | None:
         """Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process."""
 
-        last_line_split = self._get_sf_go_command_output(store_info_for)[-1].split(" ")
+        last_line_split = self._get_sf_go_command_output(store_raw_output_for)[
+            -1
+        ].split(" ")
         return None if last_line_split[1] == "(none)" else last_line_split[1]
 
-    def _get_sf_go_command_output(self, store_info_for: Func | None) -> list[str]:
+    def _get_sf_go_command_output(self, store_raw_output_for: Func | None) -> list[str]:
         """
         Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process.
@@ -645,7 +673,10 @@ class Stockfish:
             lines.append(self._read_line())
             if lines[-1].startswith("bestmove"):
                 # The "bestmove" line is the last line of the output.
-                self._store_info(lines[-2], store_info_for)
+                if store_raw_output_for:
+                    self._raw_stockfish_output[store_raw_output_for.__name__] = (
+                        copy.copy(lines)
+                    )
                 return lines
 
     @staticmethod
