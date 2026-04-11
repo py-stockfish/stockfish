@@ -514,7 +514,7 @@ class Stockfish:
         try:
             return copy.copy(self._raw_stockfish_output[func.__name__])
         except KeyError:
-            raise ValueError(f"No `info` line recorded for {func.__name__}!")
+            raise ValueError(f"No output recorded for {func.__name__}!")
 
     def set_skill_level(self, skill_level: int = 20) -> None:
         """Sets the skill level of the stockfish engine.
