@@ -200,14 +200,14 @@ class TestStockfish:
             "bestmove (none)",
         ]
 
-    def test_info_not_cleared_after_set_new_fen_position(self, stockfish: Stockfish):
+    def test_output_not_cleared_after_set_new_fen_position(self, stockfish: Stockfish):
         stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/r7/4K3 b - - 11 52")
         stockfish.get_best_move()
-        old_info = stockfish.raw_stockfish_output(stockfish.get_best_move)
+        old_output = stockfish.raw_stockfish_output(stockfish.get_best_move)
         stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53")
-        assert stockfish.raw_stockfish_output(stockfish.get_best_move) == old_info
+        assert stockfish.raw_stockfish_output(stockfish.get_best_move) == old_output
 
     def test_set_fen_position_second_argument(self, stockfish: Stockfish):
         stockfish.set_depth(16)
