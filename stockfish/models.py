@@ -656,7 +656,9 @@ class Stockfish:
         """Precondition - a "go" command must have been sent to SF before calling this function.
         This function needs existing output to read from the SF popen process."""
 
-        last_line_split = self._get_sf_go_command_output(store_raw_output_for)[-1].split(" ")
+        last_line_split = self._get_sf_go_command_output(store_raw_output_for)[
+            -1
+        ].split(" ")
         return None if last_line_split[1] == "(none)" else last_line_split[1]
 
     def _get_sf_go_command_output(self, store_raw_output_for: Func | None) -> list[str]:
@@ -672,8 +674,8 @@ class Stockfish:
             if lines[-1].startswith("bestmove"):
                 # The "bestmove" line is the last line of the output.
                 if store_raw_output_for:
-                    self._raw_stockfish_output[store_raw_output_for.__name__] = copy.copy(
-                        lines
+                    self._raw_stockfish_output[store_raw_output_for.__name__] = (
+                        copy.copy(lines)
                     )
                 return lines
 
