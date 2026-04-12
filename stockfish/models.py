@@ -35,6 +35,7 @@ class Stockfish:
     _del_counter: int = 0
 
     _RELEASES: dict[str, str] = {
+        "18.0": "2026-01-31",
         "17.1": "2025-03-30",
         "17.0": "2024-09-06",
         "16.1": "2024-02-24",
@@ -248,15 +249,18 @@ class Stockfish:
             raise BrokenPipeError()
         if any(x in command for x in ("\n", "\r")):
             raise ValueError("You've sent multiple lines in as an argument!")
-        if self._stockfish.poll() is None and not self._has_quit_command_been_sent:
-            if command != "isready":
-                self._is_ready()
-            if self._debug_view:
-                print(f">>> {command}\n")
-            self._stockfish.stdin.write(f"{command}\n")
-            self._stockfish.stdin.flush()
-            if command == "quit":
-                self._has_quit_command_been_sent = True
+        if self._stockfish.poll() is not None:
+            raise StockfishException("The Stockfish process has crashed.")
+        if self._has_quit_command_been_sent:
+            return
+        if command != "isready":
+            self._is_ready()
+        if self._debug_view:
+            print(f">>> {command}\n")
+        self._stockfish.stdin.write(f"{command}\n")
+        self._stockfish.stdin.flush()
+        if command == "quit":
+            self._has_quit_command_been_sent = True
 
     def _read_line(self) -> str:
         if not self._stockfish.stdout:
@@ -354,7 +358,7 @@ class Stockfish:
                 `do_validation = False`.
             """
             )
-        self._put(f"position fen {fen_position}")
+        self._put(f"position fen {" ".join(fen_position.split())}")
 
     def make_moves_from_start(self, moves: Sequence[str] | None = None) -> None:
         """Sets the position by making a sequence of moves from the starting position of chess.
@@ -739,6 +743,8 @@ class Stockfish:
         # Using a new temporary SF instance, in case the fen is an illegal position that causes
         # the SF process to crash.
         best_move: str | None = None
+        if any(c in fen.split()[2].lower() for c in "abcdefgh"):
+            temp_sf.update_engine_parameters({"UCI_Chess960": True})
         temp_sf.set_fen_position(fen)
         try:
             temp_sf._put("go depth 10")
