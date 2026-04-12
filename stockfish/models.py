@@ -333,7 +333,7 @@ class Stockfish:
         """Will issue a warning, referring to the function that calls this one."""
         warnings.warn(message, stacklevel=3)
 
-    def set_fen_position(self, fen_position: str) -> None:
+    def set_fen_position(self, fen_position: str, do_validation: bool = True) -> None:
         """Sets the current board position from Forsyth-Edwards notation (FEN).
 
         **Note to existing users**: the `send_ucinewgame_token: bool = True` param has been removed,
@@ -347,6 +347,13 @@ class Stockfish:
 
         >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
         """
+        if do_validation and not Stockfish._is_fen_syntax_valid(fen_position):
+            raise ValueError(
+                """
+                This fen appears to be invalid. If you're sure it's not, call this function with
+                `do_validation = False`.
+            """
+            )
         self._put(f"position fen {fen_position}")
 
     def make_moves_from_start(self, moves: Sequence[str] | None = None) -> None:
