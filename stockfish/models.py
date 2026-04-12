@@ -707,10 +707,10 @@ class Stockfish:
         ):
             return False
 
-        for fenPart in fen_fields[0].split("/"):
+        for fen_part in fen_fields[0].split("/"):
             field_sum: int = 0
             previous_was_digit: bool = False
-            for c in fenPart:
+            for c in fen_part:
                 if "1" <= c <= "8":
                     if previous_was_digit:
                         return False  # Two digits next to each other.
