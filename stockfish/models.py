@@ -242,6 +242,17 @@ class Stockfish:
             self._put("ucinewgame")
             self._is_ready()
 
+    def _stockfish_exception_error_msg(self) -> str:
+        if self._stockfish.poll() is None:
+            raise RuntimeError(
+                "This function shouldn't be called while the stockfish process is alive."
+            )
+        return (
+            "You already quit the Stockfish process"
+            if self._has_quit_command_been_sent
+            else "The Stockfish process has crashed"
+        )
+
     def _put(self, command: str) -> None:
         """Sends a command to the Stockfish engine. Note that this function shouldn't be called if
         there's any existing output in stdout that's still needed."""
@@ -250,7 +261,7 @@ class Stockfish:
         if any(x in command for x in ("\n", "\r")):
             raise ValueError("You've sent multiple lines in as an argument!")
         if self._stockfish.poll() is not None:
-            raise StockfishException("The Stockfish process has crashed.")
+            raise StockfishException(self._stockfish_exception_error_msg())
         if self._has_quit_command_been_sent:
             return
         if command != "isready":
@@ -266,7 +277,7 @@ class Stockfish:
         if not self._stockfish.stdout:
             raise BrokenPipeError()
         if self._stockfish.poll() is not None:
-            raise StockfishException("The Stockfish process has crashed")
+            raise StockfishException(self._stockfish_exception_error_msg())
         line = self._stockfish.stdout.readline().strip()
         if self._debug_view:
             print(line)
