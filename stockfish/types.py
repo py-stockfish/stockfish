@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from collections.abc import Callable
+from typing import Any
 
 
 @dataclass
@@ -110,3 +112,6 @@ class MoveEvaluation:
 
 class StockfishException(Exception):
     pass
+
+
+Func = Callable[..., Any]

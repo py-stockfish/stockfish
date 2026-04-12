@@ -16,16 +16,15 @@ import re
 import datetime
 import warnings
 import platform
-from collections.abc import Sequence, Callable
+from collections.abc import Sequence
 
 from .types import (
     MoveEvaluation,
     StockfishParameters,
     StockfishException,
     StockfishVersion,
+    Func,
 )
-
-Func = Callable[..., Any]
 
 
 class Stockfish:
