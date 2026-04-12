@@ -354,9 +354,7 @@ class Stockfish:
         if do_validation and not Stockfish._is_fen_syntax_valid(fen_position):
             raise ValueError(
                 """
-                This fen appears to be invalid. If you're sure it's not, call this function with
-                `do_validation = False`.
-            """
+                This fen appears to be invalid. If you're sure it's not, call this function with `do_validation = False`."""
             )
         self._put(f"position fen {' '.join(fen_position.split())}")
 
