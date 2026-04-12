@@ -358,7 +358,7 @@ class Stockfish:
                 `do_validation = False`.
             """
             )
-        self._put(f"position fen {" ".join(fen_position.split())}")
+        self._put(f"position fen {' '.join(fen_position.split())}")
 
     def make_moves_from_start(self, moves: Sequence[str] | None = None) -> None:
         """Sets the position by making a sequence of moves from the starting position of chess.
