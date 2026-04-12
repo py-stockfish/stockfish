@@ -691,7 +691,7 @@ class Stockfish:
         # Code for this function taken from: https://gist.github.com/Dani4kor/e1e8b439115878f8c6dcf127a4ed5d3e
         # Some small changes have been made to the code.
         if not re.match(
-            r"^\s*(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([bw])\s(-|[KQkq]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$",
+            r"^\s*(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([bw])\s(-|[KQkq]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)\s*$",
             fen,
         ):
             return False
