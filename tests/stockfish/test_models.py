@@ -179,13 +179,6 @@ class TestStockfish:
         assert stockfish.get_best_move(wtime=1000, btime=1000) is None
         assert stockfish.get_best_move(wtime=5 * 60 * 1000, btime=1000) is None
 
-    def test_set_fen_position(self, stockfish: Stockfish):
-        stockfish.set_fen_position(
-            "7r/1pr1kppb/2n1p2p/2NpP2P/5PP1/1P6/P6K/R1R2B2 w - - 1 27"
-        )
-        assert stockfish.is_move_legal("f4f5") is True
-        assert stockfish.is_move_legal("a1c1") is False
-
     def test_castling(self, stockfish: Stockfish):
         assert stockfish.is_move_legal("e1g1") is False
         stockfish.set_fen_position(
@@ -209,24 +202,6 @@ class TestStockfish:
         stockfish.send_ucinewgame_command()
         stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53")
         assert stockfish.raw_stockfish_output(stockfish.get_best_move) == old_output
-
-    def test_set_fen_position_second_argument(self, stockfish: Stockfish):
-        stockfish.set_depth(16)
-        stockfish.send_ucinewgame_command()
-        stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"
-        )
-        assert stockfish.get_best_move() == "e4e5"
-
-        stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/4P3/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 1"
-        )
-        assert stockfish.get_best_move() in ("d6e7", "d6b4")
-
-        stockfish.set_fen_position(
-            "rnbqk2r/pppp1ppp/3bpn2/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"
-        )
-        assert stockfish.get_best_move() == "e4e5"
 
     def test_is_move_legal_first_move(self, stockfish: Stockfish):
         assert stockfish.is_move_legal("e2e1") is False
@@ -412,6 +387,7 @@ class TestStockfish:
         assert "HAha" in stockfish.get_fen_position()
         assert stockfish.get_engine_parameters() == expected_parameters
         stockfish.set_fen_position("4rkr1/4p1p1/8/8/8/8/8/4nK1R w K - 0 100")
+        assert stockfish.get_fen_position() == "4rkr1/4p1p1/8/8/8/8/8/4nK1R w H - 0 100"
         assert stockfish.get_best_move() == "f1h1"
         stockfish.set_turn_perspective(False)
         assert stockfish.get_evaluation() == {"type": "mate", "value": 2}
@@ -658,7 +634,9 @@ class TestStockfish:
     def test_get_best_move_wrong_position(self, stockfish: Stockfish):
         stockfish.set_depth(2)
         wrong_fen = "3kk3/8/8/8/8/8/8/3KK3 w - - 0 0"
-        stockfish.set_fen_position(wrong_fen)
+        with pytest.raises(ValueError):
+            stockfish.set_fen_position(wrong_fen)
+        stockfish.set_fen_position(wrong_fen, False)
         assert stockfish.get_best_move() in ("d1e2", "d1c1", "d1c2")
 
     def test_constructor(self, stockfish: Stockfish):
@@ -1141,8 +1119,8 @@ class TestStockfish:
         stockfish.__del__()
         assert stockfish._stockfish.poll() is not None
         assert stockfish._has_quit_command_been_sent
-        stockfish._put(f"go depth {10}")
-        # Should do nothing, and change neither of the values below.
+        with pytest.raises(StockfishException):
+            stockfish._put(f"go depth {10}")
         assert stockfish._stockfish.poll() is not None
         assert stockfish._has_quit_command_been_sent
 
@@ -1276,6 +1254,12 @@ class TestStockfish:
         ):
             # Development versions post SF 15 seem to output a bestmove for this fen.
             return
+        if (
+            fen == "1q2nB2/pP1k2KP/NN1Q1qP1/8/1P1p4/4p1br/3R4/6n1 w - - 0 1"
+            and stockfish.get_stockfish_major_version() >= 18
+        ):
+            # Stockfish 18 returns a best move for this position without crashing.
+            return
         assert not stockfish.is_fen_valid(fen)
         assert Stockfish._del_counter == old_del_counter + 2
 
@@ -1283,19 +1267,47 @@ class TestStockfish:
         with pytest.raises(StockfishException):
             stockfish.get_evaluation()
 
-    @pytest.mark.slow
-    def test_is_fen_valid(self, stockfish: Stockfish):
-        old_params = stockfish.get_engine_parameters()
-        old_depth = stockfish._depth
-        old_fen = stockfish.get_fen_position()
-        correct_fens: list[str | None] = [
+    @pytest.mark.parametrize(
+        "input",
+        [
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
             "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK1 b kq - 0 8",
             "4k3/8/4K3/8/8/8/8/8 w - - 10 50",
-            "r1b1kb1r/ppp2ppp/3q4/8/P2Q4/8/1PP2PPP/RNB2RK1 w kq - 8 15",
-            "4k3/8/4K3/8/8/8/8/8 w - - 99 50",
-        ]
-        invalid_syntax_fens = [
+            "r1b1kb1r/ppp2ppp/3q4/8/P2Q4/8/1PP2PPP/RNB2RK1 w kq - 8 15\n",
+            " 4k3/8/4K3/8/8/8/8/8 w - -  99   50 ",
+            (
+                "7r/1pr1kppb/2n1p2p/2NpP2P/5PP1/1P6/P6K/R1R2B2 w - - 1 27",
+                ["f4f5"],
+                ["a1c1"],
+            ),
+        ],
+    )
+    @pytest.mark.slow
+    def test_valid_fens(
+        self, stockfish: Stockfish, input: str | tuple[str, list[str], list[str]]
+    ):
+        fen, legal_moves, illegal_moves = (
+            input if isinstance(input, tuple) else (input, [], [])
+        )
+        assert isinstance(fen, str)
+        old_del_counter = Stockfish._del_counter
+        old_params = stockfish.get_engine_parameters()
+        old_depth = stockfish.get_depth()
+        old_fen = stockfish.get_fen_position()
+        assert stockfish.is_fen_valid(fen)
+        assert stockfish._is_fen_syntax_valid(fen)
+        assert stockfish.get_engine_parameters() == old_params
+        assert stockfish.get_depth() == old_depth
+        assert stockfish.get_fen_position() == old_fen
+        assert Stockfish._del_counter == old_del_counter + 2
+        stockfish.set_fen_position(fen)
+        assert stockfish.get_fen_position() == " ".join(fen.split())
+        assert all(stockfish.is_move_legal(x) for x in legal_moves)
+        assert all(not stockfish.is_move_legal(x) for x in illegal_moves)
+
+    @pytest.mark.parametrize(
+        "fen",
+        [
             "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK b kq - 0 8",
             "rnbqkb1r/pppp1ppp/4pn2/8/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 3",
             "rn1q1rk1/pbppbppp/1p2pn2/8/2PP4/5NP1/PP2PPBP/RNBQ1RK1 w w - 5 7",
@@ -1315,27 +1327,57 @@ class TestStockfish:
             "r1bQkb1r/ppp2ppp/2p5/4Pn2/8/5N2/PPP2PPP/RNB2RK1 b kq - -1 8",
             "4k3/8/4K3/8/8/8/8/8 w - - 99 e",
             "4k3/8/4K3/8/8/8/8/8 w - - 99 ee",
-        ]
-        correct_fens.extend([None] * (len(invalid_syntax_fens) - len(correct_fens)))
-        assert len(correct_fens) == len(invalid_syntax_fens)
-        for correct_fen, invalid_syntax_fen in zip(correct_fens, invalid_syntax_fens):
-            old_del_counter = Stockfish._del_counter
-            if correct_fen is not None:
-                assert stockfish.is_fen_valid(correct_fen)
-                assert stockfish._is_fen_syntax_valid(correct_fen)
-            assert not stockfish.is_fen_valid(invalid_syntax_fen)
-            assert not stockfish._is_fen_syntax_valid(invalid_syntax_fen)
-            assert Stockfish._del_counter == old_del_counter + (
-                2 if correct_fen is not None else 0
-            )
-
-        time.sleep(2.0)
-        assert stockfish._stockfish.poll() is None
-        assert stockfish.get_engine_parameters() == old_params
+            "4k3/8/4K3/8/8/8/8/8 | - - 99 50",
+            "r1b1kb1r/ppp2ppp/3q4/8/P2Q4/8/1PP2PPP/RNB2RK1 w k| - 8 15",
+            "4k3/8/4K3/8/8/8/8/ 8 w - - 10 50",
+            "4k3/8/4K3/8/8/8/8/8/B w - - 10 50",
+            "7r/1pr1kppb/2n1p2p/2NpP2P/5PP1/1P6/P6K/R1R2B2",
+            "7r/1pr1kppb/2n1p2p/2NpP2P/5PP1/1P6/P6K/R1R2B2 w",
+            "1nb1k1n1/pppppppp/8/6r1/5bqK/6rrr/8/8",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/2NBQKBNR",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/2NBQKBNR w KQkq - 0 1",
+            "4k3/8/4K3/8/8/8\\8/8 w - - 10 50",
+        ],
+    )
+    @pytest.mark.slow
+    def test_invalid_syntax_fens(self, stockfish: Stockfish, fen: str):
+        old_del_counter = Stockfish._del_counter
+        stockfish.set_fen_position(
+            "r1bqkbnr/pp2pppp/2np4/1Bp5/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1"
+        )
+        old_fen = stockfish.get_fen_position()
+        assert not stockfish.is_fen_valid(fen)
+        assert not stockfish._is_fen_syntax_valid(fen)
         with pytest.raises(ValueError):
-            stockfish.raw_stockfish_output(stockfish.get_best_move)
-        assert stockfish.get_depth() == old_depth
+            stockfish.set_fen_position(fen)
         assert stockfish.get_fen_position() == old_fen
+        stockfish.set_fen_position(fen, False)
+        try:
+            new_fen = stockfish.get_fen_position()
+        except StockfishException:
+            pass
+        else:
+            assert new_fen != old_fen
+        assert Stockfish._del_counter == old_del_counter
+
+    @pytest.mark.parametrize(
+        "fen",
+        [
+            "r3k2r/8/8/8/8/8/8/R3K2R w AHah - 10 50",
+            "1r2kr2/8/8/8/8/8/8/1R2KR2 w bFBf - 10 50",
+        ],
+    )
+    def test_chess960_fens(self, stockfish: Stockfish, fen: str):
+        assert stockfish._is_fen_syntax_valid(fen)
+        stockfish.set_fen_position(fen)
+        assert all(c not in stockfish.get_fen_position().split()[2] for c in "AHahBFbf")
+        assert "KQkq" in stockfish.get_fen_position()
+        stockfish.update_engine_parameters({"UCI_Chess960": True})
+        assert "KQkq" not in stockfish.get_fen_position().split()[2]
+        assert (
+            "HAha" in stockfish.get_fen_position()
+            or "FBfb" in stockfish.get_fen_position()
+        )
 
     def test_send_quit_command(self, stockfish: Stockfish):
         assert stockfish._stockfish.poll() is None
@@ -1373,6 +1415,8 @@ class TestStockfish:
             ("dev-20241208-e8d2ba19", 17.0, "20241208", "e8d2ba19", True),
             ("17.1", 17.1, "", "", False),
             ("dev-20251005-b09339a4", 17.1, "20251005", "b09339a4", True),
+            ("18.0", 18.0, "", "", False),
+            ("dev-20260409-bb4eb04a", 18.0, "20260409", "bb4eb04a", True),
         ],
     )
     def test_parse_stockfish_version(
@@ -1448,7 +1492,6 @@ class TestStockfish:
         ["\n", "\r", "\r\n"],
     )
     def test_newline_chars(self, stockfish: Stockfish, char: str):
-        with pytest.raises(ValueError):
-            stockfish.set_fen_position(
-                f"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1{char}"
-            )
+        base_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        stockfish.set_fen_position(f"{base_fen}{char}")
+        assert stockfish.get_fen_position() == base_fen

@@ -16,16 +16,15 @@ import re
 import datetime
 import warnings
 import platform
-from collections.abc import Sequence, Callable
+from collections.abc import Sequence
 
 from .types import (
     MoveEvaluation,
     StockfishParameters,
     StockfishException,
     StockfishVersion,
+    Func,
 )
-
-Func = Callable[..., Any]
 
 
 class Stockfish:
@@ -35,6 +34,7 @@ class Stockfish:
     _del_counter: int = 0
 
     _RELEASES: dict[str, str] = {
+        "18.0": "2026-01-31",
         "17.1": "2025-03-30",
         "17.0": "2024-09-06",
         "16.1": "2024-02-24",
@@ -241,6 +241,17 @@ class Stockfish:
             self._put("ucinewgame")
             self._is_ready()
 
+    def _stockfish_exception_error_msg(self) -> str:
+        if self._stockfish.poll() is None:
+            raise RuntimeError(
+                "This function shouldn't be called while the stockfish process is alive."
+            )
+        return (
+            "You already quit the Stockfish process"
+            if self._has_quit_command_been_sent
+            else "The Stockfish process has crashed"
+        )
+
     def _put(self, command: str) -> None:
         """Sends a command to the Stockfish engine. Note that this function shouldn't be called if
         there's any existing output in stdout that's still needed."""
@@ -248,21 +259,24 @@ class Stockfish:
             raise BrokenPipeError()
         if any(x in command for x in ("\n", "\r")):
             raise ValueError("You've sent multiple lines in as an argument!")
-        if self._stockfish.poll() is None and not self._has_quit_command_been_sent:
-            if command != "isready":
-                self._is_ready()
-            if self._debug_view:
-                print(f">>> {command}\n")
-            self._stockfish.stdin.write(f"{command}\n")
-            self._stockfish.stdin.flush()
-            if command == "quit":
-                self._has_quit_command_been_sent = True
+        if self._stockfish.poll() is not None:
+            raise StockfishException(self._stockfish_exception_error_msg())
+        if self._has_quit_command_been_sent:
+            return
+        if command != "isready":
+            self._is_ready()
+        if self._debug_view:
+            print(f">>> {command}\n")
+        self._stockfish.stdin.write(f"{command}\n")
+        self._stockfish.stdin.flush()
+        if command == "quit":
+            self._has_quit_command_been_sent = True
 
     def _read_line(self) -> str:
         if not self._stockfish.stdout:
             raise BrokenPipeError()
         if self._stockfish.poll() is not None:
-            raise StockfishException("The Stockfish process has crashed")
+            raise StockfishException(self._stockfish_exception_error_msg())
         line = self._stockfish.stdout.readline().strip()
         if self._debug_view:
             print(line)
@@ -333,7 +347,7 @@ class Stockfish:
         """Will issue a warning, referring to the function that calls this one."""
         warnings.warn(message, stacklevel=3)
 
-    def set_fen_position(self, fen_position: str) -> None:
+    def set_fen_position(self, fen_position: str, do_validation: bool = True) -> None:
         """Sets the current board position from Forsyth-Edwards notation (FEN).
 
         **Note to existing users**: the `send_ucinewgame_token: bool = True` param has been removed,
@@ -343,11 +357,20 @@ class Stockfish:
 
         - FEN string of board position.
 
+        `do_validation`
+
+        - Whether to check if the fen syntax is (likely) valid first.
+
         Example:
 
         >>> stockfish.set_fen_position("1nb1k1n1/pppppppp/8/6r1/5bqK/6r1/8/8 w - - 2 2")
         """
-        self._put(f"position fen {fen_position}")
+        if do_validation and not Stockfish._is_fen_syntax_valid(fen_position):
+            raise ValueError(
+                """
+                This fen appears to be invalid. If you're sure it's not, call this function with `do_validation = False`."""
+            )
+        self._put(f"position fen {' '.join(fen_position.split())}")
 
     def make_moves_from_start(self, moves: Sequence[str] | None = None) -> None:
         """Sets the position by making a sequence of moves from the starting position of chess.
@@ -684,7 +707,7 @@ class Stockfish:
         # Code for this function taken from: https://gist.github.com/Dani4kor/e1e8b439115878f8c6dcf127a4ed5d3e
         # Some small changes have been made to the code.
         if not re.match(
-            r"\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s(-|[K|Q|k|q]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$",
+            r"^\s*(((?:[rnbqkpRNBQKP1-8]+/){7})[rnbqkpRNBQKP1-8]+)\s+([bw])\s+(-|[KQkq]{1,4}|[ABCDEFGHabcdefgh]{1,4})\s+(-|[a-h][1-8])\s+(\d+\s+\d+)\s*$",
             fen,
         ):
             return False
@@ -700,10 +723,10 @@ class Stockfish:
         ):
             return False
 
-        for fenPart in fen_fields[0].split("/"):
+        for fen_part in fen_fields[0].split("/"):
             field_sum: int = 0
             previous_was_digit: bool = False
-            for c in fenPart:
+            for c in fen_part:
                 if "1" <= c <= "8":
                     if previous_was_digit:
                         return False  # Two digits next to each other.
@@ -732,6 +755,8 @@ class Stockfish:
         # Using a new temporary SF instance, in case the fen is an illegal position that causes
         # the SF process to crash.
         best_move: str | None = None
+        if any(c in fen.split()[2].lower() for c in "abcdefgh"):
+            temp_sf.update_engine_parameters({"UCI_Chess960": True})
         temp_sf.set_fen_position(fen)
         try:
             temp_sf._put("go depth 10")
