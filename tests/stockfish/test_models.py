@@ -1336,7 +1336,7 @@ class TestStockfish:
             "1nb1k1n1/pppppppp/8/6r1/5bqK/6rrr/8/8",
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/2NBQKBNR",
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/2NBQKBNR w KQkq - 0 1",
-            "4k3/8/4K3/8/8/8\\8/8 w - - 10 50"
+            "4k3/8/4K3/8/8/8\\8/8 w - - 10 50",
         ],
     )
     @pytest.mark.slow
