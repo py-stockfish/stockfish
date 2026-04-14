@@ -1283,7 +1283,7 @@ class TestStockfish:
         ],
     )
     @pytest.mark.slow
-    def test_is_fen_valid_correct_fens(
+    def test_valid_fens(
         self, stockfish: Stockfish, input: str | tuple[str, list[str], list[str]]
     ):
         fen, legal_moves, illegal_moves = (
@@ -1291,13 +1291,19 @@ class TestStockfish:
         )
         assert isinstance(fen, str)
         old_del_counter = Stockfish._del_counter
+        old_params = stockfish.get_engine_parameters()
+        old_depth = stockfish.get_depth()
+        old_fen = stockfish.get_fen_position()
         assert stockfish.is_fen_valid(fen)
         assert stockfish._is_fen_syntax_valid(fen)
+        assert stockfish.get_engine_parameters() == old_params
+        assert stockfish.get_depth() == old_depth
+        assert stockfish.get_fen_position() == old_fen
+        assert Stockfish._del_counter == old_del_counter + 2
         stockfish.set_fen_position(fen)
         assert stockfish.get_fen_position() == " ".join(fen.split())
         assert all(stockfish.is_move_legal(x) for x in legal_moves)
         assert all(not stockfish.is_move_legal(x) for x in illegal_moves)
-        assert Stockfish._del_counter == old_del_counter + 2
 
     @pytest.mark.parametrize(
         "fen",
@@ -1330,10 +1336,11 @@ class TestStockfish:
             "1nb1k1n1/pppppppp/8/6r1/5bqK/6rrr/8/8",
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/2NBQKBNR",
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/2NBQKBNR w KQkq - 0 1",
+            "4k3/8/4K3/8/8/8\\8/8 w - - 10 50"
         ],
     )
     @pytest.mark.slow
-    def test_is_fen_valid_incorrect_fens(self, stockfish: Stockfish, fen: str):
+    def test_invalid_syntax_fens(self, stockfish: Stockfish, fen: str):
         old_del_counter = Stockfish._del_counter
         stockfish.set_fen_position(
             "r1bqkbnr/pp2pppp/2np4/1Bp5/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1"
@@ -1351,7 +1358,7 @@ class TestStockfish:
             pass
         else:
             assert new_fen != old_fen
-        assert old_del_counter == Stockfish._del_counter
+        assert Stockfish._del_counter == old_del_counter
 
     @pytest.mark.parametrize(
         "fen",
