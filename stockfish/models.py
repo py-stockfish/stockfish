@@ -405,17 +405,31 @@ class Stockfish:
             raise ValueError(
                 "Each move should be a string, and should not contain any whitespace"
             )
-        curr_fullmove_count = self._full_move_count()
-        expected_increase = self._expected_full_move_increase(len(moves))
-        self._put(f"position fen {self.get_fen_position()} moves {' '.join(moves)}")
-        if self._full_move_count() != curr_fullmove_count + expected_increase:
-            # todo - reset position to previous one, and then mention in error msg.
-            raise ValueError("Incorrect move sequence sent to Stockfish")
+        fen = self.get_fen_position()
+        expected_new_fullmove_count = (
+            self._full_move_count() + self._expected_full_move_increase(len(moves))
+        )
+        should_be_whites_turn_after = self._will_be_whites_turn_after_moves(len(moves))
+        self._put(f"position fen {fen} moves {' '.join(moves)}")
+        if (
+            self._full_move_count() != expected_new_fullmove_count
+            or self._is_whites_turn() != should_be_whites_turn_after
+        ):
+            self.set_fen_position(fen)
+            raise ValueError(
+                "Incorrect move sequence sent to Stockfish. The wrapper has therefore reset the position to what it was previously."
+            )
 
     def _expected_full_move_increase(self, num_moves: int) -> int:
         return int(num_moves / 2) + (
-            1 if num_moves % 2 != 0 and " b " in self.get_fen_position() else 0
+            0 if num_moves % 2 == 0 or self._is_whites_turn() else 1
         )
+
+    def _is_whites_turn(self) -> bool:
+        return " w " in self.get_fen_position()
+
+    def _will_be_whites_turn_after_moves(self, num_moves: int) -> bool:
+        return self._is_whites_turn() == (num_moves % 2 == 0)
 
     def _full_move_count(self) -> int:
         return int(self.get_fen_position().split(" ")[-1])
@@ -865,7 +879,7 @@ class Stockfish:
                 + """ get_evaluation will still return full strength Stockfish's evaluation of the position."""
             )
         compare: int = (
-            1 if self.get_turn_perspective() or ("w" in self.get_fen_position()) else -1
+            1 if self.get_turn_perspective() or self._is_whites_turn() else -1
         )
         # If the user wants the evaluation specified relative to who is to move, this will be done.
         # Otherwise, the evaluation will be in terms of white's side (positive meaning advantage white,
@@ -890,9 +904,7 @@ class Stockfish:
 
         # Stockfish gives the static eval from white's perspective:
         compare: int = (
-            1
-            if not self.get_turn_perspective() or ("w" in self.get_fen_position())
-            else -1
+            1 if not self.get_turn_perspective() or self._is_whites_turn() else -1
         )
         self._put("eval")
         while True:
@@ -979,7 +991,7 @@ class Stockfish:
         # Set perspective of evaluations. If get_turn_perspective() is True, or white to move,
         # use Stockfish's values -- otherwise, invert values.
         perspective: int = (
-            1 if self.get_turn_perspective() or ("w" in self.get_fen_position()) else -1
+            1 if self.get_turn_perspective() or self._is_whites_turn() else -1
         )
 
         # loop through Stockfish output lines in reverse order
