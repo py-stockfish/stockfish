@@ -16,7 +16,6 @@ import re
 import datetime
 import warnings
 import platform
-from collections.abc import Sequence
 
 from .types import (
     MoveEvaluation,
@@ -372,12 +371,12 @@ class Stockfish:
             )
         self._put(f"position fen {' '.join(fen_position.split())}")
 
-    def make_moves_from_start(self, moves: Sequence[str] | None = None) -> None:
+    def make_moves_from_start(self, moves: list[str] | None = None) -> None:
         """Sets the position by making a sequence of moves from the starting position of chess.
 
         `moves`
 
-        - A sequence of moves to set this position on the board. Must be in pure algebraic coordinate notation.
+        - A list of moves to set this position on the board. Must be in pure algebraic coordinate notation.
 
         Example:
 
@@ -388,12 +387,12 @@ class Stockfish:
         )
         self.make_moves_from_current_position(moves)
 
-    def make_moves_from_current_position(self, moves: Sequence[str] | None) -> None:
+    def make_moves_from_current_position(self, moves: list[str] | None) -> None:
         """Sets a new position by playing the moves from the current position.
 
         `moves`
 
-        - A sequence of moves to play in the current position, in order to reach a new position. Must be in
+        - A list of moves to play in the current position, in order to reach a new position. Must be in
           pure algebraic coordinate notation.
 
         Example:
@@ -1089,12 +1088,12 @@ class Stockfish:
         """Flip the side to move"""
         self._put("flip")
 
-    def _pick(self, line: Sequence[str], value: str, offset: int = 1) -> str:
+    def _pick(self, line: list[str], value: str, offset: int = 1) -> str:
         return self._pick_range(line, value, offset, 1)[0]
 
     def _pick_range(
-        self, line: Sequence[str], value: str, offset: int = 1, count: int | None = None
-    ) -> Sequence[str]:
+        self, line: list[str], value: str, offset: int = 1, count: int | None = None
+    ) -> list[str]:
         start = line.index(value) + offset
         return line[start:] if count is None else line[start : start + count]
 
