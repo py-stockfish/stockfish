@@ -417,7 +417,7 @@ class Stockfish:
         ):
             self.set_fen_position(fen)
             raise ValueError(
-                "Incorrect move sequence sent to Stockfish. The wrapper has therefore reset the position to what it was previously."
+                f"Incorrect move sequence sent to Stockfish. The wrapper has reset the position to {fen}."
             )
 
     def _expected_full_move_increase(self, num_moves: int) -> int:
