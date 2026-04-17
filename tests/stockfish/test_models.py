@@ -37,7 +37,7 @@ class TestStockfish:
             sf.get_engine_parameters() == Stockfish._DEFAULT_STOCKFISH_PARAMS.to_dict()
         )
         assert sf.get_depth() == 15 and sf.get_num_nodes() == 1000000
-        assert sf.get_turn_perspective() is True
+        assert sf.get_turn_perspective()
 
     def test_constructor_options(self):
         sf = Stockfish(
@@ -47,7 +47,7 @@ class TestStockfish:
             parameters={"Threads": 2, "UCI_Elo": 1500},
         )
         assert sf.get_depth() == 20 and sf.get_num_nodes() == 1000
-        assert sf.get_turn_perspective() is False
+        assert not sf.get_turn_perspective()
         assert (
             sf.get_engine_parameters()["Threads"] == 2
             and sf.get_engine_parameters()["UCI_Elo"] == 1500
@@ -180,11 +180,11 @@ class TestStockfish:
         assert stockfish.get_best_move(wtime=5 * 60 * 1000, btime=1000) is None
 
     def test_castling(self, stockfish: Stockfish):
-        assert stockfish.is_move_legal("e1g1") is False
+        assert not stockfish.is_move_legal("e1g1")
         stockfish.set_fen_position(
             "rnbqkbnr/ppp3pp/3ppp2/8/4P3/5N2/PPPPBPPP/RNBQK2R w KQkq - 0 4"
         )
-        assert stockfish.is_move_legal("e1g1") is True
+        assert stockfish.is_move_legal("e1g1")
 
     def test_set_fen_position_mate(self, stockfish: Stockfish):
         stockfish.set_fen_position("8/8/8/6pp/8/4k1PP/8/r3K3 w - - 12 53")
@@ -204,13 +204,13 @@ class TestStockfish:
         assert stockfish.raw_stockfish_output(stockfish.get_best_move) == old_output
 
     def test_is_move_legal_first_move(self, stockfish: Stockfish):
-        assert stockfish.is_move_legal("e2e1") is False
-        assert stockfish.is_move_legal("a2a3") is True
+        assert not stockfish.is_move_legal("e2e1")
+        assert stockfish.is_move_legal("a2a3")
 
     def test_is_move_legal_not_first_move(self, stockfish: Stockfish):
         stockfish.make_moves_from_start(["e2e4", "e7e6"])
-        assert stockfish.is_move_legal("e2e1") is False
-        assert stockfish.is_move_legal("a2a3") is True
+        assert not stockfish.is_move_legal("e2e1")
+        assert stockfish.is_move_legal("a2a3")
 
     def test_last_info(self, stockfish: Stockfish):
         stockfish.send_ucinewgame_command()
@@ -869,7 +869,7 @@ class TestStockfish:
         assert isinstance(moves[0]["Centipawn"], int) and moves[0]["Centipawn"] > 0
         assert compare(stockfish.get_evaluation()["value"], 0, operator.gt, int)
         stockfish.set_turn_perspective(False)
-        assert stockfish.get_turn_perspective() is False
+        assert not stockfish.get_turn_perspective()
         moves = stockfish.get_top_moves(1)
         assert isinstance(moves[0]["Centipawn"], int) and moves[0]["Centipawn"] < 0
         assert compare(stockfish.get_evaluation()["value"], 0, operator.lt, int)
