@@ -751,7 +751,7 @@ class TestStockfish:
             {"Move": "g1f1", "Centipawn": None, "Mate": -2},
             {"Move": "g1h1", "Centipawn": None, "Mate": -1},
         ]
-        stockfish.set_elo_rating()
+        stockfish.set_elo_rating(1350)
         with pytest.warns(UserWarning):
             top_moves = stockfish.get_top_moves(2)
         assert top_moves == [

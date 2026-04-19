@@ -53,7 +53,7 @@ There are some default engine settings used by this wrapper. For increasing Stoc
     "Slow Mover": 100,
     "UCI_Chess960": False,
     "UCI_LimitStrength": False,
-    "UCI_Elo": 1350
+    "UCI_Elo": 1350 # Ignored by default in favour of "Skill Level".
 }
 ```
 
@@ -332,14 +332,18 @@ stockfish.raw_stockfish_output(stockfish.get_top_moves)
 
 ### Set the engine's skill level (ignoring ELO rating)
 
+By default, Stockfish already uses level 20, which is full strength.
+
 ```python
 stockfish.set_skill_level(15)
 ```
 
 ### Set the engine's ELO rating (ignoring skill level)
 
+Note that by default, Stockfish uses a skill level of 20 (ignoring elo), which is full strength. So you should only call `set_elo_rating` if you want Stockfish to instead ignore skill level and play at a specified elo strength.
+
 ```python
-stockfish.set_elo_rating(1350)
+stockfish.set_elo_rating(2500)
 ```
 
 ### Put the engine back to full strength (if you've previously lowered the ELO or skill level)
